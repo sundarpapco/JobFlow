@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/lbl_heading"
+        style="@style/FragmentHeadingText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/binding"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <RadioGroup
+        android:id="@+id/radio_group_binding_type"
+        app:layout_constraintTop_toBottomOf="@id/lbl_heading"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_btn_saddle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/saddle_stitched"/>
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_btn_perfect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/perfect_binding"/>
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_btn_case_binding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/case_binding"/>
+
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/txt_layout_remarks"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txt_remarks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:inputType="text"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btn_save"
+        android:text="@string/save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"/>
+
+</LinearLayout>

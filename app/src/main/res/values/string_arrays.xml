@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backsideOptions">
+        <item>None</item>
+        <item>Gripper to Gripper</item>
+        <item>Gripper to Tail</item>
+        <item>Separate</item>
+    </string-array>
+
+
+</resources>

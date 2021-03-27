@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:theme="@style/Theme.JobFlow.Machine"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/list_item_job_activated"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="12dp">
+
+
+    <TextView
+        android:id="@+id/lbl_po_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/po_number_background"
+        android:paddingStart="8dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp"
+        android:textColor="?attr/colorDarkOnLight"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="11548 - 10 days ago" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icon_star"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_star"
+        android:tint="?attr/colorJobListItem"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
+        app:layout_constraintStart_toEndOf="@+id/lbl_po_number"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lbl_client_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/arial"
+        android:textColor="?attr/colorJobListItem"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/lbl_po_number"
+        android:maxLines="1"
+        android:ellipsize="end"
+        tools:text="Suri Graphics" />
+
+    <TextView
+        android:id="@+id/job_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/arial"
+        android:textSize="12sp"
+        android:layout_marginEnd="12dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/barrier"
+        app:layout_constraintTop_toBottomOf="@id/lbl_client_name"
+        tools:text="Naiduhall brochire" />
+
+    <TextView
+        android:id="@+id/lbl_paper_detail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="?attr/colorLightOnDark"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/lbl_reprint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/job_name"
+        tools:text="58.5 X 91 Cms 130 GSM Real art paper - 5200 Sheets" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icon_drag"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_hamburger"
+        android:tint="?attr/colorJobListItem"/>
+
+    <TextView
+        android:id="@+id/lbl_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/arial"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/icon_drag"
+        tools:text="06:85" />
+
+    <TextView
+        android:id="@+id/lbl_reprint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/reprint_background"
+        android:padding="4dp"
+        android:textColor="?attr/colorDarkOnLight"
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_time"
+        tools:ignore="SmallSp"
+        tools:text="REPRINT" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="start"
+        app:constraint_referenced_ids="icon_drag,lbl_time"
+        tools:layout_editor_absoluteX="377dp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

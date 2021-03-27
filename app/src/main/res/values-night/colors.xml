@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="machine_green">#50FF73</color>
+    <color name="machine_green_highlight">#03310C</color>
+    <color name="progress_blue">#50FFE7</color>
+    <color name="progress_blue_highlight">#0F5047</color>
+    <color name="new_job_orange_highlight">#201700</color>
+    <color name="new_job_orange">#FFB950</color>
+</resources>

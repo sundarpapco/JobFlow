@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="colorLightOnDark" format="color"/>
+    <attr name="colorDarkOnLight" format="color"/>
+
+    <!-- Custom attributes so that we can change the theme color on specific parts of the UI using the same drawable -->
+    <!-- These attributes are used for rendering the job list item theme in three different flavours orange, green and blue -->
+    <attr name="colorJobListItem" format="color"/>
+    <attr name="colorJobListItemHighlight" format="color"/>
+
+</resources>

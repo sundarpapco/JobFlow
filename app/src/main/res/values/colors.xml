@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="primary">#9c27b0</color>
+    <color name="primary_variant">#801E91</color>
+    <color name="dialog_background">#1f1f1f</color>
+    <color name="menu_grey">#454545</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_grey">#090909</color>
+
+    <color name="machine_green">#00320A</color>
+    <color name="machine_green_highlight">#47F168</color>
+    <color name="progress_blue_highlight">#50FFE7</color>
+    <color name="progress_blue">#0F5047</color>
+    <color name="new_job_orange">#201700</color>
+    <color name="new_job_orange_highlight">#FFB950</color>
+</resources>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/print_order_flow"
+    app:startDestination="@id/fragmentAddPO">
+
+    <fragment
+        android:id="@+id/fragmentAddPO"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO"
+        android:label="FragmentAddPO" >
+        <action
+            android:id="@+id/action_fragmentAddPO_to_fragmentJobDetails"
+            app:destination="@id/fragmentJobDetails"
+            app:popUpTo="@id/fragmentAddPO"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentJobDetails"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentJobDetails"
+        android:label="FragmentJobDetails" >
+        <action
+            android:id="@+id/action_fragmentJobDetails_to_fragmentPaperDetails"
+            app:destination="@id/fragmentPaperDetails" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentPaperDetails"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentPaperDetails"
+        android:label="FragmentPaperDetails" >
+        <action
+            android:id="@+id/action_fragmentPaperDetails_to_fragmentPlateMakingDetails"
+            app:destination="@id/fragmentPlateMakingDetails" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentPlateMakingDetails"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentPlateMakingDetails"
+        android:label="FragmentPlateMakingDetails" >
+        <action
+            android:id="@+id/action_fragmentPlateMakingDetails_to_fragmentPrintingDetail"
+            app:destination="@id/fragmentPrintingDetail" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentPostPressDetails"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentPostPressDetails"
+        android:label="FragmentPostPressDetails" />
+    <fragment
+        android:id="@+id/fragmentPrintingDetail"
+        android:name="com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentPrintingDetail"
+        android:label="FragmentPrintingDetail" >
+        <action
+            android:id="@+id/action_fragmentPrintingDetail_to_fragmentPostPressDetails"
+            app:destination="@id/fragmentPostPressDetails" />
+    </fragment>
+</navigation>
