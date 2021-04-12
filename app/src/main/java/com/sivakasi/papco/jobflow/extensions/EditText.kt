@@ -1,4 +1,4 @@
-package com.sivakasi.papco.jobflow
+package com.sivakasi.papco.jobflow.extensions
 
 import android.util.Log
 import android.widget.EditText
@@ -69,7 +69,7 @@ fun Float.asString(): String {
 }
 
 
-fun Fragment.log(msg: String) {
+fun log(msg: String) {
     Log.d("SUNDAR", msg)
 }
 

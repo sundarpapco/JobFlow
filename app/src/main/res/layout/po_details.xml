@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/surface_background"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/lbl_date"
+        style="@style/detailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/txt_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="@string/date"/>
+
+    <TextView
+        android:id="@+id/txt_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="10/04/2021"
+        style="@style/detailText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lbl_date"/>
+
+    <TextView
+        android:id="@+id/lbl_client_name"
+        style="@style/detailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/txt_client_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_date"
+        android:text="@string/client_name" />
+
+    <TextView
+        android:id="@+id/txt_client_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Suri Graphics, Sivakasi"
+        style="@style/detailText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lbl_client_name"/>
+
+    <TextView
+        android:id="@+id/lbl_job_name"
+        style="@style/detailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/txt_job_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_client_name"
+        android:text="@string/job_name" />
+
+    <TextView
+        android:id="@+id/txt_job_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Naiduhall brochures"
+        style="@style/detailText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lbl_job_name"/>
+
+    <TextView
+        android:id="@+id/lbl_printing_size"
+        style="@style/detailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/txt_printing_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_job_name"
+        android:text="@string/printing_size" />
+
+    <TextView
+        android:id="@+id/txt_printing_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="510 X 760 mm"
+        style="@style/detailText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lbl_printing_size"/>
+
+    <TextView
+        android:id="@+id/lbl_printing_quantity"
+        style="@style/detailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/txt_printing_quantity"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_printing_size"
+        android:text="@string/printing_quantity" />
+
+    <TextView
+        android:id="@+id/txt_printing_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="2000 Sheets"
+        style="@style/detailText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lbl_printing_quantity"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

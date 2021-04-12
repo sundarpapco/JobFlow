@@ -1,6 +1,5 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,7 +8,6 @@ import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 
@@ -17,16 +15,14 @@ import kotlinx.coroutines.launch
 class ManagePrintOrderVM : ViewModel() {
 
     private val _loadedJob = MutableLiveData<LoadingStatus>()
-    private val _saveStatus=MutableLiveData<Event<LoadingStatus>>()
+    private val _saveStatus = MutableLiveData<Event<LoadingStatus>>()
     val loadedJob: LiveData<LoadingStatus> = _loadedJob
-    val saveStatus:LiveData<Event<LoadingStatus>> = _saveStatus
+    val saveStatus: LiveData<Event<LoadingStatus>> = _saveStatus
     private lateinit var printOrder: PrintOrder
     private val repository = Repository()
 
-    /* init{
-         createNewJob()
-     }*/
-
+    var isEditMode: Boolean = false
+    var editingPrintOrderParentDestinationId: String = DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
     fun loadRepeatJob(plateNumber: Int) {
 
@@ -59,9 +55,9 @@ class ManagePrintOrderVM : ViewModel() {
                 if (searchResult == null)
                     _loadedJob.value = LoadingStatus.Error(ResourceNotFoundException(""))
                 else {
-                    printOrder=searchResult
-                    printOrder.creationTime= currentTimeInMillis()
-                    printOrder.jobType=PrintOrder.TYPE_REPEAT_JOB
+                    printOrder = searchResult
+                    printOrder.creationTime = currentTimeInMillis()
+                    printOrder.jobType = PrintOrder.TYPE_REPEAT_JOB
                     _loadedJob.value = LoadingStatus.Success(searchResult)
                 }
             } catch (e: Exception) {
@@ -71,10 +67,26 @@ class ManagePrintOrderVM : ViewModel() {
         }
     }
 
-    fun saveJobDetails(jobName: String, clientName: String) {
-        printOrder.jobName = jobName
-        printOrder.billingName = clientName
+    fun loadPrintOrderToEdit(poNumber:Int){
+        viewModelScope.launch {
+
+            _loadedJob.value = LoadingStatus.Loading("One moment please")
+            try {
+                //Load Job from repository here like
+                val searchResult = repository.searchPrintOrder(poNumber)
+                if (searchResult == null)
+                    _loadedJob.value = LoadingStatus.Error(ResourceNotFoundException(""))
+                else {
+                    printOrder = searchResult
+                    _loadedJob.value = LoadingStatus.Success(searchResult)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _loadedJob.value = LoadingStatus.Error(e)
+            }
+        }
     }
+
 
     // Paper details
 
@@ -122,10 +134,6 @@ class ManagePrintOrderVM : ViewModel() {
         _loadedJob.value = LoadingStatus.Success(printOrder)
     }
 
-    //Plate making detail
-    fun savePlateDetails(details: PlateMakingDetail) {
-        printOrder.plateMakingDetail = details
-    }
 
     fun savePrintingDetails(details: PrintingDetail) {
         printOrder.printingDetail = details
@@ -135,11 +143,25 @@ class ManagePrintOrderVM : ViewModel() {
 
         viewModelScope.launch {
             try {
-                _saveStatus.value= loadingEvent("One moment please")
+                _saveStatus.value = loadingEvent("One moment please")
                 repository.createPrintOrder(printOrder)
-                _saveStatus.value= dataEvent(true)
+                _saveStatus.value = dataEvent(true)
             } catch (e: Exception) {
-                _saveStatus.value= errorEvent(e)
+                _saveStatus.value = errorEvent(e)
+            }
+        }
+
+    }
+
+    fun updatePrintOrder() {
+
+        viewModelScope.launch {
+            try {
+                _saveStatus.value = loadingEvent("One moment please")
+                repository.updatePrintOrder(editingPrintOrderParentDestinationId, printOrder)
+                _saveStatus.value = dataEvent(true)
+            } catch (e: Exception) {
+                _saveStatus.value = errorEvent(e)
             }
         }
 

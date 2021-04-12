@@ -11,9 +11,9 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentJobDetailsBinding
+import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.validateForNonBlank
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
@@ -23,6 +23,7 @@ class FragmentJobDetails : Fragment() {
     private val viewBinding: FragmentJobDetailsBinding
         get() = _viewBinding!!
 
+    private var printOrder=PrintOrder()
     private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
 
     override fun onCreateView(
@@ -64,14 +65,18 @@ class FragmentJobDetails : Fragment() {
 
     private fun observeViewModel(){
         viewModel.loadedJob.observe(viewLifecycleOwner){
-            if(it is LoadingStatus.Success<*>)
-                renderJobDetails(it.data as PrintOrder)
+            if(it is LoadingStatus.Success<*>) {
+                printOrder=it.data as PrintOrder
+                renderJobDetails()
+            }
         }
     }
 
-    private fun renderJobDetails(printOrder: PrintOrder){
+    private fun renderJobDetails(){
+        viewBinding.switchUrgent.isChecked=printOrder.emergency
         viewBinding.txtJobName.setText(printOrder.jobName)
         viewBinding.txtClientName.setText(printOrder.billingName)
+        viewBinding.txtPendingRemarks.setText(printOrder.pendingRemarks)
     }
 
     private fun validateForm():Boolean{
@@ -87,10 +92,13 @@ class FragmentJobDetails : Fragment() {
 
 
     private fun saveJobDetails(){
-        viewModel.saveJobDetails(
-            viewBinding.txtJobName.text.toString(),
-            viewBinding.txtClientName.text.toString()
-        )
+
+        with(viewBinding){
+            printOrder.emergency=switchUrgent.isChecked
+            printOrder.jobName=txtJobName.text.toString().trim()
+            printOrder.billingName=txtClientName.text.toString().trim()
+            printOrder.pendingRemarks=txtPendingRemarks.text.toString()
+        }
     }
 
     private fun navigateToNextScreen() =

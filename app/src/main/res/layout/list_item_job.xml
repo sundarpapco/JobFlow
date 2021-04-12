@@ -2,10 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:theme="@style/Theme.JobFlow.Machine"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/list_item_job_activated"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/list_item_job"
+    android:foreground="@drawable/masked_ripple"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingBottom="12dp">
@@ -20,7 +22,7 @@
         android:paddingTop="4dp"
         android:paddingEnd="8dp"
         android:paddingBottom="4dp"
-        android:textColor="?attr/colorDarkOnLight"
+        android:textColor="@drawable/color_activation_white_black"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -28,14 +30,25 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/icon_star"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="23dp"
+        android:layout_height="23dp"
         android:layout_marginStart="8dp"
-        android:src="@drawable/ic_star"
-        android:tint="?attr/colorJobListItem"
         android:layout_marginTop="4dp"
+        android:src="@drawable/ic_star"
+        android:tint="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
         app:layout_constraintStart_toEndOf="@+id/lbl_po_number"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icon_pending"
+        android:layout_width="23dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_error"
+        app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
+        app:layout_constraintStart_toEndOf="@+id/icon_star"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -43,58 +56,57 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
         android:fontFamily="@font/arial"
-        android:textColor="?attr/colorJobListItem"
+        android:maxLines="1"
+        android:textColor="?attr/colorPrimary"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@id/lbl_time"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/barrier"
         app:layout_constraintTop_toBottomOf="@id/lbl_po_number"
-        android:maxLines="1"
-        android:ellipsize="end"
         tools:text="Suri Graphics" />
 
     <TextView
-        android:id="@+id/job_name"
+        android:id="@+id/lbl_job_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/arial"
-        android:textSize="12sp"
-        android:layout_marginEnd="12dp"
-        android:maxLines="1"
+        android:layout_marginEnd="16dp"
         android:ellipsize="end"
+        android:fontFamily="@font/arial"
+        android:maxLines="1"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/lbl_colors"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/barrier"
         app:layout_constraintTop_toBottomOf="@id/lbl_client_name"
-        tools:text="Naiduhall brochire" />
+        tools:text="Naiduhall brochure" />
 
     <TextView
         android:id="@+id/lbl_paper_detail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:maxLines="2"
         android:textColor="?attr/colorLightOnDark"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/lbl_reprint"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/job_name"
+        app:layout_constraintTop_toBottomOf="@+id/lbl_colors"
         tools:text="58.5 X 91 Cms 130 GSM Real art paper - 5200 Sheets" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/icon_drag"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:layout_marginTop="16dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
+        android:tint="@drawable/color_activation_grey_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_hamburger"
-        android:tint="?attr/colorJobListItem"/>
+        app:srcCompat="@drawable/ic_hamburger" />
 
     <TextView
         android:id="@+id/lbl_time"
@@ -102,6 +114,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/arial"
         android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/lbl_client_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/icon_drag"
         tools:text="06:85" />
@@ -110,15 +123,24 @@
         android:id="@+id/lbl_reprint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/reprint_background"
+        android:layout_marginEnd="8dp"
         android:padding="4dp"
-        android:textColor="?attr/colorDarkOnLight"
-        android:textSize="8sp"
+        android:text="@string/reprint"
+        android:textColor="@color/colorAccent"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/icon_drag"
+        app:layout_constraintTop_toTopOf="@+id/icon_drag"
+        tools:ignore="SmallSp" />
+
+    <TextView
+        android:id="@+id/lbl_colors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/arial"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lbl_time"
-        tools:ignore="SmallSp"
-        tools:text="REPRINT" />
+        app:layout_constraintTop_toTopOf="@+id/lbl_job_name"
+        tools:text="CMYK+LB" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier"

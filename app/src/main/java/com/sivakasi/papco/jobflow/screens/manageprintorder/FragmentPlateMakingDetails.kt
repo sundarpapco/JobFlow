@@ -12,6 +12,8 @@ import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPlateMakingDetailsBinding
+import com.sivakasi.papco.jobflow.extensions.number
+import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.NoFilterArrayAdapter
@@ -178,12 +180,12 @@ class FragmentPlateMakingDetails : Fragment() {
         val trimHeight = viewBinding.txtTrimHeight.text.toString().toInt()
         val jobHeight = viewBinding.txtJobHeight.text.toString().toInt()
 
-        if (trimHeight < jobHeight){
+        if (trimHeight < jobHeight) {
 
             viewBinding.txtGripper.setText("")
             viewBinding.txtTail.setText("")
 
-        }else{
+        } else {
 
             val gripper = if (trimHeight - jobHeight > 10) 10 else trimHeight - jobHeight
             val tail = trimHeight - jobHeight - gripper
@@ -234,8 +236,12 @@ class FragmentPlateMakingDetails : Fragment() {
 
         if (plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED)
             enableNewPlateOnlyFields(true)
-        else
-            enableNewPlateOnlyFields(false)
+        else {
+            if (viewModel.isEditMode && jobType==PrintOrder.TYPE_NEW_JOB)
+                enableNewPlateOnlyFields(true)
+            else
+                enableNewPlateOnlyFields(false)
+        }
 
     }
 
@@ -247,6 +253,11 @@ class FragmentPlateMakingDetails : Fragment() {
     }
 
     private fun loadPlateNumber() {
+
+        if (viewModel.isEditMode) {
+            loadPlateNumberForEditMode()
+            return
+        }
 
         if (jobType == PrintOrder.TYPE_NEW_JOB) {
             viewBinding.lblOldPlateNumber.visibility = View.GONE
@@ -263,6 +274,18 @@ class FragmentPlateMakingDetails : Fragment() {
                 viewBinding.lblOldPlateNumber.text =
                     getString(R.string.old_plate_number, plateMakingDetail.plateNumber)
         }
+    }
+
+    private fun loadPlateNumberForEditMode() {
+
+        viewBinding.lblOldPlateNumber.visibility = View.VISIBLE
+        viewBinding.checkboxPartyPlate.visibility = View.GONE
+
+        if (plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+            viewBinding.lblOldPlateNumber.text = getString(R.string.party_plate)
+        else
+            viewBinding.lblOldPlateNumber.text =
+                getString(R.string.plate_number, plateMakingDetail.plateNumber)
     }
 
     private fun createPlateNumber(): Int? {
@@ -383,39 +406,39 @@ class FragmentPlateMakingDetails : Fragment() {
 
         with(viewBinding) {
             txtLayoutJobHeight.isEnabled = editable
-            txtJobHeight.error=null
-            txtLayoutJobHeight.isFocusable=editable
-            txtJobHeight.isFocusable=editable
+            txtJobHeight.error = null
+            txtLayoutJobHeight.isFocusable = editable
+            txtJobHeight.isFocusable = editable
 
             txtLayoutJobWidth.isEnabled = editable
-            txtJobWidth.error=null
+            txtJobWidth.error = null
             txtLayoutJobWidth.isFocusable = editable
-            txtJobWidth.isFocusable=editable
+            txtJobWidth.isFocusable = editable
 
             txtLayoutGripper.isEnabled = editable
             txtLayoutGripper.isFocusable = editable
-            txtGripper.isFocusable=editable
+            txtGripper.isFocusable = editable
 
             txtLayoutTail.isEnabled = editable
             txtLayoutTail.isFocusable = editable
-            txtTail.isFocusable=editable
+            txtTail.isFocusable = editable
 
             txtLayoutScreen.isEnabled = editable
-            txtScreen.error=null
+            txtScreen.error = null
             txtLayoutScreen.isFocusable = editable
-            txtScreen.isFocusable=editable
+            txtScreen.isFocusable = editable
         }
 
     }
 
-    private fun clearNewPlateOnlyFields(){
+    private fun clearNewPlateOnlyFields() {
 
         with(viewBinding) {
-            plateMakingDetail.jobHeight= NUMBER_BLANK_STRING
-            plateMakingDetail.jobWidth= NUMBER_BLANK_STRING
-            plateMakingDetail.gripper= NUMBER_BLANK_STRING
-            plateMakingDetail.tail= NUMBER_BLANK_STRING
-            plateMakingDetail.screen=""
+            plateMakingDetail.jobHeight = NUMBER_BLANK_STRING
+            plateMakingDetail.jobWidth = NUMBER_BLANK_STRING
+            plateMakingDetail.gripper = NUMBER_BLANK_STRING
+            plateMakingDetail.tail = NUMBER_BLANK_STRING
+            plateMakingDetail.screen = ""
 
             txtJobHeight.setText("")
             txtJobWidth.setText("")

@@ -34,6 +34,7 @@
     <string name="backside_machine">Backside Machine</string>
     <string name="mm">mm</string>
     <string name="old_plate_number">Old plate: %1$d</string>
+    <string name="plate_number">Plate number: %1$d</string>
     <string name="blank_if_same_as_front_machine">Blank if same as front machine</string>
     <string name="error_invalid_trim_size">Should be %1$d to %2$d</string>
     <string name="error_invalid_positive_number">Should be greater than zero</string>
@@ -59,6 +60,7 @@
     <string name="substrate">Substrate</string>
     <string name="sheets">Sheets</string>
     <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
     <string name="error_at_least_one_paper_detail_required">Please add at least one paper detail</string>
     <string name="error_invalid_job_height">Invalid job height</string>
     <string name="error_invalid_job_width">Invalid job width</string>
@@ -90,4 +92,45 @@
     <string name="invalid_plate_number">Should be greater than zero</string>
     <string name="not_applicable">Not applicable</string>
     <string name="required_field">*Required</string>
+    <string name="urgent">Urgent</string>
+    <string name="pending_remarks">Pending remarks</string>
+    <string name="blank_if_not_pending">Blank if not pending</string>
+    <string name="reprint">REPRINT</string>
+    <string name="success_print_order_creation">Print order created successfully!</string>
+    <string name="success_print_order_updating">Print order updated successfully!</string>
+    <string name="one_moment_please">One moment please</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="xx_days_ago">%1$d days ago</string>
+    <string name="duration_in_xx_jobs">%1$s in %2$d Jobs</string>
+    <string name="add_machine">Add Machine</string>
+    <string name="edit_machine">Edit Machine</string>
+    <string name="machine_name">Machine name</string>
+    <string name="machine_already_exist">Machine with given name already exist</string>
+    <string name="invoice_detail">Invoice detail</string>
+    <string name="date">Date</string>
+    <string name="plate_number_info">Plate number</string>
+    <string name="trimming_size">Trimming size</string>
+    <string name="job_size">Job size</string>
+    <string name="printing_size">Printing size</string>
+    <string name="printing_quantity">Printing Quantity</string>
+    <string name="xx_sheets">%1$d Sheets</string>
+
+    <!-- Menu -->
+    <string name="menu_allot">Allot</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_invoice">Invoice</string>
+    <string name="menu_back">Remove</string>
+    <string name="menu_done">Mark as completed</string>
+
+
+    <!-- Accessibility -->
+    <string name="add_new_print_order">Add new print order</string>
+    <string name="add_new_machine">Add new machine destination</string>
+
+    <!-- Fragment titles -->
+    <string name="papco_jobs">Papco Jobs</string>
+    <string name="machines">Machines</string>
+    <string name="select_machine">Select machine</string>
 </resources>

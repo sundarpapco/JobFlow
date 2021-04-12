@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/mnu_invoice"
+        android:icon="@drawable/ic_rupee"
+        android:orderInCategory="100"
+        android:title="@string/menu_invoice"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/mnu_allot"
+        android:icon="@drawable/ic_upload"
+        android:orderInCategory="200"
+        android:title="@string/menu_allot"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/mnu_delete"
+        android:icon="@drawable/ic_delete"
+        android:orderInCategory="300"
+        android:title="@string/menu_delete"
+        app:showAsAction="ifRoom" />
+</menu>

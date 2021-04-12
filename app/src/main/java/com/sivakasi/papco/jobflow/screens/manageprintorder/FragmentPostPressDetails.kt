@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.DialogTextInput
@@ -21,24 +22,24 @@ import com.sivakasi.papco.jobflow.util.toast
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
-class FragmentPostPressDetails:Fragment(), ResultDialogFragment.ResultDialogListener {
+class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogListener {
 
-    companion object{
-        private const val DIALOG_CODE_LAMINATION=1
-        private const val DIALOG_CODE_SCORING=2
-        private const val DIALOG_CODE_FOLDING=3
-        private const val DIALOG_CODE_SPOT_UV=4
-        private const val DIALOG_CODE_AQUEOUS_COATING=5
-        private const val DIALOG_CODE_CUTTING=6
-        private const val DIALOG_CODE_PACKING=7
-        private const val DIALOG_CODE_FOILS=8
-        private const val DIALOG_CODE_BINDING=9
+    companion object {
+        private const val DIALOG_CODE_LAMINATION = 1
+        private const val DIALOG_CODE_SCORING = 2
+        private const val DIALOG_CODE_FOLDING = 3
+        private const val DIALOG_CODE_SPOT_UV = 4
+        private const val DIALOG_CODE_AQUEOUS_COATING = 5
+        private const val DIALOG_CODE_CUTTING = 6
+        private const val DIALOG_CODE_PACKING = 7
+        private const val DIALOG_CODE_FOILS = 8
+        private const val DIALOG_CODE_BINDING = 9
     }
 
     private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
-    private var _viewBinding: FragmentPostPressDetailsBinding?=null
-    private val viewBinding get() =_viewBinding!!
-    private var printOrder:PrintOrder?=null
+    private var _viewBinding: FragmentPostPressDetailsBinding? = null
+    private val viewBinding get() = _viewBinding!!
+    private var printOrder: PrintOrder? = null
 
 
     override fun onCreateView(
@@ -46,7 +47,7 @@ class FragmentPostPressDetails:Fragment(), ResultDialogFragment.ResultDialogList
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding= FragmentPostPressDetailsBinding.inflate(inflater,container,false)
+        _viewBinding = FragmentPostPressDetailsBinding.inflate(inflater, container, false)
         return viewBinding.root
     }
 
@@ -58,143 +59,151 @@ class FragmentPostPressDetails:Fragment(), ResultDialogFragment.ResultDialogList
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _viewBinding=null
+        _viewBinding = null
     }
 
-    private fun initViews(){
+    private fun initViews() {
 
         viewBinding.btnDone.setOnClickListener {
-            viewModel.savePrintOrder()
+            if (viewModel.isEditMode)
+                viewModel.updatePrintOrder()
+            else
+                viewModel.savePrintOrder()
         }
 
         viewBinding.chkboxLamination.setOnClickListener {
-            if(viewBinding.chkboxLamination.isChecked){
+            if (viewBinding.chkboxLamination.isChecked) {
                 //User is enabling the lamination
-                printOrder?.lamination= Lamination()
+                printOrder?.lamination = Lamination()
                 showLaminationDialog()
-            }else{
+            } else {
                 //User is disabling the lamination
-                printOrder?.lamination=null
+                printOrder?.lamination = null
             }
             renderLamination()
         }
 
         viewBinding.chkboxScoring.setOnClickListener {
-            if(viewBinding.chkboxScoring.isChecked){
+            if (viewBinding.chkboxScoring.isChecked) {
                 //User is enabling scoring
-                printOrder?.scoring=""
+                printOrder?.scoring = ""
                 showRemarksDialog(getString(R.string.scoring), DIALOG_CODE_SCORING)
-            }else{
+            } else {
                 //User is disabling scoring
-                printOrder?.scoring=null
+                printOrder?.scoring = null
             }
             renderScoring()
         }
 
         viewBinding.chkboxFolding.setOnClickListener {
-            if(viewBinding.chkboxFolding.isChecked){
+            if (viewBinding.chkboxFolding.isChecked) {
                 //User is enabling scoring
-                printOrder?.folding=""
+                printOrder?.folding = ""
                 showRemarksDialog(getString(R.string.folding), DIALOG_CODE_FOLDING)
-            }else{
+            } else {
                 //User is disabling scoring
-                printOrder?.folding=null
+                printOrder?.folding = null
             }
             renderFolding()
         }
 
         viewBinding.chkboxSpotUv.setOnClickListener {
-            if(viewBinding.chkboxSpotUv.isChecked){
+            if (viewBinding.chkboxSpotUv.isChecked) {
                 //User is enabling scoring
-                printOrder?.spotUV=""
+                printOrder?.spotUV = ""
                 showRemarksDialog(getString(R.string.spot_uv), DIALOG_CODE_SPOT_UV)
-            }else{
+            } else {
                 //User is disabling scoring
-                printOrder?.spotUV=null
+                printOrder?.spotUV = null
             }
             renderSpotUV()
         }
 
         viewBinding.chkboxAqueousCoating.setOnClickListener {
-            if(viewBinding.chkboxAqueousCoating.isChecked){
+            if (viewBinding.chkboxAqueousCoating.isChecked) {
                 //User is enabling this operation
-                printOrder?.aqueousCoating=""
+                printOrder?.aqueousCoating = ""
                 showRemarksDialog(getString(R.string.aqueous_coating), DIALOG_CODE_AQUEOUS_COATING)
-            }else{
+            } else {
                 //User is disabling this operation
-                printOrder?.aqueousCoating=null
+                printOrder?.aqueousCoating = null
             }
-           renderCoating()
+            renderCoating()
         }
 
         viewBinding.chkboxCutting.setOnClickListener {
-            if(viewBinding.chkboxCutting.isChecked){
+            if (viewBinding.chkboxCutting.isChecked) {
                 //User is enabling this operation
-                printOrder?.cutting=""
+                printOrder?.cutting = ""
                 showRemarksDialog(getString(R.string.cutting), DIALOG_CODE_CUTTING)
-            }else{
+            } else {
                 //User is disabling this operation
-                printOrder?.cutting=null
+                printOrder?.cutting = null
             }
             renderCutting()
         }
 
         viewBinding.chkboxPacking.setOnClickListener {
-            if(viewBinding.chkboxPacking.isChecked){
+            if (viewBinding.chkboxPacking.isChecked) {
                 //User is enabling this operation
-                printOrder?.packing=""
+                printOrder?.packing = ""
                 showRemarksDialog(getString(R.string.packing), DIALOG_CODE_PACKING)
-            }else{
+            } else {
                 //User is disabling this operation
-                printOrder?.packing=null
+                printOrder?.packing = null
             }
             renderPacking()
         }
 
         viewBinding.chkboxFoils.setOnClickListener {
-            if(viewBinding.chkboxFoils.isChecked){
+            if (viewBinding.chkboxFoils.isChecked) {
                 //User is enabling this operation
-                printOrder?.foil=""
+                printOrder?.foil = ""
                 showRemarksDialog(getString(R.string.foils), DIALOG_CODE_FOILS)
-            }else{
+            } else {
                 //User is disabling this operation
-                printOrder?.packing=null
+                printOrder?.packing = null
             }
             renderFoils()
         }
 
         viewBinding.chkboxBinding.setOnClickListener {
-            if(viewBinding.chkboxBinding.isChecked){
+            if (viewBinding.chkboxBinding.isChecked) {
                 //User is enabling the lamination
-                printOrder?.binding= Binding()
+                printOrder?.binding = Binding()
                 showBindingDialog()
-            }else{
+            } else {
                 //User is disabling the lamination
-                printOrder?.binding=null
+                printOrder?.binding = null
             }
             renderBinding()
         }
 
     }
 
-    private fun observeViewModel(){
-        viewModel.loadedJob.observe(viewLifecycleOwner){
+    private fun observeViewModel() {
+        viewModel.loadedJob.observe(viewLifecycleOwner) {
             if (it is LoadingStatus.Success<*>) {
-                printOrder=it.data as PrintOrder
+                printOrder = it.data as PrintOrder
                 renderScreen()
             }
         }
 
-        viewModel.saveStatus.observe(viewLifecycleOwner,EventObserver{
-            when(it){
-                is LoadingStatus.Loading->showWaitDialog(it.msg)
+        viewModel.saveStatus.observe(viewLifecycleOwner, EventObserver {
+            when (it) {
+                is LoadingStatus.Loading -> showWaitDialog(it.msg)
 
-                is LoadingStatus.Success<*>->{
+                is LoadingStatus.Success<*> -> {
                     hideWaitDialog()
-                    toast("Print order successfully saved")
+                    if (viewModel.isEditMode)
+                        toast(getString(R.string.success_print_order_updating))
+                    else
+                        toast(getString(R.string.success_print_order_creation))
+
+                    exitOutOfCreationFlow()
                 }
 
-                is LoadingStatus.Error->{
+                is LoadingStatus.Error -> {
                     hideWaitDialog()
                     toast(it.exception.message ?: "Unknown error")
                 }
@@ -202,80 +211,84 @@ class FragmentPostPressDetails:Fragment(), ResultDialogFragment.ResultDialogList
         })
     }
 
-    private fun showLaminationDialog(){
+    private fun exitOutOfCreationFlow() {
+        findNavController().popBackStack(R.id.fragmentJobDetails, true)
+    }
+
+    private fun showLaminationDialog() {
         DialogLamination.getInstance(printOrder?.lamination, DIALOG_CODE_LAMINATION).show(
-            childFragmentManager,DialogLamination.TAG
+            childFragmentManager, DialogLamination.TAG
         )
     }
 
-    private fun showBindingDialog(){
+    private fun showBindingDialog() {
         DialogBinding.getInstance(code = DIALOG_CODE_BINDING).show(
-            childFragmentManager,DialogBinding.TAG
+            childFragmentManager, DialogBinding.TAG
         )
     }
 
-    private fun showRemarksDialog(title:String,code:Int){
+    private fun showRemarksDialog(title: String, code: Int) {
         DialogTextInput.getInstance(
             title,
             "",
             code
-        ).show(childFragmentManager,DialogTextInput.TAG)
+        ).show(childFragmentManager, DialogTextInput.TAG)
     }
 
 
     override fun onDialogResult(dialogResult: Any, code: Int) {
 
-        when(code){
+        when (code) {
 
-            DIALOG_CODE_LAMINATION->{
-                printOrder?.lamination=dialogResult as Lamination
+            DIALOG_CODE_LAMINATION -> {
+                printOrder?.lamination = dialogResult as Lamination
                 renderLamination()
             }
 
-            DIALOG_CODE_SCORING->{
-                printOrder?.scoring=dialogResult as String
+            DIALOG_CODE_SCORING -> {
+                printOrder?.scoring = dialogResult as String
                 renderScoring()
             }
 
-            DIALOG_CODE_FOLDING->{
-                printOrder?.folding=dialogResult as String
+            DIALOG_CODE_FOLDING -> {
+                printOrder?.folding = dialogResult as String
                 renderFolding()
             }
 
-            DIALOG_CODE_SPOT_UV->{
-                printOrder?.spotUV=dialogResult as String
+            DIALOG_CODE_SPOT_UV -> {
+                printOrder?.spotUV = dialogResult as String
                 renderSpotUV()
             }
 
-            DIALOG_CODE_AQUEOUS_COATING->{
-                printOrder?.aqueousCoating=dialogResult as String
+            DIALOG_CODE_AQUEOUS_COATING -> {
+                printOrder?.aqueousCoating = dialogResult as String
                 renderCoating()
             }
 
-            DIALOG_CODE_CUTTING->{
-                printOrder?.cutting=dialogResult as String
+            DIALOG_CODE_CUTTING -> {
+                printOrder?.cutting = dialogResult as String
                 renderCutting()
             }
 
-            DIALOG_CODE_PACKING->{
-                printOrder?.packing=dialogResult as String
+            DIALOG_CODE_PACKING -> {
+                printOrder?.packing = dialogResult as String
                 renderPacking()
             }
 
-            DIALOG_CODE_FOILS->{
-                printOrder?.foil=dialogResult as String
+            DIALOG_CODE_FOILS -> {
+                printOrder?.foil = dialogResult as String
                 renderFoils()
             }
 
-            DIALOG_CODE_BINDING->{
-                printOrder?.binding=dialogResult as Binding
+            DIALOG_CODE_BINDING -> {
+                printOrder?.binding = dialogResult as Binding
                 renderBinding()
             }
         }
 
     }
 
-    private fun renderScreen(){
+    private fun renderScreen() {
         renderLamination()
         renderScoring()
         renderFolding()
@@ -287,148 +300,147 @@ class FragmentPostPressDetails:Fragment(), ResultDialogFragment.ResultDialogList
         renderBinding()
     }
 
-    private fun renderLamination(){
+    private fun renderLamination() {
         printOrder?.lamination?.let {
-            viewBinding.chkboxLamination.isChecked=true
-            viewBinding.lblLaminationDetail1.visibility=View.VISIBLE
-            viewBinding.lblLaminationDetail1.text=it.toString()
-            if(it.remarks.isBlank()) {
+            viewBinding.chkboxLamination.isChecked = true
+            viewBinding.lblLaminationDetail1.visibility = View.VISIBLE
+            viewBinding.lblLaminationDetail1.text = it.toString()
+            if (it.remarks.isBlank()) {
                 viewBinding.lblLaminationDetail2.visibility = View.GONE
-            }else {
+            } else {
                 viewBinding.lblLaminationDetail2.visibility = View.VISIBLE
-                viewBinding.lblLaminationDetail2.text=it.remarks
+                viewBinding.lblLaminationDetail2.text = it.remarks
             }
-        } ?: run{
-            viewBinding.chkboxLamination.isChecked=false
-            viewBinding.lblLaminationDetail1.visibility=View.GONE
-            viewBinding.lblLaminationDetail2.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxLamination.isChecked = false
+            viewBinding.lblLaminationDetail1.visibility = View.GONE
+            viewBinding.lblLaminationDetail2.visibility = View.GONE
         }
     }
 
-    private fun renderScoring(){
+    private fun renderScoring() {
         printOrder?.scoring?.let {
-            viewBinding.chkboxScoring.isChecked=true
-            if(it.isBlank())
-            viewBinding.lblScoringDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblScoringDetail1.visibility=View.VISIBLE
-                viewBinding.lblScoringDetail1.text=it
+            viewBinding.chkboxScoring.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblScoringDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblScoringDetail1.visibility = View.VISIBLE
+                viewBinding.lblScoringDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxScoring.isChecked=false
-            viewBinding.lblScoringDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxScoring.isChecked = false
+            viewBinding.lblScoringDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderFolding(){
+    private fun renderFolding() {
         printOrder?.folding?.let {
-            viewBinding.chkboxFolding.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblFoldingDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblFoldingDetail1.visibility=View.VISIBLE
-                viewBinding.lblFoldingDetail1.text=it
+            viewBinding.chkboxFolding.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblFoldingDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblFoldingDetail1.visibility = View.VISIBLE
+                viewBinding.lblFoldingDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxFolding.isChecked=false
-            viewBinding.lblFoldingDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxFolding.isChecked = false
+            viewBinding.lblFoldingDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderSpotUV(){
+    private fun renderSpotUV() {
         printOrder?.spotUV?.let {
-            viewBinding.chkboxSpotUv.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblSpotUvDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblSpotUvDetail1.visibility=View.VISIBLE
-                viewBinding.lblSpotUvDetail1.text=it
+            viewBinding.chkboxSpotUv.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblSpotUvDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblSpotUvDetail1.visibility = View.VISIBLE
+                viewBinding.lblSpotUvDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxSpotUv.isChecked=false
-            viewBinding.lblSpotUvDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxSpotUv.isChecked = false
+            viewBinding.lblSpotUvDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderCoating(){
+    private fun renderCoating() {
         printOrder?.aqueousCoating?.let {
-            viewBinding.chkboxAqueousCoating.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblAqueousCoatingDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblAqueousCoatingDetail1.visibility=View.VISIBLE
-                viewBinding.lblAqueousCoatingDetail1.text=it
+            viewBinding.chkboxAqueousCoating.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblAqueousCoatingDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblAqueousCoatingDetail1.visibility = View.VISIBLE
+                viewBinding.lblAqueousCoatingDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxAqueousCoating.isChecked=false
-            viewBinding.lblAqueousCoatingDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxAqueousCoating.isChecked = false
+            viewBinding.lblAqueousCoatingDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderCutting(){
+    private fun renderCutting() {
         printOrder?.cutting?.let {
-            viewBinding.chkboxCutting.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblCuttingDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblCuttingDetail1.visibility=View.VISIBLE
-                viewBinding.lblCuttingDetail1.text=it
+            viewBinding.chkboxCutting.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblCuttingDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblCuttingDetail1.visibility = View.VISIBLE
+                viewBinding.lblCuttingDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxCutting.isChecked=false
-            viewBinding.lblCuttingDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxCutting.isChecked = false
+            viewBinding.lblCuttingDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderPacking(){
+    private fun renderPacking() {
         printOrder?.packing?.let {
-            viewBinding.chkboxPacking.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblPackingDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblPackingDetail1.visibility=View.VISIBLE
-                viewBinding.lblPackingDetail1.text=it
+            viewBinding.chkboxPacking.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblPackingDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblPackingDetail1.visibility = View.VISIBLE
+                viewBinding.lblPackingDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxPacking.isChecked=false
-            viewBinding.lblPackingDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxPacking.isChecked = false
+            viewBinding.lblPackingDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderFoils(){
+    private fun renderFoils() {
         printOrder?.foil?.let {
-            viewBinding.chkboxFoils.isChecked=true
-            if(it.isBlank())
-                viewBinding.lblFoilsDetail1.visibility=View.GONE
-            else{
-                viewBinding.lblFoilsDetail1.visibility=View.VISIBLE
-                viewBinding.lblFoilsDetail1.text=it
+            viewBinding.chkboxFoils.isChecked = true
+            if (it.isBlank())
+                viewBinding.lblFoilsDetail1.visibility = View.GONE
+            else {
+                viewBinding.lblFoilsDetail1.visibility = View.VISIBLE
+                viewBinding.lblFoilsDetail1.text = it
             }
-        } ?: run{
-            viewBinding.chkboxFoils.isChecked=false
-            viewBinding.lblFoilsDetail1.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxFoils.isChecked = false
+            viewBinding.lblFoilsDetail1.visibility = View.GONE
         }
     }
 
-    private fun renderBinding(){
+    private fun renderBinding() {
 
-        printOrder?.binding?.let{
-            viewBinding.chkboxBinding.isChecked=true
-            viewBinding.lblBindingDetail1.visibility=View.VISIBLE
-            viewBinding.lblBindingDetail1.text=it.getBindingName(requireContext())
-            if(it.remarks.isBlank())
-                viewBinding.lblBindingDetail2.visibility=View.GONE
-            else{
-                viewBinding.lblBindingDetail2.text=it.remarks
-                viewBinding.lblBindingDetail2.visibility=View.VISIBLE
+        printOrder?.binding?.let {
+            viewBinding.chkboxBinding.isChecked = true
+            viewBinding.lblBindingDetail1.visibility = View.VISIBLE
+            viewBinding.lblBindingDetail1.text = it.getBindingName(requireContext())
+            if (it.remarks.isBlank())
+                viewBinding.lblBindingDetail2.visibility = View.GONE
+            else {
+                viewBinding.lblBindingDetail2.text = it.remarks
+                viewBinding.lblBindingDetail2.visibility = View.VISIBLE
             }
-        } ?: run{
-            viewBinding.chkboxBinding.isChecked=false
-            viewBinding.lblBindingDetail1.visibility=View.GONE
-            viewBinding.lblBindingDetail2.visibility=View.GONE
+        } ?: run {
+            viewBinding.chkboxBinding.isChecked = false
+            viewBinding.lblBindingDetail1.visibility = View.GONE
+            viewBinding.lblBindingDetail2.visibility = View.GONE
         }
     }
-
 
 
 }

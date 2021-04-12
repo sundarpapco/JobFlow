@@ -14,33 +14,19 @@
         <!-- Customize your theme here. -->
         <item name="colorDarkOnLight">@android:color/white</item>
         <item name="colorLightOnDark">@android:color/black</item>
-        <item name="colorJobListItem">@color/machine_green</item>
-        <item name="colorJobListItemHighlight">@color/machine_green_highlight</item>
     </style>
 
     <style name="Theme.JobFlow.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
     </style>
+
 
     <style name="Theme.JobFlow.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.JobFlow.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
-
-    <style name="Theme.JobFlow.Machine" parent="Theme.JobFlow">
-        <item name="colorJobListItem">@color/machine_green</item>
-        <item name="colorJobListItemHighlight">@color/machine_green_highlight</item>
-    </style>
-
-    <style name="Theme.JobFlow.Progress" parent="Theme.JobFlow">
-        <item name="colorJobListItem">@color/progress_blue</item>
-        <item name="colorJobListItemHighlight">@color/progress_blue_highlight</item>
-    </style>
-
-    <style name="Theme.JobFlow.NewJob" parent="Theme.JobFlow">
-        <item name="colorJobListItem">@color/new_job_orange</item>
-        <item name="colorJobListItemHighlight">@color/new_job_orange_highlight</item>
-    </style>
 
 
 </resources>

@@ -3,11 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/firstFragment">
+    app:startDestination="@id/fragmentHome">
 
     <fragment
-        android:id="@+id/firstFragment"
-        android:name="com.sivakasi.papco.jobflow.FirstFragment"
-        android:label="fragment_first"
-        tools:layout="@layout/fragment_first" />
+        android:id="@+id/fixedDestinationFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment"
+        android:label="FixedDestinationFragment"
+        tools:layout="@layout/destination_fixed">
+        <action
+            android:id="@+id/action_fixedDestinationFragment_to_print_order_flow"
+            app:destination="@id/print_order_flow" />
+        <action
+            android:id="@+id/action_fixedDestinationFragment_to_manageMachinesFragment"
+            app:destination="@id/manageMachinesFragment" />
+    </fragment>
+    <include app:graph="@navigation/print_order_flow" />
+    <fragment
+        android:id="@+id/manageMachinesFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment"
+        android:label="ManageMachinesFragment" >
+        <action
+            android:id="@+id/action_manageMachinesFragment_to_fixedDestinationFragment"
+            app:destination="@id/fixedDestinationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentHome"
+        android:name="com.sivakasi.papco.jobflow.screens.home.FragmentHome"
+        android:label="FragmentHome" >
+        <action
+            android:id="@+id/action_fragmentHome_to_fixedDestinationFragment"
+            app:destination="@id/fixedDestinationFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_manageMachinesFragment"
+            app:destination="@id/manageMachinesFragment" />
+    </fragment>
 </navigation>

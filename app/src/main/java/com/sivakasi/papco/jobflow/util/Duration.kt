@@ -63,6 +63,9 @@ class Duration(hours: Int = 0, minutes: Int = 0) {
         return hours * 60 + minutes
     }
 
+    fun timeFormatString():String{
+        return String.format("%02d:%02d",hours,minutes)
+    }
 
     private fun asString(): String {
         return "$hours Hrs, $minutes Mins"

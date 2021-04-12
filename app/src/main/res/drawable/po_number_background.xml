@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="?attr/colorJobListItem" />
+    <solid android:color="@drawable/color_activation_grey_primary" />
     <!--border color and border width-->
     <!--border radius in dp-->
     <corners android:bottomLeftRadius="15dp"

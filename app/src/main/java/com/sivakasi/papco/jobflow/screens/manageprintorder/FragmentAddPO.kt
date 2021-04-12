@@ -13,22 +13,39 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.common.ConfirmationDialog
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
-import com.sivakasi.papco.jobflow.number
+import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
+import com.sivakasi.papco.jobflow.util.toast
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.ValidNumberRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
-class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
+class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener {
+
+    companion object {
+        private const val KEY_EDITING_PO_ID = "key:editing:po:id"
+
+        fun getArgumentBundle(editingPONumber: Int): Bundle = Bundle().apply {
+            putInt(KEY_EDITING_PO_ID, editingPONumber)
+        }
+    }
 
     private var _viewBinding: FragmentAddPoBinding? = null
     private val viewBinding: FragmentAddPoBinding
         get() = _viewBinding!!
 
     private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if(isEditMode()) {
+            viewModel.isEditMode=true
+            viewModel.loadPrintOrderToEdit(getEditingPOId())
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,26 +86,11 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
 
     private fun observeViewModel() {
         viewModel.loadedJob.observe(viewLifecycleOwner) {
-            when (it) {
-                is LoadingStatus.Loading -> {
-                    renderLoadingState(it.msg)
-                }
+           if(isEditMode())
+               handleJobLoadInEditMode(it)
+            else
+                handleJobLoadInNonEditMode(it)
 
-                is LoadingStatus.Success<*> -> {
-                    navigateToNextScreen()
-                }
-
-                is LoadingStatus.Error -> {
-                    hideLoadingState()
-                    if (it.exception is ResourceNotFoundException)
-                        showPrintOrderNotFoundDialog()
-                    else
-                        showUnExpectedError(
-                            it.exception.message ?: getString(R.string.error_unknown_error)
-                        )
-                }
-
-            }
         }
     }
 
@@ -107,7 +109,7 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
             return
         }
 
-        if(!validatePlateNumber())
+        if (!validatePlateNumber())
             return
 
         val plateNumber =
@@ -117,16 +119,16 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
 
     }
 
-    private fun validatePlateNumber():Boolean{
+    private fun validatePlateNumber(): Boolean {
 
-        if(viewBinding.txtPlateNumber.text!!.isBlank())
+        if (viewBinding.txtPlateNumber.text!!.isBlank())
             return true
 
         return viewBinding.txtPlateNumber.validator()
             .addRule(ValidNumberRule())
             .addRule(GreaterThanOrEqualRule(1))
             .addErrorCallback {
-                viewBinding.txtPlateNumber.error=getString(R.string.invalid_plate_number)
+                viewBinding.txtPlateNumber.error = getString(R.string.invalid_plate_number)
             }
             .check()
     }
@@ -146,7 +148,7 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
 
     private fun showPrintOrderNotFoundDialog() {
 
-        val rid=viewBinding.txtPlateNumber.text.toString().trim()
+        val rid = viewBinding.txtPlateNumber.text.toString().trim()
 
         ConfirmationDialog.getInstance(
             getString(R.string.confirmation_old_print_order_not_found_proceed),
@@ -154,7 +156,7 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
             1,
             getString(R.string.print_order_not_found),
             rid
-        ).show(childFragmentManager,ConfirmationDialog.TAG)
+        ).show(childFragmentManager, ConfirmationDialog.TAG)
     }
 
     private fun showUnExpectedError(message: String) {
@@ -173,4 +175,56 @@ class FragmentAddPO : Fragment(),ConfirmationDialog.ConfirmationDialogListener {
     override fun onConfirmationDialogConfirm(confirmationId: Int, extra: String) {
         viewModel.createRepeatJob(extra.toInt())
     }
+
+    private fun handleJobLoadInEditMode(loadingStatus: LoadingStatus){
+
+        when (loadingStatus) {
+            is LoadingStatus.Loading -> {
+                viewBinding.fullscreenProgressBar.root.visibility=View.VISIBLE
+                renderLoadingState(loadingStatus.msg)
+            }
+
+            is LoadingStatus.Success<*> -> {
+                navigateToNextScreen()
+            }
+
+            is LoadingStatus.Error -> {
+                viewBinding.fullscreenProgressBar.root.visibility=View.GONE
+                toast(loadingStatus.exception.message ?: getString(R.string.error_unknown_error))
+                findNavController().popBackStack()
+            }
+
+        }
+
+    }
+
+    private fun handleJobLoadInNonEditMode(loadingStatus: LoadingStatus){
+
+        when (loadingStatus) {
+            is LoadingStatus.Loading -> {
+                renderLoadingState(loadingStatus.msg)
+            }
+
+            is LoadingStatus.Success<*> -> {
+                navigateToNextScreen()
+            }
+
+            is LoadingStatus.Error -> {
+                hideLoadingState()
+                if (loadingStatus.exception is ResourceNotFoundException)
+                    showPrintOrderNotFoundDialog()
+                else
+                    showUnExpectedError(
+                        loadingStatus.exception.message ?: getString(R.string.error_unknown_error)
+                    )
+            }
+
+        }
+
+    }
+
+    private fun isEditMode(): Boolean = getEditingPOId() != -4
+
+    private fun getEditingPOId(): Int =
+        arguments?.getInt(KEY_EDITING_PO_ID) ?: -4
 }
