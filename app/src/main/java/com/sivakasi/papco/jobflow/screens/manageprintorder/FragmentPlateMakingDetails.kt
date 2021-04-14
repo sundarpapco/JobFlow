@@ -234,15 +234,6 @@ class FragmentPlateMakingDetails : Fragment() {
             txtBackside.setText(plateMakingDetail.backsidePrinting)
         }
 
-        if (plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED)
-            enableNewPlateOnlyFields(true)
-        else {
-            if (viewModel.isEditMode && jobType==PrintOrder.TYPE_NEW_JOB)
-                enableNewPlateOnlyFields(true)
-            else
-                enableNewPlateOnlyFields(false)
-        }
-
     }
 
     private fun Int.asString(): String {
@@ -264,15 +255,20 @@ class FragmentPlateMakingDetails : Fragment() {
             viewBinding.checkboxPartyPlate.visibility = View.VISIBLE
             viewBinding.checkboxPartyPlate.isChecked =
                 plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
+
+            enableNewPlateOnlyFields(true)
+
         } else {
             viewBinding.lblOldPlateNumber.visibility = View.VISIBLE
             viewBinding.checkboxPartyPlate.visibility = View.GONE
 
             if (plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
-                viewBinding.lblOldPlateNumber.text = getString(R.string.party_plate)
+                viewBinding.lblOldPlateNumber.text = getString(R.string.outside_plate)
             else
                 viewBinding.lblOldPlateNumber.text =
                     getString(R.string.old_plate_number, plateMakingDetail.plateNumber)
+
+            enableNewPlateOnlyFields(false)
         }
     }
 
@@ -282,10 +278,16 @@ class FragmentPlateMakingDetails : Fragment() {
         viewBinding.checkboxPartyPlate.visibility = View.GONE
 
         if (plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
-            viewBinding.lblOldPlateNumber.text = getString(R.string.party_plate)
+            viewBinding.lblOldPlateNumber.text = getString(R.string.outside_plate)
         else
             viewBinding.lblOldPlateNumber.text =
                 getString(R.string.plate_number, plateMakingDetail.plateNumber)
+
+        if(jobType==PrintOrder.TYPE_NEW_JOB && plateMakingDetail.plateNumber > 0)
+            enableNewPlateOnlyFields(true)
+        else
+            enableNewPlateOnlyFields(false)
+
     }
 
     private fun createPlateNumber(): Int? {

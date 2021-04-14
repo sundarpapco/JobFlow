@@ -12,6 +12,7 @@
 
     <string name="new_print_order">New print order</string>
     <string name="new_job">New job</string>
+    <string name="new_jobs">New jobs</string>
     <string name="repeat_job">Repeat job</string>
     <string name="rid">RID</string>
     <string name="blank_if_party_plate">Blank if party plate</string>
@@ -54,6 +55,7 @@
     <string name="cutting">Cutting</string>
     <string name="packing">Packing</string>
     <string name="create_print_order">Create print order</string>
+    <string name="save_print_order">Save print order</string>
     <string name="height">Height</string>
     <string name="width">Width</string>
     <string name="gsm">GSM</string>
@@ -64,7 +66,7 @@
     <string name="error_at_least_one_paper_detail_required">Please add at least one paper detail</string>
     <string name="error_invalid_job_height">Invalid job height</string>
     <string name="error_invalid_job_width">Invalid job width</string>
-    <string name="party_plate">Party plate</string>
+    <string name="outside_plate">Outside plate</string>
     <string name="printing_details">Printing details</string>
     <string name="colours">Colours</string>
     <string name="printing_instructions">Printing instructions</string>
@@ -115,6 +117,9 @@
     <string name="printing_size">Printing size</string>
     <string name="printing_quantity">Printing Quantity</string>
     <string name="xx_sheets">%1$d Sheets</string>
+    <string name="po_xx">PO %1$d</string>
+    <string name="xx_jobs">%1$d Jobs</string>
+    <string name="job_type">Job type</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>
@@ -123,6 +128,7 @@
     <string name="menu_invoice">Invoice</string>
     <string name="menu_back">Remove</string>
     <string name="menu_done">Mark as completed</string>
+    <string name="print">Print</string>
 
 
     <!-- Accessibility -->

@@ -9,7 +9,7 @@ import androidx.fragment.app.DialogFragment
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.databinding.DialogRunningTimeBinding
-import com.sivakasi.papco.jobflow.number
+import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.toast

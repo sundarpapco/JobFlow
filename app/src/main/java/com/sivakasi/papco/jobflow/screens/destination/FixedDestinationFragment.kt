@@ -18,6 +18,7 @@ import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
+import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
@@ -175,7 +176,8 @@ class FixedDestinationFragment : Fragment(),
 
     override fun onItemClick(item: PrintOrderUIModel, position: Int) {
         if (actionMode == null)
-            navigateToEditPrintOrderScreen(item.printOrderNumber)
+            navigateToViewPrintOrderScreen(item.documentId())
+        //navigateToEditPrintOrderScreen(item.printOrderNumber)
         else {
             viewModel.jobSelections.toggle(item)
             adapter.notifyItemChanged(position)
@@ -315,10 +317,10 @@ class FixedDestinationFragment : Fragment(),
         )
     }
 
-    private fun navigateToEditPrintOrderScreen(printOrderNumber:Int){
+    private fun navigateToEditPrintOrderScreen(printOrderNumber: Int) {
 
         /* Editing a job is disabled in the dynamic destination */
-        if(getDestinationType()==Destination.TYPE_DYNAMIC)
+        if (getDestinationType() == Destination.TYPE_DYNAMIC)
             return
 
         findNavController().navigate(
@@ -326,6 +328,17 @@ class FixedDestinationFragment : Fragment(),
             FragmentAddPO.getArgumentBundle(printOrderNumber)
         )
 
+    }
+
+    private fun navigateToViewPrintOrderScreen(printOrderId: String) {
+        findNavController().navigate(
+            R.id.action_fixedDestinationFragment_to_viewPrintOrderFragment,
+            ViewPrintOrderFragment.getArguments(
+                getDestinationId(),
+                getDestinationType(),
+                printOrderId
+            )
+        )
     }
 
     private fun getDestinationId(): String =

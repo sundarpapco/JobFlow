@@ -71,6 +71,10 @@ class Duration(hours: Int = 0, minutes: Int = 0) {
         return "$hours Hrs, $minutes Mins"
     }
 
+    fun asFullString(): String {
+        return "$hours Hours, $minutes Minutes"
+    }
+
     override fun toString(): String {
         return asString()
     }

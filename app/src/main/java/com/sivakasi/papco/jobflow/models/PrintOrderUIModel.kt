@@ -15,6 +15,7 @@ data class PrintOrderUIModel(
     var printingSizePaperDetail: String = "",
     var runningTime: Duration=Duration(),
     var colors: String = "",
+    var hasSpotColors:Boolean=false,
     var isPending:Boolean=false
 ) {
     companion object {
@@ -32,6 +33,7 @@ data class PrintOrderUIModel(
                 runningTime = Duration.fromMinutes(printOrder.printingDetail.runningMinutes)
                 colors = printOrder.printingDetail.colours
                 isPending=printOrder.pendingRemarks.isNotBlank()
+                hasSpotColors=printOrder.printingDetail.hasSpotColours
             }
         }
     }

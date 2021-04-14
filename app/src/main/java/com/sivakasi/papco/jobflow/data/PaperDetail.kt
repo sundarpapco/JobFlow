@@ -29,6 +29,12 @@ data class PaperDetail(
         return maxOf(landscapeSteps,portraitSteps)
 
     }
+
+    fun paperName():String=
+        "${height.asString()} X ${width.asString()} Cm $gsm GSM $name"
+
+    fun paperSize():String="${(height*10).toInt()} X ${(width*10).toInt()} mm"
+
 }
 
 class PaperDetailDiff:DiffUtil.ItemCallback<PaperDetail>(){

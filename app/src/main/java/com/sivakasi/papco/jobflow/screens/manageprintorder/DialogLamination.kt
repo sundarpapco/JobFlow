@@ -9,7 +9,7 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.common.ResultDialogFragment
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.databinding.DialogLaminationBinding
-import com.sivakasi.papco.jobflow.number
+import com.sivakasi.papco.jobflow.extensions.number
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanRule
 import com.wajahatkarim3.easyvalidation.core.rules.ValidNumberRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator

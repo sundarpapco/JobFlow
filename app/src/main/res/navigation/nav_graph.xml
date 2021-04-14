@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_fixedDestinationFragment_to_manageMachinesFragment"
             app:destination="@id/manageMachinesFragment" />
+        <action
+            android:id="@+id/action_fixedDestinationFragment_to_viewPrintOrderFragment"
+            app:destination="@id/viewPrintOrderFragment" />
     </fragment>
     <include app:graph="@navigation/print_order_flow" />
     <fragment
@@ -36,5 +39,13 @@
         <action
             android:id="@+id/action_fragmentHome_to_manageMachinesFragment"
             app:destination="@id/manageMachinesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/viewPrintOrderFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment"
+        android:label="ViewPrintOrderFragment" >
+        <action
+            android:id="@+id/action_viewPrintOrderFragment_to_print_order_flow"
+            app:destination="@id/print_order_flow" />
     </fragment>
 </navigation>

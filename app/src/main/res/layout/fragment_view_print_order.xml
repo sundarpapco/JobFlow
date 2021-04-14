@@ -55,6 +55,24 @@
         <include layout="@layout/printing_details"
             android:id="@+id/printing_details"/>
 
+        <TextView
+            android:id="@+id/lbl_heading_post_press_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/post_press_details"
+            style="@style/detailText"
+            android:textColor="@color/colorAccent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/post_press_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:background="@drawable/surface_background"
+            android:orientation="vertical"/>
+
     </LinearLayout>
 
 </ScrollView>

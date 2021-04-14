@@ -138,6 +138,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/arial"
         android:textSize="12sp"
+        android:textColor="@drawable/color_has_spot_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/lbl_job_name"
         tools:text="CMYK+LB" />

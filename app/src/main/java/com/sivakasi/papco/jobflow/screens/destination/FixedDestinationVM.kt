@@ -58,7 +58,7 @@ class FixedDestinationVM @Inject constructor(
         _loadedJobs.value = LoadingStatus.Loading("")
         viewModelScope.launch {
             try {
-                repository.jobsFlowOfDestination(destinationId)
+                repository.jobsOfDestination(destinationId)
                     .collect {
                         _loadedJobs.value = LoadingStatus.Success(it)
                     }

@@ -64,6 +64,9 @@ class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogLi
 
     private fun initViews() {
 
+        if(viewModel.isEditMode)
+            viewBinding.btnDone.text=getString(R.string.save_print_order)
+
         viewBinding.btnDone.setOnClickListener {
             if (viewModel.isEditMode)
                 viewModel.updatePrintOrder()
@@ -162,7 +165,7 @@ class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogLi
                 showRemarksDialog(getString(R.string.foils), DIALOG_CODE_FOILS)
             } else {
                 //User is disabling this operation
-                printOrder?.packing = null
+                printOrder?.foil = null
             }
             renderFoils()
         }

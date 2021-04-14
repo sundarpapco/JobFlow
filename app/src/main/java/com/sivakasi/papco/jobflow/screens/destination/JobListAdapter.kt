@@ -102,6 +102,7 @@ class JobListViewHolder(private val viewBinding: ListItemJobBinding) :
             viewBinding.lblTime.text = runningTime.timeFormatString()
             viewBinding.lblPaperDetail.text = printingSizePaperDetail
             viewBinding.lblColors.text = colors
+            viewBinding.lblColors.isActivated = hasSpotColors
             viewBinding.iconPending.visibility=if(isPending)
                 View.VISIBLE
             else

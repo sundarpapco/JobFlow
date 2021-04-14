@@ -36,19 +36,46 @@ class Repository @Inject constructor() {
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
                         offer(null)
-                    }catch(e:Exception){
+                    } catch (e: Exception) {
 
                     }
                 }
 
                 try {
                     offer(documentSnapshot!!.toObject(Destination::class.java))
-                }catch(e:Exception){
+                } catch (e: Exception) {
 
                 }
             }
 
         awaitClose {}
+    }
+
+    suspend fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
+
+        database.poReference(destinationId,poId)
+            .addSnapshotListener { documentSnapshot, firebaseFireStoreException ->
+
+                if (firebaseFireStoreException != null)
+                    throw firebaseFireStoreException
+
+                if (documentSnapshot == null || !documentSnapshot.exists()) {
+                    try {
+                        offer(null)
+                    } catch (e: Exception) {
+
+                    }
+                }
+
+                try {
+                    offer(documentSnapshot!!.toObject(PrintOrder::class.java))
+                } catch (e: Exception) {
+
+                }
+            }
+
+        awaitClose {  }
+
     }
 
 
@@ -73,7 +100,7 @@ class Repository @Inject constructor() {
 
         }
 
-    suspend fun searchPrintOrder(poNumber:Int): PrintOrder? =
+    suspend fun searchPrintOrder(poNumber: Int): PrintOrder? =
         suspendCancellableCoroutine { continuation ->
 
             database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
@@ -93,7 +120,7 @@ class Repository @Inject constructor() {
 
         }
 
-    fun jobsFlowOfDestination(destinationId: String) = callbackFlow {
+    fun jobsOfDestination(destinationId: String) = callbackFlow {
 
         database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .document(destinationId)
@@ -108,7 +135,7 @@ class Repository @Inject constructor() {
                 else {
                     try {
                         offer(querySnapshot.documents)
-                    }catch(e:Exception){
+                    } catch (e: Exception) {
 
                     }
                 }
@@ -137,7 +164,7 @@ class Repository @Inject constructor() {
                 else
                     try {
                         offer(querySnapshot.documents)
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
 
                     }
 
@@ -171,49 +198,50 @@ class Repository @Inject constructor() {
 
         }
 
-    suspend fun readPrintOrder(destinationId:String,poId:String)= suspendCancellableCoroutine<PrintOrder> { continuation->
-        database.poReference(destinationId,poId)
-            .get()
-            .addOnSuccessListener {
-                continuation.resume(it.toObject(PrintOrder::class.java)!!)
-            }
-            .addOnFailureListener {
-                continuation.resumeWithException(it)
-            }
-    }
+    suspend fun readPrintOrder(destinationId: String, poId: String) =
+        suspendCancellableCoroutine<PrintOrder> { continuation ->
+            database.poReference(destinationId, poId)
+                .get()
+                .addOnSuccessListener {
+                    continuation.resume(it.toObject(PrintOrder::class.java)!!)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
 
     suspend fun moveJobs(
         sourceId: String,
         destinationId: String,
         jobs: List<PrintOrderUIModel>,
-        applyFunction:(PrintOrder)->Unit={}
+        applyFunction: (PrintOrder) -> Unit = {}
     ): Boolean =
-        runTransaction(MovePrintOrdersTransaction(sourceId,destinationId,jobs,applyFunction))
+        runTransaction(MovePrintOrdersTransaction(sourceId, destinationId, jobs, applyFunction))
 
     suspend fun createPrintOrder(printOrder: PrintOrder) =
         runTransaction(CreatePrintOrderTransaction(printOrder))
 
-    suspend fun updatePrintOrder(parentDestinationId:String,printOrder: PrintOrder)=
-        runTransaction(UpdatePrintOrderTransaction(printOrder,parentDestinationId))
+    suspend fun updatePrintOrder(parentDestinationId: String, printOrder: PrintOrder) =
+        runTransaction(UpdatePrintOrderTransaction(printOrder, parentDestinationId))
 
     suspend fun batchUpdateJobs(destinationId: String, jobList: List<PrintOrderUIModel>) =
-        runBatch(UpdateJobsBatch(destinationId,jobList))
+        runBatch(UpdateJobsBatch(destinationId, jobList))
 
     suspend fun createMachine(machineName: String) =
         runTransaction(CreateMachineTransaction(machineName))
 
     suspend fun updateMachine(machineId: String, machineName: String) =
-        runTransaction(UpdateMachineTransaction(machineId,machineName))
+        runTransaction(UpdateMachineTransaction(machineId, machineName))
 
     suspend fun deleteMachine(machineId: String) =
         runTransaction(DeleteMachineTransaction(machineId))
 
-    suspend fun backtrackJobs(sourceId:String,jobs:List<PrintOrderUIModel>) =
-        runTransaction(BackTrackPrintOrderTransaction(sourceId,jobs))
+    suspend fun backtrackJobs(sourceId: String, jobs: List<PrintOrderUIModel>) =
+        runTransaction(BackTrackPrintOrderTransaction(sourceId, jobs))
 
 
-    private suspend fun runTransaction(transaction:Transaction.Function<Boolean>)=
-        suspendCancellableCoroutine<Boolean> { continuation->
+    private suspend fun runTransaction(transaction: Transaction.Function<Boolean>) =
+        suspendCancellableCoroutine<Boolean> { continuation ->
             database.runTransaction(transaction)
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -222,7 +250,7 @@ class Repository @Inject constructor() {
                 }
         }
 
-    private suspend fun runBatch(batch:WriteBatch.Function)=
+    private suspend fun runBatch(batch: WriteBatch.Function) =
         suspendCancellableCoroutine<Unit> { continuation ->
 
             database.runBatch(batch)

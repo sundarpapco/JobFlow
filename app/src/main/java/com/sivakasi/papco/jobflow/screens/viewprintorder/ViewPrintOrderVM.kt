@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,8 +37,14 @@ class ViewPrintOrderVM @Inject constructor(
             try {
                 _loadedPrintOrder.value =
                     LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-                val po = repository.readPrintOrder(destinationId, printOrderId)
-                _loadedPrintOrder.value = LoadingStatus.Success(po)
+                repository.observePrintOrder(destinationId, printOrderId)
+                    .collect { printOrder ->
+                        if (printOrder == null)
+                            _loadedPrintOrder.value =
+                                LoadingStatus.Error(ResourceNotFoundException(""))
+                        else
+                            _loadedPrintOrder.value = LoadingStatus.Success(printOrder)
+                    }
             } catch (e: Exception) {
                 _loadedPrintOrder.value = LoadingStatus.Error(e)
             }

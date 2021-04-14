@@ -12,10 +12,10 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPrintingDetailBinding
+import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.validateForNonBlank
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
