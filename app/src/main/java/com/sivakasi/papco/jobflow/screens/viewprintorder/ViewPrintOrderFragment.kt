@@ -1,6 +1,8 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
+import android.content.Context
 import android.os.Bundle
+import android.print.PrintManager
 import android.view.*
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
@@ -15,12 +17,15 @@ import com.sivakasi.papco.jobflow.databinding.PaperDetailBinding
 import com.sivakasi.papco.jobflow.databinding.PostPressDetailBinding
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
+import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -39,6 +44,9 @@ class ViewPrintOrderFragment : Fragment() {
             }
     }
 
+    @Inject
+    lateinit var printOrderReport: PrintOrderReport
+    private lateinit var printOrder:PrintOrder
     private var printOrderNumber: Int = -1
     private var _viewBinding: FragmentViewPrintOrderBinding? = null
     private val viewBinding: FragmentViewPrintOrderBinding
@@ -89,7 +97,7 @@ class ViewPrintOrderFragment : Fragment() {
         }
 
         if (item.itemId == R.id.mnu_print) {
-            toast("Print the PO here")
+            print()
             return true
         }
 
@@ -260,7 +268,7 @@ class ViewPrintOrderFragment : Fragment() {
         } else {
             val lastPostPressDetail =
                 viewBinding.postPressDetails[viewBinding.postPressDetails.childCount - 1]
-            lastPostPressDetail.findViewById<View>(R.id.separator).visibility=View.GONE
+            lastPostPressDetail.findViewById<View>(R.id.separator).visibility = View.GONE
         }
 
     }
@@ -287,7 +295,7 @@ class ViewPrintOrderFragment : Fragment() {
             }
 
             is LoadingStatus.Success<*> -> {
-                val printOrder = loadingState.data as PrintOrder
+                printOrder = loadingState.data as PrintOrder
                 renderPrintOrder(printOrder)
             }
 
@@ -307,8 +315,17 @@ class ViewPrintOrderFragment : Fragment() {
     private fun navigateToEditPrintOrderScreen() {
         findNavController().navigate(
             R.id.action_viewPrintOrderFragment_to_print_order_flow,
-            FragmentAddPO.getArgumentBundle(printOrderNumber)
+            FragmentAddPO.getArgumentBundle(printOrderNumber,getDestinationId())
         )
+    }
+
+    private fun print() {
+
+        val printManager = requireContext().getSystemService(Context.PRINT_SERVICE) as PrintManager
+        val jobName = "PrintOrder"
+        val printAdapter=PrintOrderAdapter(printOrder,printOrderReport)
+        printManager.print(jobName,printAdapter,null)
+
     }
 
     private fun getDestinationId(): String =

@@ -1,12 +1,15 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.ItemTouchHelperCallBack
 import com.sivakasi.papco.jobflow.common.JobListSelection
 import com.sivakasi.papco.jobflow.common.ListAdapter
@@ -16,6 +19,7 @@ import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModelDiff
 
 class JobsAdapter(
+    private val context: Context,
     private val selections: JobListSelection,
     private val callback: ListAdapterListener<PrintOrderUIModel>
 ) :
@@ -24,11 +28,13 @@ class JobsAdapter(
 
     var itemTouchHelper: ItemTouchHelper? = null
 
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobListViewHolder {
-        val viewBinding = ListItemJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val viewBinding =
+            ListItemJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        val viewHolder = JobListViewHolder(viewBinding)
+        val viewHolder = JobListViewHolder(context,viewBinding)
         viewBinding.root.setOnClickListener {
             callback.onItemClick(
                 getData(viewHolder.bindingAdapterPosition),
@@ -38,9 +44,9 @@ class JobsAdapter(
 
         viewBinding.iconDrag.setOnTouchListener { _, motionEvent ->
 
-            if(selections.size()>0)
+            if (selections.size() > 0)
                 return@setOnTouchListener true
-            
+
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
                 itemTouchHelper?.startDrag(viewHolder)
 
@@ -66,8 +72,8 @@ class JobsAdapter(
     override fun onDragging(fromPosition: Int, toPosition: Int) {
 
         val from = getData(fromPosition)
-        val to=getData(toPosition)
-        val fromListPosition=from.listPosition
+        val to = getData(toPosition)
+        val fromListPosition = from.listPosition
         from.listPosition = to.listPosition
         to.listPosition = fromListPosition
 
@@ -86,8 +92,13 @@ class JobsAdapter(
 }
 
 
-class JobListViewHolder(private val viewBinding: ListItemJobBinding) :
-    RecyclerView.ViewHolder(viewBinding.root) {
+class JobListViewHolder(
+    context: Context,
+    private val viewBinding: ListItemJobBinding
+) : RecyclerView.ViewHolder(viewBinding.root) {
+
+    val accentColor = ContextCompat.getColor(context, R.color.colorAccent)
+    val borderColor = ContextCompat.getColor(context, R.color.border_grey)
 
     fun bind(printOrderModel: PrintOrderUIModel, isSelected: Boolean) {
 
@@ -102,8 +113,11 @@ class JobListViewHolder(private val viewBinding: ListItemJobBinding) :
             viewBinding.lblTime.text = runningTime.timeFormatString()
             viewBinding.lblPaperDetail.text = printingSizePaperDetail
             viewBinding.lblColors.text = colors
-            viewBinding.lblColors.isActivated = hasSpotColors
-            viewBinding.iconPending.visibility=if(isPending)
+            if(hasSpotColors)
+                viewBinding.lblColors.setTextColor(accentColor)
+            else
+                viewBinding.lblColors.setTextColor(borderColor)
+            viewBinding.iconPending.visibility = if (isPending)
                 View.VISIBLE
             else
                 View.GONE

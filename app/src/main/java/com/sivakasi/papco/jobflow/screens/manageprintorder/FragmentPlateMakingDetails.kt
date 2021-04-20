@@ -254,10 +254,13 @@ class FragmentPlateMakingDetails : Fragment() {
             viewBinding.lblOldPlateNumber.visibility = View.GONE
             viewBinding.checkboxPartyPlate.visibility = View.VISIBLE
             viewBinding.checkboxPartyPlate.isChecked =
-                plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
-
-            enableNewPlateOnlyFields(true)
-
+                if(plateMakingDetail.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE){
+                    enableNewPlateOnlyFields(false)
+                    true
+                }else{
+                    enableNewPlateOnlyFields(true)
+                    false
+                }
         } else {
             viewBinding.lblOldPlateNumber.visibility = View.VISIBLE
             viewBinding.checkboxPartyPlate.visibility = View.GONE
@@ -327,8 +330,9 @@ class FragmentPlateMakingDetails : Fragment() {
 
     private fun checkTrimHeight(): Boolean {
 
-        val minValue = 360
-        val maxValue = 720
+        val skipCheck=viewBinding.checkBoxDontCheckSize.isChecked
+        val minValue = if(skipCheck) 1 else 360
+        val maxValue = if(skipCheck) Int.MAX_VALUE else 720
 
         return viewBinding.txtTrimHeight.validator()
             .addRule(GreaterThanOrEqualRule(minValue))
@@ -344,8 +348,9 @@ class FragmentPlateMakingDetails : Fragment() {
 
     private fun checkTrimWidth(): Boolean {
 
-        val minValue = 560
-        val maxValue = 1020
+        val skipCheck=viewBinding.checkBoxDontCheckSize.isChecked
+        val minValue = if(skipCheck) 1 else 560
+        val maxValue = if(skipCheck) Int.MAX_VALUE else 1020
 
         return viewBinding.txtTrimWidth.validator()
             .addRule(GreaterThanOrEqualRule(minValue))

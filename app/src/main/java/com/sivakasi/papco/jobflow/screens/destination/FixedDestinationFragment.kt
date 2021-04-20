@@ -17,7 +17,6 @@ import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
-import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.EventObserver
@@ -63,7 +62,7 @@ class FixedDestinationFragment : Fragment(),
 
 
     private val adapter: JobsAdapter by lazy {
-        JobsAdapter(viewModel.jobSelections, this)
+        JobsAdapter(requireContext(),viewModel.jobSelections, this)
     }
 
 
@@ -317,18 +316,6 @@ class FixedDestinationFragment : Fragment(),
         )
     }
 
-    private fun navigateToEditPrintOrderScreen(printOrderNumber: Int) {
-
-        /* Editing a job is disabled in the dynamic destination */
-        if (getDestinationType() == Destination.TYPE_DYNAMIC)
-            return
-
-        findNavController().navigate(
-            R.id.action_fixedDestinationFragment_to_print_order_flow,
-            FragmentAddPO.getArgumentBundle(printOrderNumber)
-        )
-
-    }
 
     private fun navigateToViewPrintOrderScreen(printOrderId: String) {
         findNavController().navigate(

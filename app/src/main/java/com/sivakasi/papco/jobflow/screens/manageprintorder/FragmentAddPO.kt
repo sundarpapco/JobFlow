@@ -11,6 +11,7 @@ import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.common.ConfirmationDialog
+import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
 import com.sivakasi.papco.jobflow.extensions.number
@@ -27,9 +28,11 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     companion object {
         private const val KEY_EDITING_PO_ID = "key:editing:po:id"
+        private const val KEY_PARENT_DESTINATION_ID="key:parent:destination"
 
-        fun getArgumentBundle(editingPONumber: Int): Bundle = Bundle().apply {
+        fun getArgumentBundle(editingPONumber: Int,parentDestinationId:String): Bundle = Bundle().apply {
             putInt(KEY_EDITING_PO_ID, editingPONumber)
+            putString(KEY_PARENT_DESTINATION_ID,parentDestinationId)
         }
     }
 
@@ -43,6 +46,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         super.onCreate(savedInstanceState)
         if(isEditMode()) {
             viewModel.isEditMode=true
+            viewModel.editingPrintOrderParentDestinationId=getParentDestinationId()
             viewModel.loadPrintOrderToEdit(getEditingPOId())
         }
     }
@@ -224,6 +228,9 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     }
 
     private fun isEditMode(): Boolean = getEditingPOId() != -4
+
+    private fun getParentDestinationId():String=
+        arguments?.getString(KEY_PARENT_DESTINATION_ID) ?: DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
     private fun getEditingPOId(): Int =
         arguments?.getInt(KEY_EDITING_PO_ID) ?: -4

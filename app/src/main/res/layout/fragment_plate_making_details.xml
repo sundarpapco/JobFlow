@@ -26,17 +26,27 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <CheckBox
+                android:id="@+id/check_box_dont_check_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/do_not_check_size"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/lbl_fragment_heading"/>
+
             <TextView
                 android:id="@+id/lbl_old_plate_number"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textSize="16sp"
                 android:text="@string/old_plate_number"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@+id/check_box_dont_check_size"
+                app:layout_constraintEnd_toStartOf="@+id/check_box_dont_check_size"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/lbl_fragment_heading"
+                app:layout_constraintTop_toTopOf="@+id/check_box_dont_check_size"
                 tools:text="@string/old_plate_number" />
 
             <CheckBox
@@ -45,8 +55,11 @@
                 android:layout_height="wrap_content"
                 android:text="@string/outside_plate"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/lbl_old_plate_number"
+                app:layout_constraintTop_toTopOf="@id/check_box_dont_check_size"
+                app:layout_constraintBottom_toBottomOf="@id/check_box_dont_check_size"
                 android:visibility="gone"/>
+
+
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline"
@@ -62,11 +75,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
                 android:hint="@string/trim_height"
-                app:suffixText="@string/mm"
-                android:layout_marginTop="12dp"
                 app:layout_constraintEnd_toStartOf="@+id/guideline"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/checkbox_party_plate">
+                app:layout_constraintTop_toBottomOf="@+id/check_box_dont_check_size"
+                app:suffixText="@string/mm">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/txt_trim_height"
