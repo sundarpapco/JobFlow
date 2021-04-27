@@ -14,75 +14,87 @@ import kotlinx.coroutines.launch
 @ExperimentalCoroutinesApi
 class ManagePrintOrderVM : ViewModel() {
 
-    private val _loadedJob = MutableLiveData<LoadingStatus>()
+    private val _loadedJob = MutableLiveData<PrintOrder>()
+    private val _reprintLoadingStatus= MutableLiveData<Event<LoadingStatus>>()
     private val _saveStatus = MutableLiveData<Event<LoadingStatus>>()
-    val loadedJob: LiveData<LoadingStatus> = _loadedJob
+
+    val loadedJob: LiveData<PrintOrder> = _loadedJob
+    val reprintLoadingStatus:LiveData<Event<LoadingStatus>> = _reprintLoadingStatus
     val saveStatus: LiveData<Event<LoadingStatus>> = _saveStatus
+
     private lateinit var printOrder: PrintOrder
     private val repository = Repository()
 
     var isEditMode: Boolean = false
     var editingPrintOrderParentDestinationId: String = DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
-    fun loadRepeatJob(plateNumber: Int) {
+    fun saveLoadedJob(printOrder:PrintOrder){
+        this.printOrder=printOrder
+        _loadedJob.value=printOrder
+    }
+
+    fun loadRepeatJob(plateNumber: Int, searchByPlateNumber: Boolean) {
 
         if (plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE) {
             createRepeatJob(plateNumber)
         } else
-            loadJobFromRepository(plateNumber)
+            loadJobFromRepository(plateNumber, searchByPlateNumber)
     }
 
     fun createNewJob() {
         printOrder = PrintOrder()
-        _loadedJob.value = LoadingStatus.Success(printOrder)
+        _loadedJob.value = printOrder
     }
 
     fun createRepeatJob(plateNumber: Int) {
         printOrder = PrintOrder()
         printOrder.jobType = PrintOrder.TYPE_REPEAT_JOB
         printOrder.plateMakingDetail.plateNumber = plateNumber
-        _loadedJob.value = LoadingStatus.Success(printOrder)
+        _loadedJob.value = printOrder
     }
 
-    private fun loadJobFromRepository(plateNumber: Int) {
+    private fun loadJobFromRepository(plateNumber: Int, searchByPlateNumber: Boolean) {
 
         viewModelScope.launch {
 
-            _loadedJob.value = LoadingStatus.Loading("One moment please")
+            _reprintLoadingStatus.value = loadingEvent("One moment please")
             try {
                 //Load Job from repository here like
-                val searchResult = repository.searchPrintOrderByPlateNumber(plateNumber)
+                val searchResult = if (searchByPlateNumber) {
+                    repository.searchPrintOrderByPlateNumber(plateNumber) //Search by plate number
+                } else
+                    repository.searchPrintOrder(plateNumber) //Search by po number
+
                 if (searchResult == null)
-                    _loadedJob.value = LoadingStatus.Error(ResourceNotFoundException(""))
+                    _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
                 else {
                     printOrder = searchResult
                     printOrder.creationTime = currentTimeInMillis()
                     printOrder.jobType = PrintOrder.TYPE_REPEAT_JOB
-                    _loadedJob.value = LoadingStatus.Success(searchResult)
+                    _reprintLoadingStatus.value= dataEvent(printOrder)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                _loadedJob.value = LoadingStatus.Error(e)
+                _reprintLoadingStatus.value = errorEvent(e)
             }
         }
     }
 
-    fun loadPrintOrderToEdit(poNumber:Int){
+    fun loadPrintOrderToEdit(poNumber: Int) {
         viewModelScope.launch {
 
-            _loadedJob.value = LoadingStatus.Loading("One moment please")
+            _reprintLoadingStatus.value = loadingEvent("One moment please")
             try {
                 //Load Job from repository here like
                 val searchResult = repository.searchPrintOrder(poNumber)
                 if (searchResult == null)
-                    _loadedJob.value = LoadingStatus.Error(ResourceNotFoundException(""))
+                    _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
                 else {
                     printOrder = searchResult
-                    _loadedJob.value = LoadingStatus.Success(searchResult)
+                    _reprintLoadingStatus.value= dataEvent(printOrder)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                _loadedJob.value = LoadingStatus.Error(e)
+                _reprintLoadingStatus.value= errorEvent(e)
             }
         }
     }
@@ -105,7 +117,7 @@ class ManagePrintOrderVM : ViewModel() {
             printOrder.paperDetails = newList
         }
 
-        _loadedJob.value = LoadingStatus.Success(printOrder)
+        _loadedJob.value = printOrder
     }
 
     fun removePaperDetail(index: Int) {
@@ -118,7 +130,7 @@ class ManagePrintOrderVM : ViewModel() {
             printOrder.paperDetails = newList
         }
 
-        _loadedJob.value = LoadingStatus.Success(printOrder)
+        _loadedJob.value = printOrder
     }
 
     fun updatePaperDetail(index: Int, paperDetail: PaperDetail) {
@@ -131,7 +143,7 @@ class ManagePrintOrderVM : ViewModel() {
             printOrder.paperDetails = newList
         }
 
-        _loadedJob.value = LoadingStatus.Success(printOrder)
+        _loadedJob.value = printOrder
     }
 
 

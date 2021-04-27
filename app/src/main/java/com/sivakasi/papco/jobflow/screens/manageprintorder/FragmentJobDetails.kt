@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -11,9 +12,11 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentJobDetailsBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
+import com.sivakasi.papco.jobflow.extensions.hideKeyboard
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.FormValidator
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
@@ -23,7 +26,7 @@ class FragmentJobDetails : Fragment() {
     private val viewBinding: FragmentJobDetailsBinding
         get() = _viewBinding!!
 
-    private var printOrder=PrintOrder()
+    private var printOrder = PrintOrder()
     private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
 
     override fun onCreateView(
@@ -31,14 +34,25 @@ class FragmentJobDetails : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding= FragmentJobDetailsBinding.inflate(inflater,container,false)
+        _viewBinding = FragmentJobDetailsBinding.inflate(inflater, container, false)
         return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == android.R.id.home) {
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onPause() {
@@ -48,13 +62,14 @@ class FragmentJobDetails : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _viewBinding=null
+        _viewBinding = null
     }
 
-    private fun initViews(){
+    private fun initViews() {
         viewBinding.btnNext.setOnClickListener {
-            if(validateForm()) {
+            if (validateForm()) {
                 saveJobDetails()
+                hideKeyboard(requireContext(), viewBinding.btnNext)
                 navigateToNextScreen()
             }
         }
@@ -63,26 +78,24 @@ class FragmentJobDetails : Fragment() {
         viewBinding.txtJobName.clearErrorOnTextChange()
     }
 
-    private fun observeViewModel(){
-        viewModel.loadedJob.observe(viewLifecycleOwner){
-            if(it is LoadingStatus.Success<*>) {
-                printOrder=it.data as PrintOrder
-                renderJobDetails()
-            }
+    private fun observeViewModel() {
+        viewModel.loadedJob.observe(viewLifecycleOwner) {
+            printOrder = it
+            renderJobDetails()
         }
     }
 
-    private fun renderJobDetails(){
-        viewBinding.switchUrgent.isChecked=printOrder.emergency
+    private fun renderJobDetails() {
+        viewBinding.switchUrgent.isChecked = printOrder.emergency
         viewBinding.txtJobName.setText(printOrder.jobName)
         viewBinding.txtClientName.setText(printOrder.billingName)
         viewBinding.txtPendingRemarks.setText(printOrder.pendingRemarks)
     }
 
-    private fun validateForm():Boolean{
+    private fun validateForm(): Boolean {
 
-        val errorMsg=getString(R.string.required_field)
-        val validator=FormValidator()
+        val errorMsg = getString(R.string.required_field)
+        val validator = FormValidator()
             .validate(viewBinding.txtClientName.validateForNonBlank(errorMsg))
             .validate(viewBinding.txtJobName.validateForNonBlank(errorMsg))
 
@@ -91,13 +104,13 @@ class FragmentJobDetails : Fragment() {
     }
 
 
-    private fun saveJobDetails(){
+    private fun saveJobDetails() {
 
-        with(viewBinding){
-            printOrder.emergency=switchUrgent.isChecked
-            printOrder.jobName=txtJobName.text.toString().trim()
-            printOrder.billingName=txtClientName.text.toString().trim()
-            printOrder.pendingRemarks=txtPendingRemarks.text.toString()
+        with(viewBinding) {
+            printOrder.emergency = switchUrgent.isChecked
+            printOrder.jobName = txtJobName.text.toString().trim()
+            printOrder.billingName = txtClientName.text.toString().trim()
+            printOrder.pendingRemarks = txtPendingRemarks.text.toString()
         }
     }
 

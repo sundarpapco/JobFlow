@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.content.Context
 import android.os.Bundle
+import android.print.PrintAttributes
 import android.print.PrintManager
 import android.view.*
 import androidx.core.view.get
@@ -11,18 +12,20 @@ import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.asDateString
 import com.sivakasi.papco.jobflow.calendarWithTime
+import com.sivakasi.papco.jobflow.common.hideWaitDialog
+import com.sivakasi.papco.jobflow.common.showWaitDialog
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.databinding.FragmentViewPrintOrderBinding
 import com.sivakasi.papco.jobflow.databinding.PaperDetailBinding
 import com.sivakasi.papco.jobflow.databinding.PostPressDetailBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.shareReport
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
-import com.sivakasi.papco.jobflow.util.toast
+import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -77,8 +80,11 @@ class ViewPrintOrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackArrow()
         observerViewModel()
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -91,24 +97,36 @@ class ViewPrintOrderFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if (item.itemId == R.id.mnu_edit_po) {
-            navigateToEditPrintOrderScreen()
-            return true
+        return when(item.itemId){
+            R.id.mnu_edit_po -> {
+                navigateToEditPrintOrderScreen()
+                true
+            }
+
+            R.id.mnu_print->{
+                print()
+                true
+            }
+
+            R.id.mnu_share_pdf->{
+                viewModel.generatePdfFile(printOrder)
+                true
+            }
+
+            android.R.id.home-> findNavController().popBackStack()
+
+            else-> super.onOptionsItemSelected(item)
         }
-
-        if (item.itemId == R.id.mnu_print) {
-            print()
-            return true
-        }
-
-        return false
-
     }
 
     private fun observerViewModel() {
         viewModel.loadedPrintOrder.observe(viewLifecycleOwner) {
             handleLoadingStatus(it)
         }
+
+        viewModel.generatePdfStatus.observe(viewLifecycleOwner,EventObserver{
+            handleGeneratePdfStatus(it)
+        })
     }
 
     private fun renderPrintOrder(printOrder: PrintOrder) {
@@ -312,6 +330,22 @@ class ViewPrintOrderFragment : Fragment() {
         }
     }
 
+    private fun handleGeneratePdfStatus(loadingStatus:LoadingStatus){
+
+        when(loadingStatus){
+            is LoadingStatus.Loading->{ showWaitDialog(loadingStatus.msg)}
+            is LoadingStatus.Success<*>->{
+                hideWaitDialog()
+                sharePdfFile(loadingStatus.data as String)
+            }
+            is LoadingStatus.Error->{
+                hideWaitDialog()
+                toast(loadingStatus.exception.message ?: getString(R.string.error_unknown_error))
+            }
+        }
+
+    }
+
     private fun navigateToEditPrintOrderScreen() {
         findNavController().navigate(
             R.id.action_viewPrintOrderFragment_to_print_order_flow,
@@ -321,11 +355,18 @@ class ViewPrintOrderFragment : Fragment() {
 
     private fun print() {
 
+        val printAttributes=PrintAttributes.Builder()
+            .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+            .build()
         val printManager = requireContext().getSystemService(Context.PRINT_SERVICE) as PrintManager
         val jobName = "PrintOrder"
         val printAdapter=PrintOrderAdapter(printOrder,printOrderReport)
-        printManager.print(jobName,printAdapter,null)
+        printManager.print(jobName,printAdapter,printAttributes)
 
+    }
+
+    private fun sharePdfFile(filePath:String){
+        requireContext().shareReport(filePath)
     }
 
     private fun getDestinationId(): String =

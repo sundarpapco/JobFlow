@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -16,6 +17,8 @@ import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPostPressDetailsBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.toast
@@ -53,8 +56,19 @@ class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogLi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if(item.itemId==android.R.id.home){
+            exitOutOfCreationFlow()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onDestroyView() {
@@ -186,10 +200,8 @@ class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogLi
 
     private fun observeViewModel() {
         viewModel.loadedJob.observe(viewLifecycleOwner) {
-            if (it is LoadingStatus.Success<*>) {
-                printOrder = it.data as PrintOrder
+                printOrder = it
                 renderScreen()
-            }
         }
 
         viewModel.saveStatus.observe(viewLifecycleOwner, EventObserver {

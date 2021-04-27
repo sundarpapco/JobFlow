@@ -5,16 +5,30 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <TextView
+        android:id="@+id/lbl_last_completion_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        tools:text="Last completed on: 26/04/2019"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:background="?attr/colorPrimary"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="24dp"
         android:paddingBottom="80dp"
         android:clipToPadding="false"
-        tools:listitem="@layout/list_item_job"/>
+        tools:listitem="@layout/list_item_job"
+        app:layout_constraintTop_toBottomOf="@id/lbl_last_completion_time"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

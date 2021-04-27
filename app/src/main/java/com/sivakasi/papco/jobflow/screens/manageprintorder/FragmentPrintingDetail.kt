@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -12,10 +13,11 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPrintingDetailBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
@@ -41,8 +43,19 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == android.R.id.home) {
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onStop() {
@@ -76,8 +89,7 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
 
     private fun observeViewModel() {
         viewModel.loadedJob.observe(viewLifecycleOwner) {
-            if (it is LoadingStatus.Success<*>)
-                loadValues(it.data as PrintOrder)
+            loadValues(it)
         }
     }
 

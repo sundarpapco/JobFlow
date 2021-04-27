@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -93,12 +94,12 @@ class JobsAdapter(
 
 
 class JobListViewHolder(
-    context: Context,
+    private val context: Context,
     private val viewBinding: ListItemJobBinding
 ) : RecyclerView.ViewHolder(viewBinding.root) {
 
-    val accentColor = ContextCompat.getColor(context, R.color.colorAccent)
-    val borderColor = ContextCompat.getColor(context, R.color.border_grey)
+    private val accentColor = ContextCompat.getColor(context, R.color.colorAccent)
+    private val borderColor = ContextCompat.getColor(context, R.color.border_grey)
 
     fun bind(printOrderModel: PrintOrderUIModel, isSelected: Boolean) {
 
@@ -113,14 +114,27 @@ class JobListViewHolder(
             viewBinding.lblTime.text = runningTime.timeFormatString()
             viewBinding.lblPaperDetail.text = printingSizePaperDetail
             viewBinding.lblColors.text = colors
+
             if(hasSpotColors)
                 viewBinding.lblColors.setTextColor(accentColor)
             else
                 viewBinding.lblColors.setTextColor(borderColor)
-            viewBinding.iconPending.visibility = if (isPending)
+
+            if(isPending()){
+                viewBinding.iconPending.visibility=View.VISIBLE
+                viewBinding.iconPending.setOnClickListener {
+                    Toast.makeText(context, pendingReason, Toast.LENGTH_SHORT).show()
+                }
+            }else {
+                viewBinding.iconPending.setOnClickListener(null)
+                viewBinding.iconPending.visibility = View.GONE
+            }
+
+            viewBinding.iconPending.visibility = if (isPending()) {
                 View.VISIBLE
-            else
+            }else {
                 View.GONE
+            }
         }
 
         viewBinding.root.isActivated = isSelected

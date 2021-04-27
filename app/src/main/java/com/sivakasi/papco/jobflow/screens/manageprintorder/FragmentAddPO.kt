@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -13,8 +14,12 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.common.ConfirmationDialog
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.number
+import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import com.sivakasi.papco.jobflow.util.toast
@@ -28,12 +33,15 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     companion object {
         private const val KEY_EDITING_PO_ID = "key:editing:po:id"
-        private const val KEY_PARENT_DESTINATION_ID="key:parent:destination"
+        private const val KEY_PARENT_DESTINATION_ID = "key:parent:destination"
+        private const val KEY_SEARCH_MODE = "key:search:mode"
+        private const val CONFIRMATION_RID_NOT_FOUND = 1
 
-        fun getArgumentBundle(editingPONumber: Int,parentDestinationId:String): Bundle = Bundle().apply {
-            putInt(KEY_EDITING_PO_ID, editingPONumber)
-            putString(KEY_PARENT_DESTINATION_ID,parentDestinationId)
-        }
+        fun getArgumentBundle(editingPONumber: Int, parentDestinationId: String): Bundle =
+            Bundle().apply {
+                putInt(KEY_EDITING_PO_ID, editingPONumber)
+                putString(KEY_PARENT_DESTINATION_ID, parentDestinationId)
+            }
     }
 
     private var _viewBinding: FragmentAddPoBinding? = null
@@ -41,12 +49,16 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         get() = _viewBinding!!
 
     private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private var searchByPlateNumber: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if(isEditMode()) {
-            viewModel.isEditMode=true
-            viewModel.editingPrintOrderParentDestinationId=getParentDestinationId()
+        savedInstanceState?.let {
+            searchByPlateNumber = it.getBoolean(KEY_SEARCH_MODE, true)
+        }
+        if (isEditMode()) {
+            viewModel.isEditMode = true
+            viewModel.editingPrintOrderParentDestinationId = getParentDestinationId()
             viewModel.loadPrintOrderToEdit(getEditingPOId())
         }
     }
@@ -62,8 +74,25 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if(item.itemId==android.R.id.home){
+            findNavController().popBackStack()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_SEARCH_MODE, searchByPlateNumber)
+
     }
 
     override fun onDestroyView() {
@@ -74,6 +103,9 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     private fun initViews() {
 
         viewBinding.txtPlateNumber.clearErrorOnTextChange()
+        viewBinding.btnSearch.setOnClickListener {
+            toggleSearchMode()
+        }
 
         viewBinding.btnNext.setOnClickListener {
             onNextPressed()
@@ -81,29 +113,50 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
         viewBinding.radioButtonNewJob.setOnCheckedChangeListener { _, checked ->
             if (checked) {
-                hidePlateNumberLayout()
+                hideSearchLayout()
             } else {
-                showPlateNumberLayout()
+                showSearchLayout()
             }
         }
     }
 
     private fun observeViewModel() {
-        viewModel.loadedJob.observe(viewLifecycleOwner) {
-           if(isEditMode())
-               handleJobLoadInEditMode(it)
+        viewModel.reprintLoadingStatus.observe(viewLifecycleOwner,EventObserver {
+            if (isEditMode())
+                handleJobLoadInEditMode(it)
             else
                 handleJobLoadInNonEditMode(it)
 
+        })
+
+        viewModel.loadedJob.observe(viewLifecycleOwner){
+            //A valid print order has been successfully loaded. So, navigate to next screen
+            navigateToNextScreen()
         }
     }
 
-    private fun hidePlateNumberLayout() {
+    private fun hideSearchLayout() {
         viewBinding.layoutPlateNumber.visibility = View.GONE
+        viewBinding.btnSearch.visibility = View.GONE
     }
 
-    private fun showPlateNumberLayout() {
+    private fun showSearchLayout() {
         viewBinding.layoutPlateNumber.visibility = View.VISIBLE
+        viewBinding.btnSearch.visibility = View.VISIBLE
+    }
+
+    private fun toggleSearchMode() {
+        if (searchByPlateNumber) {
+            searchByPlateNumber = false
+            viewBinding.btnSearch.text = getString(R.string.po_number)
+            viewBinding.layoutPlateNumber.hint = getString(R.string.po_number)
+            viewBinding.layoutPlateNumber.helperText = getString(R.string.required_field)
+        } else {
+            searchByPlateNumber = true
+            viewBinding.btnSearch.text = getString(R.string.rid)
+            viewBinding.layoutPlateNumber.hint = getString(R.string.rid)
+            viewBinding.layoutPlateNumber.helperText = getString(R.string.blank_if_party_plate)
+        }
     }
 
     private fun onNextPressed() {
@@ -119,14 +172,15 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         val plateNumber =
             viewBinding.txtPlateNumber.number(PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
 
-        viewModel.loadRepeatJob(plateNumber)
+        viewModel.loadRepeatJob(plateNumber, searchByPlateNumber)
 
     }
 
     private fun validatePlateNumber(): Boolean {
 
-        if (viewBinding.txtPlateNumber.text!!.isBlank())
+        if (viewBinding.txtPlateNumber.text!!.isBlank() && searchByPlateNumber)
             return true
+
 
         return viewBinding.txtPlateNumber.validator()
             .addRule(ValidNumberRule())
@@ -150,16 +204,25 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         viewBinding.btnNext.isEnabled = true
     }
 
-    private fun showPrintOrderNotFoundDialog() {
+    private fun showPlateNumberNotFoundDialog() {
 
         val rid = viewBinding.txtPlateNumber.text.toString().trim()
 
         ConfirmationDialog.getInstance(
             getString(R.string.confirmation_old_print_order_not_found_proceed),
             getString(R.string.proceed),
-            1,
+            CONFIRMATION_RID_NOT_FOUND,
             getString(R.string.print_order_not_found),
             rid
+        ).show(childFragmentManager, ConfirmationDialog.TAG)
+    }
+
+    private fun showPrintOrderNotFoundDialog() {
+        ConfirmationDialog.getInstance(
+            getString(R.string.error_po_not_found),
+            getString(R.string.ok),
+            2,
+            getString(R.string.print_order_not_found)
         ).show(childFragmentManager, ConfirmationDialog.TAG)
     }
 
@@ -177,23 +240,24 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     }
 
     override fun onConfirmationDialogConfirm(confirmationId: Int, extra: String) {
-        viewModel.createRepeatJob(extra.toInt())
+        if (confirmationId == CONFIRMATION_RID_NOT_FOUND)
+            viewModel.createRepeatJob(extra.toInt())
     }
 
-    private fun handleJobLoadInEditMode(loadingStatus: LoadingStatus){
+    private fun handleJobLoadInEditMode(loadingStatus: LoadingStatus) {
 
         when (loadingStatus) {
             is LoadingStatus.Loading -> {
-                viewBinding.fullscreenProgressBar.root.visibility=View.VISIBLE
+                viewBinding.fullscreenProgressBar.root.visibility = View.VISIBLE
                 renderLoadingState(loadingStatus.msg)
             }
 
             is LoadingStatus.Success<*> -> {
-                navigateToNextScreen()
+                viewModel.saveLoadedJob(loadingStatus.data as PrintOrder)
             }
 
             is LoadingStatus.Error -> {
-                viewBinding.fullscreenProgressBar.root.visibility=View.GONE
+                viewBinding.fullscreenProgressBar.root.visibility = View.GONE
                 toast(loadingStatus.exception.message ?: getString(R.string.error_unknown_error))
                 findNavController().popBackStack()
             }
@@ -202,7 +266,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     }
 
-    private fun handleJobLoadInNonEditMode(loadingStatus: LoadingStatus){
+    private fun handleJobLoadInNonEditMode(loadingStatus: LoadingStatus) {
 
         when (loadingStatus) {
             is LoadingStatus.Loading -> {
@@ -210,17 +274,27 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
             }
 
             is LoadingStatus.Success<*> -> {
-                navigateToNextScreen()
+                viewModel.saveLoadedJob(loadingStatus.data as PrintOrder)
             }
 
             is LoadingStatus.Error -> {
                 hideLoadingState()
-                if (loadingStatus.exception is ResourceNotFoundException)
-                    showPrintOrderNotFoundDialog()
-                else
-                    showUnExpectedError(
+                when(loadingStatus.exception){
+                    is ResourceNotFoundException->{
+                        if (searchByPlateNumber)
+                            showPlateNumberNotFoundDialog()
+                        else
+                            showPrintOrderNotFoundDialog()
+                    }
+
+                    is IllegalArgumentException->{
+                        showUnExpectedError(getString(R.string.invalid_rid_entered))
+                    }
+
+                    else->showUnExpectedError(
                         loadingStatus.exception.message ?: getString(R.string.error_unknown_error)
                     )
+                }
             }
 
         }
@@ -229,7 +303,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     private fun isEditMode(): Boolean = getEditingPOId() != -4
 
-    private fun getParentDestinationId():String=
+    private fun getParentDestinationId(): String =
         arguments?.getString(KEY_PARENT_DESTINATION_ID) ?: DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
     private fun getEditingPOId(): Int =

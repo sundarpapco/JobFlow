@@ -4,6 +4,7 @@ package com.sivakasi.papco.jobflow.screens.machines
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -15,8 +16,7 @@ import com.sivakasi.papco.jobflow.common.hideWaitDialog
 import com.sivakasi.papco.jobflow.common.showWaitDialog
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.FragmentMachinesBinding
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
@@ -62,16 +62,36 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        if (isPrinterVersionApp())
+            disableBackArrow()
+        else
+            enableBackArrow()
+
         initViews()
         initRecycler()
         observeViewModel()
         updateFragmentTitle()
     }
 
-    private fun initViews() {
-        viewBinding.fab.setOnClickListener {
-            showCreateMachineDialog()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == android.R.id.home) {
+            findNavController().popBackStack()
+            return true
         }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun initViews() {
+
+        if (isPrinterVersionApp())
+            viewBinding.fab.hide()
+        else
+            viewBinding.fab.setOnClickListener {
+                showCreateMachineDialog()
+            }
     }
 
     private fun initRecycler() {
@@ -109,7 +129,7 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
     }
 
     override fun onMachineClicked(machine: Destination) {
-        if(isSelectionMode())
+        if (isSelectionMode())
             selectMachineAndClose(machine.id)
         else
             navigateToMachineJobListScreen(machine.id)
@@ -159,16 +179,16 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
         }
     }
 
-    private fun navigateToMachineJobListScreen(machineId:String){
+    private fun navigateToMachineJobListScreen(machineId: String) {
         findNavController().navigate(
             R.id.action_manageMachinesFragment_to_fixedDestinationFragment,
-            FixedDestinationFragment.getArgumentBundle(machineId,Destination.TYPE_DYNAMIC)
+            FixedDestinationFragment.getArgumentBundle(machineId, Destination.TYPE_DYNAMIC)
         )
     }
 
     private fun selectMachineAndClose(machineId: String) {
 
-        val controller=findNavController()
+        val controller = findNavController()
         controller.previousBackStackEntry?.savedStateHandle?.set(
             KEY_SELECTED_MACHINE_ID,
             machineId
@@ -177,8 +197,8 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
 
     }
 
-    private fun updateFragmentTitle(){
-        if(isSelectionMode())
+    private fun updateFragmentTitle() {
+        if (isSelectionMode())
             updateTitle(getString(R.string.select_machine))
         else
             updateTitle(getString(R.string.machines))

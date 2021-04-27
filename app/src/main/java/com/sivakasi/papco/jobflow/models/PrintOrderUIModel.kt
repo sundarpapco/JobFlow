@@ -16,7 +16,7 @@ data class PrintOrderUIModel(
     var runningTime: Duration=Duration(),
     var colors: String = "",
     var hasSpotColors:Boolean=false,
-    var isPending:Boolean=false
+    var pendingReason:String=""
 ) {
     companion object {
 
@@ -32,11 +32,13 @@ data class PrintOrderUIModel(
                 printingSizePaperDetail = printOrder.printingSizePaperDetail().toString()
                 runningTime = Duration.fromMinutes(printOrder.printingDetail.runningMinutes)
                 colors = printOrder.printingDetail.colours
-                isPending=printOrder.pendingRemarks.isNotBlank()
+                pendingReason=printOrder.pendingRemarks
                 hasSpotColors=printOrder.printingDetail.hasSpotColours
             }
         }
     }
+
+    fun isPending():Boolean = pendingReason.isNotBlank()
 
     fun documentId():String{
         require(printOrderNumber > 0) { "Invalid print order number while generating document ID" }

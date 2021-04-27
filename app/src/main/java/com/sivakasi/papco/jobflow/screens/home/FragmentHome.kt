@@ -12,6 +12,8 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.FixedDestinationBinding
 import com.sivakasi.papco.jobflow.databinding.FragmentHomeBinding
+import com.sivakasi.papco.jobflow.extensions.disableBackArrow
+import com.sivakasi.papco.jobflow.extensions.isPrinterVersionApp
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
@@ -32,6 +34,13 @@ class FragmentHome : Fragment() {
         ViewModelProvider(this).get(FragmentHomeVM::class.java)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        disableBackArrow()
+        if(isPrinterVersionApp())
+            navigateToMachinesFragment()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,6 +52,7 @@ class FragmentHome : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        disableBackArrow()
         initViews()
         updateTitle(getString(R.string.papco_jobs))
         updateSubTitle("")
@@ -60,10 +70,7 @@ class FragmentHome : Fragment() {
         }
 
         viewBinding.machines.root.setOnClickListener {
-            findNavController().navigate(
-                R.id.action_fragmentHome_to_manageMachinesFragment,
-                ManageMachinesFragment.getArguments(false)
-            )
+            navigateToMachinesFragment()
         }
 
         viewBinding.inProgress.root.setOnClickListener {
@@ -99,6 +106,13 @@ class FragmentHome : Fragment() {
             runningTime.text=Duration.fromMinutes(destination.runningTime).asFullString()
         }
 
+    }
+
+    private fun navigateToMachinesFragment(){
+        findNavController().navigate(
+            R.id.action_fragmentHome_to_manageMachinesFragment,
+            ManageMachinesFragment.getArguments(false)
+        )
     }
 
 

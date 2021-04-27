@@ -33,6 +33,64 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216439034064:android:c012b1c80e7d4e8d314ed5",
+        "android_client_info": {
+          "package_name": "com.sivakasi.papco.jobflow.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216439034064-liep6qs3imv3930k05lhhd9ii954ght4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZBTTVgt6w_cGWODTp_6fVfTp-WC_SzR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216439034064-liep6qs3imv3930k05lhhd9ii954ght4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216439034064:android:daf3528748e50bba314ed5",
+        "android_client_info": {
+          "package_name": "com.sivakasi.papco.jobflow.printer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216439034064-liep6qs3imv3930k05lhhd9ii954ght4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZBTTVgt6w_cGWODTp_6fVfTp-WC_SzR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216439034064-liep6qs3imv3930k05lhhd9ii954ght4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

@@ -99,10 +99,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:hint="@string/rid"
-                android:visibility="gone"
                 app:helperText="@string/blank_if_party_plate"
-                app:layout_constraintEnd_toStartOf="@+id/guideline"
-                app:layout_constraintStart_toStartOf="parent"
+                android:visibility="gone"
+                android:layout_marginStart="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btn_search"
                 app:layout_constraintTop_toBottomOf="@+id/radioGroup">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -115,6 +116,17 @@
                     android:maxLines="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:text="@string/rid"
+                android:drawableTop="@drawable/ic_search"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/layout_plate_number"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/layout_plate_number" />
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline"

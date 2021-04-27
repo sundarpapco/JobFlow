@@ -9,6 +9,9 @@ import com.sivakasi.papco.jobflow.calendarWithTime
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 import kotlin.math.abs
@@ -40,12 +43,24 @@ class PrintOrderReport @Inject constructor(
 
     private lateinit var pdfDocument: PdfDocument
 
-    fun render(
+    fun print(
         printOrder: PrintOrder,
         destination: ParcelFileDescriptor
     ) {
+        this.printOrder=printOrder
+        drawPdf()
+        pdfDocument.writeTo(FileOutputStream(destination.fileDescriptor))
+        pdfDocument.close()
 
-        this.printOrder = printOrder
+    }
+
+    suspend fun generatePdfFile(printOrder:PrintOrder):String= withContext(Dispatchers.IO){
+        this@PrintOrderReport.printOrder=printOrder
+        drawPdf()
+        writeToPdfFile(pdfDocument)
+    }
+
+    private fun drawPdf(){
         val page = initialize()
         drawHeading(page.canvas)
         drawSubHeading(page.canvas)
@@ -57,9 +72,6 @@ class PrintOrderReport @Inject constructor(
         drawFooter(page.canvas)
 
         pdfDocument.finishPage(page)
-        pdfDocument.writeTo(FileOutputStream(destination.fileDescriptor))
-        pdfDocument.close()
-
     }
 
     private fun initialize(): PdfDocument.Page {
@@ -144,7 +156,7 @@ class PrintOrderReport @Inject constructor(
 
     private fun drawPaperDetails(canvas: Canvas, printOrder: PrintOrder) {
 
-        drawSectionHeading(canvas, "PAPER DETAILS", 7)
+        drawSectionHeading(canvas, "Paper Details", 7)
 
         val rectangleBounds = rowRangeBounds(8, lastRowOfPaperDetail)
         canvas.drawRect(rectangleBounds, linePaint)
@@ -168,10 +180,10 @@ class PrintOrderReport @Inject constructor(
 
         val bounds = rowBounds(rowNumber)
         val owner = when {
-            paperDetail.partyPaper -> "Party's Own:"
-            else -> "Our Own:"
+            paperDetail.partyPaper -> "Party's Own"
+            else -> "Our Own"
         }
-        val labelText = if (isPrintingSize) "Printing Size:" else "${index + 1}. $owner"
+        val labelText = if (isPrintingSize) "Printing Size" else "${index + 1}. $owner"
         val detailText =
             if (isPrintingSize) paperDetail.asConsolidatedString() else paperDetail.toString()
         drawLabeledText(canvas, labelText, detailText, bounds)
@@ -181,7 +193,7 @@ class PrintOrderReport @Inject constructor(
 
         val plateMakingDetail = printOrder.plateMakingDetail
         var rowNumber = lastRowOfPaperDetail + 1
-        drawSectionHeading(canvas, "PLATE MAKING DETAILS", rowNumber)
+        drawSectionHeading(canvas, "Plate making Details", rowNumber)
 
         rowNumber++
         val rectangleBounds = rowRangeBounds(rowNumber, rowNumber + 3)
@@ -232,7 +244,7 @@ class PrintOrderReport @Inject constructor(
     private fun drawPrintingDetail(canvas: Canvas) {
 
         var rowNumber = lastRowOfPaperDetail + 6
-        drawSectionHeading(canvas, "PRINTING DETAILS", rowNumber)
+        drawSectionHeading(canvas, "Printing Details", rowNumber)
 
         rowNumber++
         canvas.drawRect(rowRangeBounds(rowNumber, rowNumber + 6), linePaint)
@@ -273,7 +285,7 @@ class PrintOrderReport @Inject constructor(
             return
 
         var rowNumber = lastRowOfPaperDetail + 14
-        drawSectionHeading(canvas, "POST PRESS DETAILS", rowNumber)
+        drawSectionHeading(canvas, "Post Press Details", rowNumber)
         val rowsForPostPress: Int = if (numberOfPostPress % 3 == 0)
             numberOfPostPress / 3 * 2
         else
@@ -401,19 +413,22 @@ class PrintOrderReport @Inject constructor(
     private fun drawSectionHeading(canvas: Canvas, heading: String, rowNumber: Int) {
 
         val sectionHeight = 18f
-        val sectionWidth = 143f
-
-        val y = rowNumber * rowHeight - sectionHeight
-        val bounds = RectF(leftMargin, y, leftMargin + sectionWidth, y + sectionHeight)
-        val sectionHeadingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        sectionHeadingPaint.style = Paint.Style.FILL
-        sectionHeadingPaint.color = Color.BLACK
-        canvas.drawRect(bounds, sectionHeadingPaint)
 
         val sectionHeadingTextPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         sectionHeadingTextPaint.color = Color.WHITE
         sectionHeadingTextPaint.textSize = 12f
-        sectionHeadingPaint.typeface = Typeface.create(fontArial, Typeface.BOLD)
+        sectionHeadingTextPaint.typeface = Typeface.create(fontArial, Typeface.BOLD)
+
+        val sectionHeadingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        sectionHeadingPaint.style = Paint.Style.FILL
+        sectionHeadingPaint.color = Color.BLACK
+
+        val textWidth=sectionHeadingTextPaint.measureText(heading)+cellMargin*2
+        val y = rowNumber * rowHeight - sectionHeight
+        val bounds = RectF(leftMargin, y, leftMargin + textWidth, y + sectionHeight)
+        canvas.drawRect(bounds, sectionHeadingPaint)
+
+
         drawTextInBounds(canvas, heading, sectionHeadingTextPaint, bounds, cellMargin)
 
     }
@@ -540,4 +555,21 @@ class PrintOrderReport @Inject constructor(
 
     private fun labeledTextWidth(label:String,detail:String):Float=
         labelTextPaint.measureText(label)+detailTextPaint.measureText(": $detail")
+
+    private fun writeToPdfFile(pdfDocument: PdfDocument): String {
+
+        //create outputStream
+        val cacheDirectoryPath=application.cacheDir.absolutePath
+        val cacheDirectory = File(cacheDirectoryPath)
+        if (!cacheDirectory.isDirectory)
+            cacheDirectory.mkdirs()
+
+        val filePath = "$cacheDirectory/${printOrder.documentId()}.pdf"
+
+        val outStream = FileOutputStream(File(filePath))
+        pdfDocument.writeTo(outStream)
+
+        return filePath
+
+    }
 }

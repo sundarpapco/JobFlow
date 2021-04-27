@@ -17,7 +17,7 @@ fun Context.shareReport(localFilePath: String) {
     )
     val sharingIntent = Intent(Intent.ACTION_SEND)
 
-    sharingIntent.type = "application/pdf"
+    sharingIntent.type = "application/*"
     sharingIntent.putExtra(Intent.EXTRA_STREAM, path)
     sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Report from Papco Payroll")

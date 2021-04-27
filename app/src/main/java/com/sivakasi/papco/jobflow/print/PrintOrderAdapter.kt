@@ -46,7 +46,7 @@ class PrintOrderAdapter @Inject constructor(
     ) {
 
         try{
-            printOrderReport.render(printOrder,destination!!)
+            printOrderReport.print(printOrder,destination!!)
             callback?.onWriteFinished(pageRanges)
         }catch (e:Exception){
             callback?.onWriteFailed(e.message)

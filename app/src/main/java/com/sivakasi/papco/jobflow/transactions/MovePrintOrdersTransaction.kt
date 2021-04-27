@@ -80,6 +80,7 @@ class MovePrintOrdersTransaction(
         }
 
         //Make ready of source and destination documents
+        source.lastJobCompletion= currentTimeInMillis()
         source.jobCount -= movingPrintOrders.size
         source.runningTime -= totalMovingJobsDuration
 

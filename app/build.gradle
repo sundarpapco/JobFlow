@@ -34,6 +34,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions 'Versions'
+    productFlavors {
+        printer {
+            dimension = 'Versions'
+            applicationId = 'com.sivakasi.papco.jobflow.printer'
+
+        }
+
+        admin {
+            dimension='Versions'
+            applicationId = 'com.sivakasi.papco.jobflow.admin'
+
+        }
+    }
 
     buildFeatures{
         viewBinding true

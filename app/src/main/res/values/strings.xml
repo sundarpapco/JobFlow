@@ -124,6 +124,17 @@
     <string name="xx_jobs">%1$d Jobs</string>
     <string name="job_type">Job type</string>
     <string name="do_not_check_size">"Don't check size"</string>
+    <string name="cancel_confirmation">Are you sure you want to cancel the selected print orders?</string>
+    <string name="revert_confirmation">Are you sure you want to remove the selected print orders?</string>
+    <string name="complete_confirmation">Mark the selected jobs as complete?</string>
+    <string name="mark_as_complete">Mark as Complete</string>
+    <string name="remove">Remove</string>
+    <string name="po_number">PO.NO</string>
+    <string name="error_po_not_found">Print order with given number not found</string>
+    <string name="ok">OK</string>
+    <string name="invalid_rid_entered">Invalid Plate Number</string>
+    <string name="last_completed_on">Last completed on: %1$s</string>
+    <string name="simple_format_last_completion">"dd/MM/yyyy, hh:mm a"</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>
@@ -133,6 +144,7 @@
     <string name="menu_back">Remove</string>
     <string name="menu_done">Mark as completed</string>
     <string name="print">Print</string>
+    <string name="menu_share_as_pdf">Share as PDF</string>
 
 
     <!-- Accessibility -->

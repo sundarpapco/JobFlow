@@ -79,8 +79,12 @@ class Repository @Inject constructor() {
     }
 
 
-    suspend fun searchPrintOrderByPlateNumber(plateNumber: Int): PrintOrder? =
-        suspendCancellableCoroutine { continuation ->
+    suspend fun searchPrintOrderByPlateNumber(plateNumber: Int): PrintOrder? {
+
+        if(!isValidReprintPlateNumber(plateNumber))
+            throw IllegalArgumentException()
+
+        return suspendCancellableCoroutine { continuation ->
 
             database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
                 .whereEqualTo("plateMakingDetail.plateNumber", plateNumber)
@@ -99,6 +103,8 @@ class Repository @Inject constructor() {
                 }
 
         }
+    }
+
 
     suspend fun searchPrintOrder(poNumber: Int): PrintOrder? =
         suspendCancellableCoroutine { continuation ->
@@ -197,6 +203,19 @@ class Repository @Inject constructor() {
                 }
 
         }
+
+    suspend fun isValidReprintPlateNumber(plateNumber: Int):Boolean= suspendCancellableCoroutine { continuation->
+        database.collection(DatabaseContract.COLLECTION_COUNTERS)
+            .document(DatabaseContract.DOCUMENT_COUNTER_RID)
+            .get(Source.SERVER)
+            .addOnSuccessListener {
+                val lastValue=it.toObject(Counter::class.java)!!.value
+                continuation.resume(plateNumber <= lastValue)
+            }
+            .addOnFailureListener {
+                continuation.resumeWithException(it)
+            }
+    }
 
     suspend fun readPrintOrder(destinationId: String, poId: String) =
         suspendCancellableCoroutine<PrintOrder> { continuation ->

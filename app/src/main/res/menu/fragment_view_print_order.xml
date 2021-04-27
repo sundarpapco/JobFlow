@@ -14,4 +14,9 @@
         android:title="@string/print"
         app:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/mnu_share_pdf"
+        android:orderInCategory="300"
+        android:title="@string/menu_share_as_pdf"
+        app:showAsAction="never"/>
+
 </menu>

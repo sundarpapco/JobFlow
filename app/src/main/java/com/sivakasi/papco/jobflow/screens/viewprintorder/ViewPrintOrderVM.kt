@@ -6,9 +6,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
+import com.sivakasi.papco.jobflow.print.PrintOrderReport
+import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -19,12 +20,15 @@ import javax.inject.Inject
 @HiltViewModel
 class ViewPrintOrderVM @Inject constructor(
     private val application: Application,
-    private val repository: Repository
+    private val repository: Repository,
+    private val printOrderReport: PrintOrderReport
 ) : ViewModel() {
 
     private var isAlreadyLoaded = false
     private val _loadedPrintOrder = MutableLiveData<LoadingStatus>()
+    private val _generatePdfStatus=MutableLiveData<Event<LoadingStatus>>()
     val loadedPrintOrder: LiveData<LoadingStatus> = _loadedPrintOrder
+    val generatePdfStatus:LiveData<Event<LoadingStatus>> =_generatePdfStatus
 
     fun loadPrintOrder(destinationId: String, printOrderId: String) {
 
@@ -50,6 +54,18 @@ class ViewPrintOrderVM @Inject constructor(
             }
         }
 
+    }
+
+    fun generatePdfFile(printOrder:PrintOrder){
+        viewModelScope.launch {
+            _generatePdfStatus.value= loadingEvent(application.getString(R.string.one_moment_please))
+            try {
+                val filename = printOrderReport.generatePdfFile(printOrder)
+                _generatePdfStatus.value = dataEvent(filename)
+            }catch(e:Exception){
+                _generatePdfStatus.value= errorEvent(e)
+            }
+        }
     }
 
 }

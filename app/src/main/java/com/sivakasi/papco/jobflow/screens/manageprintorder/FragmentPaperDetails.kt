@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -11,9 +12,9 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
-import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPaperDetailsBinding
-import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.util.toast
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -50,8 +51,19 @@ class FragmentPaperDetails : Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if(item.itemId==android.R.id.home){
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onDestroyView() {
@@ -74,12 +86,10 @@ class FragmentPaperDetails : Fragment(),
     private fun observeViewModel() {
 
         viewModel.loadedJob.observe(viewLifecycleOwner) {
-            if (it is LoadingStatus.Success<*>) {
-                paperDetailCount = (it.data as PrintOrder).paperDetails?.let { list ->
+                paperDetailCount = it.paperDetails?.let { list ->
                     paperDetailAdapter.submitList(list)
                     list.size
                 } ?: 0
-            }
         }
 
     }

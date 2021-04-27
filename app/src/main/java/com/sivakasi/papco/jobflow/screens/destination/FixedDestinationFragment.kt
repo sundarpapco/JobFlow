@@ -13,6 +13,7 @@ import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.DestinationFixedBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
@@ -24,18 +25,26 @@ import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import java.text.SimpleDateFormat
+import java.util.*
 
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class FixedDestinationFragment : Fragment(),
     ListAdapterListener<PrintOrderUIModel>,
     ActionMode.Callback,
-    ResultDialogFragment.ResultDialogListener {
+    ResultDialogFragment.ResultDialogListener,
+    ConfirmationDialog.ConfirmationDialogListener {
 
     companion object {
         private const val KEY_DESTINATION_ID = "key:destination:id"
         private const val KEY_DESTINATION_TYPE = "key:destination:type"
         private const val DIALOG_CODE_INVOICE_DETAIL = 1
+
+        private const val CONFIRMATION_CANCEL_JOBS = 1
+        private const val CONFIRMATION_COMPLETE_JOBS = 2
+        private const val CONFIRMATION_REVERT_JOBS = 3
+
         fun getArgumentBundle(destinationId: String, destinationType: Int): Bundle =
             Bundle().apply {
                 putInt(KEY_DESTINATION_TYPE, destinationType)
@@ -62,7 +71,7 @@ class FixedDestinationFragment : Fragment(),
 
 
     private val adapter: JobsAdapter by lazy {
-        JobsAdapter(requireContext(),viewModel.jobSelections, this)
+        JobsAdapter(requireContext(), viewModel.jobSelections, this)
     }
 
 
@@ -82,8 +91,19 @@ class FixedDestinationFragment : Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackArrow()
         initViews()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == android.R.id.home) {
+            findNavController().popBackStack()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onDestroyView() {
@@ -239,15 +259,11 @@ class FixedDestinationFragment : Fragment(),
 
         when (item.itemId) {
 
-            R.id.mnu_delete -> viewModel.cancelSelectedJobs(getDestinationId())
+            R.id.mnu_delete -> showCancellationConfirmationDialog()
             R.id.mnu_allot -> navigateToMachineSelectionScreen()
             R.id.mnu_invoice -> showInvoiceDetailsInputDialog()
-            R.id.mnu_back -> viewModel.backtrackSelectedJobs(getDestinationId())
-            R.id.mnu_done -> {
-                viewModel.markSelectedJobsAsComplete(
-                    getDestinationId(), currentTimeInMillis()
-                )
-            }
+            R.id.mnu_back -> showRevertConfirmationDialog()
+            R.id.mnu_done -> showCompleteConfirmationDialog()
         }
 
         return true
@@ -265,6 +281,21 @@ class FixedDestinationFragment : Fragment(),
         val duration = Duration.fromMinutes(destination.runningTime).toString()
         updateTitle(destination.name)
         updateSubTitle("$duration in ${destination.jobCount} jobs")
+
+        if (getDestinationType() == Destination.TYPE_FIXED) {
+            viewBinding.lblLastCompletionTime.visibility = View.GONE
+        } else {
+            viewBinding.lblLastCompletionTime.visibility = View.VISIBLE
+
+            val dateString = SimpleDateFormat(
+                getString(R.string.simple_format_last_completion),
+                Locale.getDefault()
+            )
+                .format(Date(destination.lastJobCompletion))
+
+            viewBinding.lblLastCompletionTime.text =
+                getString(R.string.last_completed_on, dateString)
+        }
     }
 
     private fun showInvoiceDetailsInputDialog() {
@@ -286,6 +317,7 @@ class FixedDestinationFragment : Fragment(),
 
     private fun handleWorkingStatusEvent(loadingStatus: LoadingStatus) {
 
+
         when (loadingStatus) {
 
             is LoadingStatus.Loading -> {
@@ -306,6 +338,50 @@ class FixedDestinationFragment : Fragment(),
             }
         }
 
+    }
+
+    private fun showCancellationConfirmationDialog() {
+        ConfirmationDialog.getInstance(
+            getString(R.string.cancel_confirmation),
+            getString(R.string.cancel),
+            CONFIRMATION_CANCEL_JOBS
+        ).show(
+            childFragmentManager,
+            ConfirmationDialog.TAG
+        )
+    }
+
+    private fun showCompleteConfirmationDialog() {
+        ConfirmationDialog.getInstance(
+            getString(R.string.complete_confirmation),
+            getString(R.string.mark_as_complete),
+            CONFIRMATION_COMPLETE_JOBS
+        ).show(
+            childFragmentManager,
+            ConfirmationDialog.TAG
+        )
+    }
+
+    private fun showRevertConfirmationDialog() {
+        ConfirmationDialog.getInstance(
+            getString(R.string.revert_confirmation),
+            getString(R.string.remove),
+            CONFIRMATION_REVERT_JOBS
+        ).show(
+            childFragmentManager,
+            ConfirmationDialog.TAG
+        )
+    }
+
+    override fun onConfirmationDialogConfirm(confirmationId: Int, extra: String) {
+        when (confirmationId) {
+            CONFIRMATION_CANCEL_JOBS -> viewModel.cancelSelectedJobs(getDestinationId())
+            CONFIRMATION_REVERT_JOBS -> viewModel.backtrackSelectedJobs(getDestinationId())
+            CONFIRMATION_COMPLETE_JOBS -> viewModel.markSelectedJobsAsComplete(
+                getDestinationId(),
+                currentTimeInMillis()
+            )
+        }
     }
 
     private fun navigateToMachineSelectionScreen() {

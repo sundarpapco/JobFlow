@@ -10,6 +10,7 @@ import com.sivakasi.papco.jobflow.common.ListAdapter
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.DestinationDiff
 import com.sivakasi.papco.jobflow.databinding.ListItemDestinationBinding
+import com.sivakasi.papco.jobflow.extensions.isPrinterVersionApp
 import com.sivakasi.papco.jobflow.util.Duration
 
 class MachinesAdapter(private val callback: MachinesAdapterListener) :
@@ -23,8 +24,13 @@ class MachinesAdapter(private val callback: MachinesAdapterListener) :
             callback.onMachineClicked(getData(viewHolder.bindingAdapterPosition))
         }
 
-        viewBinding.iconMore.setOnClickListener {
-            showPopupMenu(it,viewHolder.bindingAdapterPosition)
+        if(isPrinterVersionApp())
+            viewBinding.iconMore.visibility=View.GONE
+        else {
+            viewBinding.iconMore.visibility=View.VISIBLE
+            viewBinding.iconMore.setOnClickListener {
+                showPopupMenu(it, viewHolder.bindingAdapterPosition)
+            }
         }
         return viewHolder
     }

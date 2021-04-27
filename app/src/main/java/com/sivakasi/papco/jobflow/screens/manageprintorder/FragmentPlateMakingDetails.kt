@@ -3,6 +3,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -12,10 +13,11 @@ import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPlateMakingDetailsBinding
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.FormValidator
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.NoFilterArrayAdapter
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanRule
@@ -76,9 +78,20 @@ class FragmentPlateMakingDetails : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        enableBackAsClose()
         initViews()
         attachEditTextListeners()
         observeViewModel()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if(item.itemId==android.R.id.home){
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onStop() {
@@ -116,13 +129,10 @@ class FragmentPlateMakingDetails : Fragment() {
 
     private fun observeViewModel() {
 
-        viewModel.loadedJob.observe(viewLifecycleOwner) {
-            if (it is LoadingStatus.Success<*>) {
-                val printOrder = it.data as PrintOrder
+        viewModel.loadedJob.observe(viewLifecycleOwner) {printOrder->
                 jobType = printOrder.jobType
                 plateMakingDetail = printOrder.plateMakingDetail
                 renderPlateMakingDetail()
-            }
         }
     }
 
