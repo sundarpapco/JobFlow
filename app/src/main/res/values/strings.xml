@@ -16,6 +16,7 @@
     <string name="new_print_order">New print order</string>
     <string name="new_job">New job</string>
     <string name="new_jobs">New jobs</string>
+    <string name="in_progress">In Progress</string>
     <string name="repeat_job">Repeat job</string>
     <string name="rid">RID</string>
     <string name="blank_if_party_plate">Blank if party plate</string>
@@ -135,6 +136,7 @@
     <string name="invalid_rid_entered">Invalid Plate Number</string>
     <string name="last_completed_on">Last completed on: %1$s</string>
     <string name="simple_format_last_completion">"dd/MM/yyyy, hh:mm a"</string>
+    <string name="loading">Loading…</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>

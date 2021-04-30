@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
@@ -37,6 +38,10 @@ class FragmentHome : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         disableBackArrow()
+    }
+
+    override fun onResume() {
+        super.onResume()
         if(isPrinterVersionApp())
             navigateToMachinesFragment()
     }
@@ -65,6 +70,15 @@ class FragmentHome : Fragment() {
     }
 
     private fun initViews() {
+
+        viewBinding.newJobs.icon.setImageResource(R.drawable.ic_new_jobs)
+        viewBinding.newJobs.destinationName.text=getString(R.string.new_jobs)
+        viewBinding.inProgress.icon.setImageResource(R.drawable.ic_in_progress)
+        viewBinding.inProgress.destinationName.text=getString(R.string.in_progress)
+        viewBinding.machines.icon.setImageResource(R.drawable.ic_machine)
+        viewBinding.machines.destinationName.text=getString(R.string.machines)
+
+
         viewBinding.newJobs.root.setOnClickListener {
             findNavController().navigate(R.id.action_fragmentHome_to_fixedDestinationFragment)
         }
@@ -109,10 +123,22 @@ class FragmentHome : Fragment() {
     }
 
     private fun navigateToMachinesFragment(){
-        findNavController().navigate(
-            R.id.action_fragmentHome_to_manageMachinesFragment,
-            ManageMachinesFragment.getArguments(false)
-        )
+
+        if(isPrinterVersionApp()){
+            val navOptions=NavOptions.Builder()
+                .setPopUpTo(R.id.fragmentHome,true)
+                .build()
+            findNavController().navigate(
+                R.id.action_fragmentHome_to_manageMachinesFragment,
+                ManageMachinesFragment.getArguments(false),
+                navOptions
+            )
+        }else{
+            findNavController().navigate(
+                R.id.action_fragmentHome_to_manageMachinesFragment,
+                ManageMachinesFragment.getArguments(false)
+            )
+        }
     }
 
 

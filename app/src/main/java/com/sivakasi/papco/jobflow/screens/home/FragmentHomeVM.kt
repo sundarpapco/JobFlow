@@ -75,17 +75,21 @@ class FragmentHomeVM @Inject constructor(
             try {
                 repository.loadAllMachines()
                     .map {
-                        it.reduce { acc, destination ->
-                            acc.jobCount += destination.jobCount
-                            acc.runningTime += destination.runningTime
-                            acc
-                        }
+                        if (it.isNotEmpty())
+                            it.reduce { acc, destination ->
+                                acc.jobCount += destination.jobCount
+                                acc.runningTime += destination.runningTime
+                                acc
+                            }
+                        else
+                            emptyDestination(application.getString(R.string.machines))
                     }.collect {
                         it.name = application.getString(R.string.machines)
                         _machines.value = it
                     }
 
             } catch (e: Exception) {
+                e.printStackTrace()
                 _machines.value = emptyDestination(application.getString(R.string.machines))
             }
         }

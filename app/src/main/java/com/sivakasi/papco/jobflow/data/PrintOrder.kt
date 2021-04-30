@@ -37,6 +37,13 @@ class PrintOrder {
     var packing: String? = null
 
 
+    fun prepareForReprint(){
+        creationTime= currentTimeInMillis()
+        jobType=TYPE_REPEAT_JOB
+        invoiceDetails=""
+    }
+
+
     fun ageString(): String {
         //86,400,000 is the number of milliseconds per day
         val calendar = getCalendarInstance()

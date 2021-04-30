@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -69,8 +68,7 @@ class ManagePrintOrderVM : ViewModel() {
                     _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
                 else {
                     printOrder = searchResult
-                    printOrder.creationTime = currentTimeInMillis()
-                    printOrder.jobType = PrintOrder.TYPE_REPEAT_JOB
+                    printOrder.prepareForReprint()
                     _reprintLoadingStatus.value= dataEvent(printOrder)
                 }
             } catch (e: Exception) {

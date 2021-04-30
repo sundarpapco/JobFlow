@@ -145,7 +145,7 @@ class PrintOrderReport @Inject constructor(
                 printOrder.plateMakingDetail.plateNumber.toString()
         }
         textWidth=labeledTextWidth(labelText,detailText)
-        bounds.left += rowWidth-textWidth-cellMargin
+        bounds.left += rowWidth-textWidth
         drawLabeledText(canvas,labelText,detailText,bounds)
 
         rowNumber++

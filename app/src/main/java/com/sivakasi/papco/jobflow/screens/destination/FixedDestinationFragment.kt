@@ -121,6 +121,11 @@ class FixedDestinationFragment : Fragment(),
         viewBinding.fab.setOnClickListener {
             navigateToCreatePOScreen()
         }
+
+        if(getDestinationId()!=DatabaseContract.DOCUMENT_DEST_NEW_JOBS){
+            viewBinding.fab.setOnClickListener(null)
+            viewBinding.fab.hide()
+        }
         initRecycler()
     }
 
@@ -223,7 +228,6 @@ class FixedDestinationFragment : Fragment(),
                 actionMode = viewBinding.root.startActionMode(this)
             }
 
-            actionMode?.invalidate()
             actionMode?.title = viewModel.jobSelections.title()
             actionMode?.subtitle = viewModel.jobSelections.subTitle()
         } else {
@@ -245,15 +249,7 @@ class FixedDestinationFragment : Fragment(),
         return true
     }
 
-    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-
-        if (getDestinationType() == Destination.TYPE_DYNAMIC)
-            return true
-
-        val invoiceItem = menu?.findItem(R.id.mnu_invoice)
-        invoiceItem?.isVisible = viewModel.jobSelections.size() == 1
-        return true
-    }
+    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean = true
 
     override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
 

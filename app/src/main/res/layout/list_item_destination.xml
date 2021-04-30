@@ -20,7 +20,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_setting" />
+        app:srcCompat="@drawable/ic_setting"
+        android:tint="@color/colorAccent"/>
 
     <TextView
         android:id="@+id/lbl_name"

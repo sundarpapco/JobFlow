@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.destination
 
 import androidx.lifecycle.*
 import com.sivakasi.papco.jobflow.common.JobListSelection
+import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.Repository
@@ -96,11 +97,13 @@ class FixedDestinationVM @Inject constructor(
         viewModelScope.launch {
             try {
                 _workingStatus.value = loadingEvent("One moment please")
+                val time= currentTimeInMillis()
                 repository.moveJobs(
                     sourceId,
                     DatabaseContract.DOCUMENT_DEST_COMPLETED,
                     jobs){
                     it.invoiceDetails=invoiceDetail
+                    it.completionTime=time
                 }
                 _workingStatus.value = dataEvent(true)
             } catch (e: Exception) {

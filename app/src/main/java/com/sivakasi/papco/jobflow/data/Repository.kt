@@ -160,6 +160,7 @@ class Repository @Inject constructor() {
 
         database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .whereEqualTo("type", Destination.TYPE_DYNAMIC)
+            .orderBy("creationTime",Query.Direction.ASCENDING)
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
@@ -204,7 +205,7 @@ class Repository @Inject constructor() {
 
         }
 
-    suspend fun isValidReprintPlateNumber(plateNumber: Int):Boolean= suspendCancellableCoroutine { continuation->
+    private suspend fun isValidReprintPlateNumber(plateNumber: Int):Boolean= suspendCancellableCoroutine { continuation->
         database.collection(DatabaseContract.COLLECTION_COUNTERS)
             .document(DatabaseContract.DOCUMENT_COUNTER_RID)
             .get(Source.SERVER)
@@ -216,18 +217,6 @@ class Repository @Inject constructor() {
                 continuation.resumeWithException(it)
             }
     }
-
-    suspend fun readPrintOrder(destinationId: String, poId: String) =
-        suspendCancellableCoroutine<PrintOrder> { continuation ->
-            database.poReference(destinationId, poId)
-                .get()
-                .addOnSuccessListener {
-                    continuation.resume(it.toObject(PrintOrder::class.java)!!)
-                }
-                .addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
-        }
 
     suspend fun moveJobs(
         sourceId: String,

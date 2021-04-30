@@ -39,6 +39,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_manageMachinesFragment"
             app:destination="@id/manageMachinesFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_manageMachinesFragment2"
+            app:destination="@id/manageMachinesFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPrintOrderFragment"
