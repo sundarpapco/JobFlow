@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.data
 
+import android.util.Log
 import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.extensions.poReference
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
@@ -22,12 +23,11 @@ class Repository @Inject constructor() {
     private val database = FirebaseFirestore.getInstance()
 
 
-    fun observeDestination(
+    suspend fun observeDestination(
         destinationId: String,
     ) = callbackFlow {
 
-        var isDestinationRemoved = false
-        database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .document(destinationId)
             .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
 
@@ -35,50 +35,42 @@ class Repository @Inject constructor() {
                     throw firebaseFirestoreException
 
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
-                    if (!isDestinationRemoved) {
-                        isDestinationRemoved = true
-                        try {
-                            offer(null)
-                        }catch (e:Exception){}
-                    }
-                }
-
-                if (!isDestinationRemoved)
                     try {
-                        offer(documentSnapshot!!.toObject(Destination::class.java))
-                    } catch (e: Exception) { }
+                        offer(null)
+                    } catch (e: Exception) {
+                    }
+                } else
+                    try {
+                        offer(documentSnapshot.toObject(Destination::class.java))
+                    } catch (e: Exception) {
+                    }
             }
 
-        awaitClose {}
+        awaitClose { listenerRegistration.remove() }
     }
 
     fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
 
-        var isPrintOrderMoved = false
-        database.poReference(destinationId, poId)
+        val listenerRegistration = database.poReference(destinationId, poId)
             .addSnapshotListener { documentSnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
                     throw firebaseFireStoreException
 
                 if (documentSnapshot == null || !documentSnapshot.exists())
-                    if (!isPrintOrderMoved) {
-                        isPrintOrderMoved = true
-                        try {
-                            offer(null)
-                        }catch (e:Exception){}
-                    }
-
-
-                if (!isPrintOrderMoved)
                     try {
-                        offer(documentSnapshot!!.toObject(PrintOrder::class.java))
+                        offer(null)
+                    } catch (e: Exception) {
+                    }
+                else
+                    try {
+                        offer(documentSnapshot.toObject(PrintOrder::class.java))
                     } catch (e: Exception) {
 
                     }
             }
 
-        awaitClose { }
+        awaitClose { listenerRegistration.remove() }
 
     }
 
@@ -132,7 +124,7 @@ class Repository @Inject constructor() {
 
     fun jobsOfDestination(destinationId: String) = callbackFlow {
 
-        database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .document(destinationId)
             .collection(DatabaseContract.COLLECTION_JOBS)
             .orderBy("listPosition", Query.Direction.ASCENDING)
@@ -151,7 +143,7 @@ class Repository @Inject constructor() {
                 }
             }
 
-        awaitClose { }
+        awaitClose { listenerRegistration.remove() }
     }.map {
         it.map { doc ->
             val po = doc.toObject(PrintOrder::class.java)
@@ -162,7 +154,7 @@ class Repository @Inject constructor() {
 
     suspend fun loadAllMachines() = callbackFlow {
 
-        database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .whereEqualTo("type", Destination.TYPE_DYNAMIC)
             .orderBy("creationTime", Query.Direction.ASCENDING)
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
@@ -180,7 +172,7 @@ class Repository @Inject constructor() {
                     }
 
             }
-        awaitClose { }
+        awaitClose { listenerRegistration.remove() }
 
     }.map {
         it.map { document ->

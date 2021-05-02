@@ -19,10 +19,7 @@ import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
-import com.sivakasi.papco.jobflow.util.Duration
-import com.sivakasi.papco.jobflow.util.EventObserver
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.toast
+import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.text.SimpleDateFormat
@@ -113,6 +110,8 @@ class FixedDestinationFragment : Fragment(),
             clearSelections = false
             actionMode?.finish()
         }
+        actionMode = null
+        adapter.itemTouchHelper = null
         viewBinding.recycler.adapter = null
         _viewBinding = null
     }
@@ -122,7 +121,7 @@ class FixedDestinationFragment : Fragment(),
             navigateToCreatePOScreen()
         }
 
-        if(getDestinationId()!=DatabaseContract.DOCUMENT_DEST_NEW_JOBS){
+        if (getDestinationId() != DatabaseContract.DOCUMENT_DEST_NEW_JOBS) {
             viewBinding.fab.setOnClickListener(null)
             viewBinding.fab.hide()
         }
@@ -225,7 +224,8 @@ class FixedDestinationFragment : Fragment(),
 
         if (selectionCount > 0) {
             if (actionMode == null) {
-                actionMode = viewBinding.root.startActionMode(this)
+                //SafeActionModeWrapper class used to prevent memory leak. See that class description comments
+                actionMode = viewBinding.root.startActionMode(SafeActionModeCallBack(this))
             }
 
             actionMode?.title = viewModel.jobSelections.title()

@@ -10,7 +10,7 @@
 
 
     <item android:id="@+id/mnu_print"
-        android:icon="@drawable/ic_baseline_print_24"
+        android:icon="@drawable/ic_print"
         android:orderInCategory="200"
         android:title="@string/print"
         app:showAsAction="ifRoom"/>
