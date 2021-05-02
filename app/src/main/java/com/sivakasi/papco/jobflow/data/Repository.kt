@@ -22,10 +22,11 @@ class Repository @Inject constructor() {
     private val database = FirebaseFirestore.getInstance()
 
 
-    suspend fun observeDestination(
+    fun observeDestination(
         destinationId: String,
     ) = callbackFlow {
 
+        var isDestinationRemoved = false
         database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .document(destinationId)
             .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
@@ -34,54 +35,57 @@ class Repository @Inject constructor() {
                     throw firebaseFirestoreException
 
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
-                    try {
-                        offer(null)
-                    } catch (e: Exception) {
-
+                    if (!isDestinationRemoved) {
+                        isDestinationRemoved = true
+                        try {
+                            offer(null)
+                        }catch (e:Exception){}
                     }
                 }
 
-                try {
-                    offer(documentSnapshot!!.toObject(Destination::class.java))
-                } catch (e: Exception) {
-
-                }
+                if (!isDestinationRemoved)
+                    try {
+                        offer(documentSnapshot!!.toObject(Destination::class.java))
+                    } catch (e: Exception) { }
             }
 
         awaitClose {}
     }
 
-    suspend fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
+    fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
 
-        database.poReference(destinationId,poId)
+        var isPrintOrderMoved = false
+        database.poReference(destinationId, poId)
             .addSnapshotListener { documentSnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
                     throw firebaseFireStoreException
 
-                if (documentSnapshot == null || !documentSnapshot.exists()) {
+                if (documentSnapshot == null || !documentSnapshot.exists())
+                    if (!isPrintOrderMoved) {
+                        isPrintOrderMoved = true
+                        try {
+                            offer(null)
+                        }catch (e:Exception){}
+                    }
+
+
+                if (!isPrintOrderMoved)
                     try {
-                        offer(null)
+                        offer(documentSnapshot!!.toObject(PrintOrder::class.java))
                     } catch (e: Exception) {
 
                     }
-                }
-
-                try {
-                    offer(documentSnapshot!!.toObject(PrintOrder::class.java))
-                } catch (e: Exception) {
-
-                }
             }
 
-        awaitClose {  }
+        awaitClose { }
 
     }
 
 
     suspend fun searchPrintOrderByPlateNumber(plateNumber: Int): PrintOrder? {
 
-        if(!isValidReprintPlateNumber(plateNumber))
+        if (!isValidReprintPlateNumber(plateNumber))
             throw IllegalArgumentException()
 
         return suspendCancellableCoroutine { continuation ->
@@ -160,7 +164,7 @@ class Repository @Inject constructor() {
 
         database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .whereEqualTo("type", Destination.TYPE_DYNAMIC)
-            .orderBy("creationTime",Query.Direction.ASCENDING)
+            .orderBy("creationTime", Query.Direction.ASCENDING)
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
@@ -205,18 +209,19 @@ class Repository @Inject constructor() {
 
         }
 
-    private suspend fun isValidReprintPlateNumber(plateNumber: Int):Boolean= suspendCancellableCoroutine { continuation->
-        database.collection(DatabaseContract.COLLECTION_COUNTERS)
-            .document(DatabaseContract.DOCUMENT_COUNTER_RID)
-            .get(Source.SERVER)
-            .addOnSuccessListener {
-                val lastValue=it.toObject(Counter::class.java)!!.value
-                continuation.resume(plateNumber <= lastValue)
-            }
-            .addOnFailureListener {
-                continuation.resumeWithException(it)
-            }
-    }
+    private suspend fun isValidReprintPlateNumber(plateNumber: Int): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            database.collection(DatabaseContract.COLLECTION_COUNTERS)
+                .document(DatabaseContract.DOCUMENT_COUNTER_RID)
+                .get(Source.SERVER)
+                .addOnSuccessListener {
+                    val lastValue = it.toObject(Counter::class.java)!!.value
+                    continuation.resume(plateNumber <= lastValue)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
 
     suspend fun moveJobs(
         sourceId: String,
@@ -231,6 +236,9 @@ class Repository @Inject constructor() {
 
     suspend fun updatePrintOrder(parentDestinationId: String, printOrder: PrintOrder) =
         runTransaction(UpdatePrintOrderTransaction(printOrder, parentDestinationId))
+
+    suspend fun updateNotes(parentDestinationId: String, poId: String, newNotes: String) =
+        runTransaction(UpdateNotesTransaction(parentDestinationId, poId, newNotes))
 
     suspend fun batchUpdateJobs(destinationId: String, jobList: List<PrintOrderUIModel>) =
         runBatch(UpdateJobsBatch(destinationId, jobList))

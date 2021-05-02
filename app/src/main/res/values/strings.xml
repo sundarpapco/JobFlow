@@ -137,6 +137,13 @@
     <string name="last_completed_on">Last completed on: %1$s</string>
     <string name="simple_format_last_completion">"dd/MM/yyyy, hh:mm a"</string>
     <string name="loading">Loading…</string>
+    <string name="notes_saved_successfully">Notes saved successfully</string>
+    <string name="unsaved_changes_title">Unsaved Changes</string>
+    <string name="unsaved_changes_confirmation">Do you really want to exit without saving?</string>
+    <string name="exit">Exit</string>
+    <string name="po_not_found">PO not found</string>
+    <string name="po_not_found_desc">This print order was moved or removed by some other person using this app and this screen will now close</string>
+    <string name="close">Close</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>
@@ -146,6 +153,8 @@
     <string name="menu_back">Remove</string>
     <string name="menu_done">Mark as completed</string>
     <string name="print">Print</string>
+    <string name="notes">Notes</string>
+    <string name="notes_title">Notes - %1$s</string>
     <string name="menu_share_as_pdf">Share as PDF</string>
 
 

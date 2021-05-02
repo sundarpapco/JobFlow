@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.print.PrintAttributes
 import android.print.PrintManager
 import android.view.*
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -18,10 +19,7 @@ import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.databinding.FragmentViewPrintOrderBinding
 import com.sivakasi.papco.jobflow.databinding.PaperDetailBinding
 import com.sivakasi.papco.jobflow.databinding.PostPressDetailBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.shareReport
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
@@ -85,6 +83,7 @@ class ViewPrintOrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         enableBackArrow()
+        initViews()
         observerViewModel()
     }
 
@@ -102,10 +101,6 @@ class ViewPrintOrderFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         return when (item.itemId) {
-            R.id.mnu_edit_po -> {
-                navigateToEditPrintOrderScreen()
-                true
-            }
 
             R.id.mnu_print -> {
                 print()
@@ -117,10 +112,24 @@ class ViewPrintOrderFragment : Fragment() {
                 true
             }
 
+            R.id.mnu_notes->{
+                navigateToNotesScreen()
+                true
+            }
+
             android.R.id.home -> findNavController().popBackStack()
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun initViews(){
+        if(isPrinterVersionApp())
+            viewBinding.fab.hide()
+        else
+            viewBinding.fab.setOnClickListener {
+                navigateToEditPrintOrderScreen()
+            }
     }
 
     private fun observerViewModel() {
@@ -325,8 +334,7 @@ class ViewPrintOrderFragment : Fragment() {
 
                 val exception = loadingState.exception
                 if (exception is ResourceNotFoundException) {
-                    toast(getString(R.string.print_order_not_found))
-                    findNavController().popBackStack()
+                    showPrintOrderRemovedDialog()
                 } else
                     toast(exception.message ?: getString(R.string.error_unknown_error))
             }
@@ -371,8 +379,27 @@ class ViewPrintOrderFragment : Fragment() {
 
     }
 
+    private fun showPrintOrderRemovedDialog(){
+
+        val builder= AlertDialog.Builder(requireContext())
+        builder.setMessage(getString(R.string.po_not_found_desc))
+        builder.setTitle(getString(R.string.po_not_found))
+        builder.setPositiveButton(getString(R.string.exit)){_,_->
+            findNavController().popBackStack()
+        }
+        builder.setCancelable(false)
+        builder.create().show()
+    }
+
     private fun sharePdfFile(filePath: String) {
         requireContext().shareReport(filePath)
+    }
+
+    private fun navigateToNotesScreen(){
+        findNavController().navigate(
+            R.id.action_viewPrintOrderFragment_to_notesFragment,
+            NotesFragment.getArguments(getDestinationId(),getPoId(),printOrder.notes)
+        )
     }
 
     private fun getDestinationId(): String =

@@ -13,22 +13,24 @@ import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ViewPrintOrderVM @Inject constructor(
-    private val application: Application,
     private val repository: Repository,
+    private val application: Application,
     private val printOrderReport: PrintOrderReport
 ) : ViewModel() {
 
     private var isAlreadyLoaded = false
     private val _loadedPrintOrder = MutableLiveData<LoadingStatus>()
-    private val _generatePdfStatus=MutableLiveData<Event<LoadingStatus>>()
+    private val _generatePdfStatus = MutableLiveData<Event<LoadingStatus>>()
     val loadedPrintOrder: LiveData<LoadingStatus> = _loadedPrintOrder
-    val generatePdfStatus:LiveData<Event<LoadingStatus>> =_generatePdfStatus
+    val generatePdfStatus: LiveData<Event<LoadingStatus>> = _generatePdfStatus
+
 
     fun loadPrintOrder(destinationId: String, printOrderId: String) {
 
@@ -38,32 +40,32 @@ class ViewPrintOrderVM @Inject constructor(
             isAlreadyLoaded = true
 
         viewModelScope.launch {
-            try {
-                _loadedPrintOrder.value =
-                    LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-                repository.observePrintOrder(destinationId, printOrderId)
-                    .collect { printOrder ->
-                        if (printOrder == null)
-                            _loadedPrintOrder.value =
-                                LoadingStatus.Error(ResourceNotFoundException(""))
-                        else
-                            _loadedPrintOrder.value = LoadingStatus.Success(printOrder)
-                    }
-            } catch (e: Exception) {
-                _loadedPrintOrder.value = LoadingStatus.Error(e)
-            }
-        }
 
+            repository.observePrintOrder(destinationId, printOrderId)
+                .onStart {
+                    _loadedPrintOrder.value =
+                        LoadingStatus.Loading(application.getString(R.string.one_moment_please))
+                }
+                .collect { printOrder ->
+                    if (printOrder == null)
+                        _loadedPrintOrder.value = LoadingStatus.Error(ResourceNotFoundException(""))
+                    else
+                        _loadedPrintOrder.value = LoadingStatus.Success(printOrder)
+                }
+
+        }
     }
 
-    fun generatePdfFile(printOrder:PrintOrder){
+
+    fun generatePdfFile(printOrder: PrintOrder) {
         viewModelScope.launch {
-            _generatePdfStatus.value= loadingEvent(application.getString(R.string.one_moment_please))
+            _generatePdfStatus.value =
+                loadingEvent(application.getString(R.string.one_moment_please))
             try {
                 val filename = printOrderReport.generatePdfFile(printOrder)
                 _generatePdfStatus.value = dataEvent(filename)
-            }catch(e:Exception){
-                _generatePdfStatus.value= errorEvent(e)
+            } catch (e: Exception) {
+                _generatePdfStatus.value = errorEvent(e)
             }
         }
     }

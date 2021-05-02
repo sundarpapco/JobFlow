@@ -25,6 +25,7 @@ class PrintOrder {
     var invoiceDetails:String=""
     var previousDestinationId:String=""
     var completionTime:Long=0
+    var notes:String=""
 
     var lamination: Lamination? = null
     var foil: String? = null

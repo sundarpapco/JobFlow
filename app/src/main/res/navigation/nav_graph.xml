@@ -50,5 +50,12 @@
         <action
             android:id="@+id/action_viewPrintOrderFragment_to_print_order_flow"
             app:destination="@id/print_order_flow" />
+        <action
+            android:id="@+id/action_viewPrintOrderFragment_to_notesFragment"
+            app:destination="@id/notesFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.NotesFragment"
+        android:label="NotesFragment" />
 </navigation>
