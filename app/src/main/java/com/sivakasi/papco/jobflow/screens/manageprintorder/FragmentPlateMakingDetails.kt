@@ -13,7 +13,6 @@ import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPlateMakingDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
@@ -23,9 +22,11 @@ import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanRule
 import com.wajahatkarim3.easyvalidation.core.rules.LessThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
+@AndroidEntryPoint
 class FragmentPlateMakingDetails : Fragment() {
 
     companion object {
@@ -101,6 +102,7 @@ class FragmentPlateMakingDetails : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewBinding.txtBackside.setAdapter(null)
         _viewBinding = null
     }
 

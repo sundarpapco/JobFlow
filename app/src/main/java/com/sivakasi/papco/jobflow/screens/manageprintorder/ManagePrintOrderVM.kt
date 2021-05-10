@@ -6,12 +6,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.util.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 @ExperimentalCoroutinesApi
-class ManagePrintOrderVM : ViewModel() {
+@HiltViewModel
+class ManagePrintOrderVM @Inject constructor(
+    private val repository: Repository
+) : ViewModel() {
 
     private val _loadedJob = MutableLiveData<PrintOrder>()
     private val _reprintLoadingStatus= MutableLiveData<Event<LoadingStatus>>()
@@ -22,7 +27,6 @@ class ManagePrintOrderVM : ViewModel() {
     val saveStatus: LiveData<Event<LoadingStatus>> = _saveStatus
 
     private lateinit var printOrder: PrintOrder
-    private val repository = Repository()
 
     var isEditMode: Boolean = false
     var editingPrintOrderParentDestinationId: String = DatabaseContract.DOCUMENT_DEST_NEW_JOBS
@@ -60,9 +64,9 @@ class ManagePrintOrderVM : ViewModel() {
             try {
                 //Load Job from repository here like
                 val searchResult = if (searchByPlateNumber) {
-                    repository.searchPrintOrderByPlateNumber(plateNumber) //Search by plate number
+                    repository.getLatestPrintOrderWithPlateNumber(plateNumber) //Search by plate number
                 } else
-                    repository.searchPrintOrder(plateNumber) //Search by po number
+                    repository.fetchPrintOrder(plateNumber) //Search by po number
 
                 if (searchResult == null)
                     _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
@@ -83,7 +87,7 @@ class ManagePrintOrderVM : ViewModel() {
             _reprintLoadingStatus.value = loadingEvent("One moment please")
             try {
                 //Load Job from repository here like
-                val searchResult = repository.searchPrintOrder(poNumber)
+                val searchResult = repository.fetchPrintOrder(poNumber)
                 if (searchResult == null)
                     _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
                 else {

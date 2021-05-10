@@ -9,6 +9,15 @@ class PrintOrder {
         const val TYPE_NEW_JOB = -1
         const val TYPE_REPEAT_JOB = -2
         const val PO_NUMBER_NOT_YET_ALLOCATED = -3
+        const val FIELD_PLATE_NUMBER="plateMakingDetail.plateNumber"
+        const val FIELD_PRINT_ORDER_NUMBER="printOrderNumber"
+        const val FIELD_CREATION_TIME="creationTime"
+        const val FIELD_INVOICE_NUMBER="invoiceDetails"
+
+        fun documentId(poNumber:Int):String{
+            require(poNumber > 0) { "Invalid print order number while generating document ID" }
+            return "po$poNumber"
+        }
     }
 
     var creationTime: Long = currentTimeInMillis()
@@ -91,10 +100,7 @@ class PrintOrder {
         return result
     }
 
-    fun documentId(): String {
-
-        require(printOrderNumber > 0) { "Invalid print order number while generating document ID" }
-        return "po$printOrderNumber"
-    }
+    fun documentId(): String =
+        documentId(printOrderNumber)
 
 }

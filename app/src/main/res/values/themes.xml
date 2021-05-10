@@ -28,5 +28,10 @@
 
     <style name="Theme.JobFlow.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
 
+    <style name="CustomChipTheme" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/chip_background</item>
+        <item name="android:textColor">?attr/colorLightOnDark</item>
+    </style>
+
 
 </resources>

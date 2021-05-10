@@ -1,8 +1,8 @@
 package com.sivakasi.papco.jobflow.util
 
-import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.view.ActionMode
 
 /*
 This is a utility wrapper class for preventing memory leaks.
@@ -16,7 +16,7 @@ the fragment from the activity preventing memory leak.
  */
 
 class SafeActionModeCallBack(
-    var callback:ActionMode.Callback?
+    var callback: ActionMode.Callback?
 ):ActionMode.Callback {
 
     override fun onCreateActionMode(actionMode: ActionMode, menu: Menu?): Boolean {

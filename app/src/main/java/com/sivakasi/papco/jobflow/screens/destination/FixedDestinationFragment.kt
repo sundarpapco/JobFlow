@@ -2,11 +2,14 @@ package com.sivakasi.papco.jobflow.screens.destination
 
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.*
 import com.sivakasi.papco.jobflow.currentTimeInMillis
@@ -28,7 +31,7 @@ import java.util.*
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class FixedDestinationFragment : Fragment(),
-    ListAdapterListener<PrintOrderUIModel>,
+    JobsAdapterListener,
     ActionMode.Callback,
     ResultDialogFragment.ResultDialogListener,
     ConfirmationDialog.ConfirmationDialogListener {
@@ -37,6 +40,7 @@ class FixedDestinationFragment : Fragment(),
         private const val KEY_DESTINATION_ID = "key:destination:id"
         private const val KEY_DESTINATION_TYPE = "key:destination:type"
         private const val DIALOG_CODE_INVOICE_DETAIL = 1
+        private const val DIALOG_CODE_PENDING_REMARKS = 2
 
         private const val CONFIRMATION_CANCEL_JOBS = 1
         private const val CONFIRMATION_COMPLETE_JOBS = 2
@@ -57,6 +61,7 @@ class FixedDestinationFragment : Fragment(),
     private var refreshAdapterNeeded: Boolean = true
     private var clearSelections: Boolean = true
     private var actionMode: ActionMode? = null
+    private lateinit var selections: JobListSelection
     private var _viewBinding: DestinationFixedBinding? = null
     private val viewBinding: DestinationFixedBinding
         get() = _viewBinding!!
@@ -75,6 +80,7 @@ class FixedDestinationFragment : Fragment(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadJobsFromDestination(getDestinationId())
+        selections = viewModel.jobSelections
     }
 
     override fun onCreateView(
@@ -218,18 +224,29 @@ class FixedDestinationFragment : Fragment(),
 
     }
 
+    override fun showPendingRemarks(item: PrintOrderUIModel) {
+
+        Snackbar.make(viewBinding.fab, item.pendingReason, Snackbar.LENGTH_LONG)
+            .setAction(R.string.clear) {
+                viewModel.clearPendingStatus(getDestinationId(), item)
+            }
+            .show()
+    }
+
     // ----------------------------
 
     private fun onSelectionChange(selectionCount: Int) {
 
         if (selectionCount > 0) {
             if (actionMode == null) {
+                val activity = requireActivity() as AppCompatActivity
                 //SafeActionModeWrapper class used to prevent memory leak. See that class description comments
-                actionMode = viewBinding.root.startActionMode(SafeActionModeCallBack(this))
+                actionMode = activity.startSupportActionMode(SafeActionModeCallBack(this))
             }
 
             actionMode?.title = viewModel.jobSelections.title()
             actionMode?.subtitle = viewModel.jobSelections.subTitle()
+            actionMode?.invalidate()
         } else {
             actionMode?.finish()
             if (refreshAdapterNeeded) {
@@ -249,7 +266,25 @@ class FixedDestinationFragment : Fragment(),
         return true
     }
 
-    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean = true
+    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+
+        if (getDestinationType() == Destination.TYPE_DYNAMIC)
+            return true
+
+        menu?.let {
+
+            val itemMark = it.findItem(R.id.mnu_mark_as_pending)
+            val itemClear = it.findItem(R.id.mnu_clear_pending)
+            if (selections.hasPendingItems()) {
+                itemMark.isVisible = false
+                itemClear.isVisible = true
+            } else {
+                itemMark.isVisible = true
+                itemClear.isVisible = false
+            }
+        }
+        return true
+    }
 
     override fun onActionItemClicked(mode: ActionMode?, item: MenuItem): Boolean {
 
@@ -260,6 +295,8 @@ class FixedDestinationFragment : Fragment(),
             R.id.mnu_invoice -> showInvoiceDetailsInputDialog()
             R.id.mnu_back -> showRevertConfirmationDialog()
             R.id.mnu_done -> showCompleteConfirmationDialog()
+            R.id.mnu_clear_pending -> viewModel.clearPendingStatusOfSelectedItems(getDestinationId())
+            R.id.mnu_mark_as_pending -> showPendingRemarksDialog()
         }
 
         return true
@@ -294,21 +331,16 @@ class FixedDestinationFragment : Fragment(),
         }
     }
 
-    private fun showInvoiceDetailsInputDialog() {
-        DialogTextInput.getInstance(
-            title = getString(R.string.invoice_detail),
-            code = DIALOG_CODE_INVOICE_DETAIL
-        )
-            .show(
-                childFragmentManager,
-                DialogTextInput.TAG
-            )
-    }
 
     override fun onDialogResult(dialogResult: Any, code: Int) {
         if (code == DIALOG_CODE_INVOICE_DETAIL) {
             viewModel.invoiceSelectedJob(getDestinationId(), dialogResult as String)
         }
+
+        if (code == DIALOG_CODE_PENDING_REMARKS) {
+            viewModel.markAsPending(getDestinationId(), dialogResult as String)
+        }
+
     }
 
     private fun handleWorkingStatusEvent(loadingStatus: LoadingStatus) {
@@ -327,12 +359,40 @@ class FixedDestinationFragment : Fragment(),
 
             is LoadingStatus.Success<*> -> {
                 hideWaitDialog()
+
                 //Finish the action mode. But don't refresh the adapter as the DiffUtil will take
                 //care of it automatically
+                //refreshAdapterNeeded = !(loadingStatus.data as Boolean)
                 refreshAdapterNeeded = false
                 actionMode?.finish()
             }
+
+
         }
+
+    }
+
+    private fun showInvoiceDetailsInputDialog() {
+        DialogTextInput.getInstance(
+            title = getString(R.string.invoice_detail),
+            code = DIALOG_CODE_INVOICE_DETAIL
+        )
+            .show(
+                childFragmentManager,
+                DialogTextInput.TAG
+            )
+    }
+
+    private fun showPendingRemarksDialog() {
+        DialogTextInput.getInstance(
+            getString(R.string.pending_remarks),
+            "",
+            DIALOG_CODE_PENDING_REMARKS,
+            false
+        ).show(
+            childFragmentManager,
+            DialogTextInput.TAG
+        )
 
     }
 

@@ -144,6 +144,20 @@
     <string name="po_not_found">PO not found</string>
     <string name="po_not_found_desc">This print order was moved or removed by some other person using this app and this screen will now close</string>
     <string name="close">Close</string>
+    <string name="clear">Clear</string>
+    <string name="mark_as_pending">Mark as pending</string>
+    <string name="clear_pending">Clear pending</string>
+    <string name="search_hint">PO No, Plate No or Bill No</string>
+    <string name="search">Search</string>
+    <string name="invoice">Invoice</string>
+    <string name="search_by">Search By </string>
+    <string name="po_number_and_date">PO No:%1$d - %2$s</string>
+    <string name="rid_xx">RID: %1$d</string>
+    <string name="active">ACTIVE</string>
+    <string name="completed">COMPLETED</string>
+    <string name="cancelled">CANCELLED</string>
+    <string name="xx_results">%1$d Result(s)</string>
+    <string name="no_results_found">No results found!</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>

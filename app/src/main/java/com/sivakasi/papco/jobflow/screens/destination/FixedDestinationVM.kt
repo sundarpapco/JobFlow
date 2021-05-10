@@ -1,6 +1,8 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
+import android.app.Application
 import androidx.lifecycle.*
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.JobListSelection
 import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FixedDestinationVM @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val application: Application,
     private val repository: Repository
 ) : ViewModel() {
 
@@ -81,64 +84,66 @@ class FixedDestinationVM @Inject constructor(
 
     fun allotSelectedJobs(sourceId: String, destinationId: String) {
         val jobs = jobSelections.asList()
-        viewModelScope.launch {
-            try {
-                _workingStatus.value = loadingEvent("One moment please")
-                repository.moveJobs(sourceId, destinationId, jobs)
-                _workingStatus.value = dataEvent(true)
-            } catch (e: Exception) {
-                _workingStatus.value = errorEvent(e)
-            }
-        }
+        doWork { repository.moveJobs(sourceId, destinationId, jobs) }
     }
 
     fun invoiceSelectedJob(sourceId: String, invoiceDetail: String) {
         val jobs = jobSelections.asList()
+        doWork {
+            val time = currentTimeInMillis()
+            repository.moveJobs(
+                sourceId,
+                DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                jobs
+            ) {
+                it.invoiceDetails = invoiceDetail.trim()
+                it.completionTime = time
+            }
+        }
+    }
+
+    fun markSelectedJobsAsComplete(sourceId: String, completionTime: Long) {
+        val jobs = jobSelections.asList()
+        doWork {
+            repository.moveJobs(
+                sourceId,
+                DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
+                jobs
+            ) {
+                it.completionTime = completionTime
+            }
+        }
+    }
+
+    fun backtrackSelectedJobs(sourceId: String) {
+        val jobs = jobSelections.asList()
+        doWork { repository.backtrackJobs(sourceId, jobs) }
+    }
+
+    fun clearPendingStatus(destinationId: String, item: PrintOrderUIModel) =
+        doWork { repository.clearPendingStatus(destinationId, listOf(item)) }
+
+    fun clearPendingStatusOfSelectedItems(destinationId: String) {
+        val jobs = jobSelections.asList()
+        doWork { repository.clearPendingStatus(destinationId, jobs) }
+    }
+
+    fun markAsPending(destinationId: String, remark: String) {
+        val jobs = jobSelections.asList()
+        doWork {
+            repository.markAsPending(destinationId, remark, jobs)
+        }
+    }
+
+
+    private inline fun doWork(crossinline block: suspend () -> Unit) {
         viewModelScope.launch {
             try {
-                _workingStatus.value = loadingEvent("One moment please")
-                val time= currentTimeInMillis()
-                repository.moveJobs(
-                    sourceId,
-                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
-                    jobs){
-                    it.invoiceDetails=invoiceDetail
-                    it.completionTime=time
-                }
+                _workingStatus.value =
+                    loadingEvent(application.getString(R.string.one_moment_please))
+                block()
                 _workingStatus.value = dataEvent(true)
             } catch (e: Exception) {
-                _workingStatus.value = errorEvent(e)
-            }
-        }
-    }
-
-    fun markSelectedJobsAsComplete(sourceId: String,completionTime:Long){
-        val jobs=jobSelections.asList()
-        viewModelScope.launch {
-            try{
-                _workingStatus.value= loadingEvent("One moment please")
-                repository.moveJobs(
-                    sourceId,
-                    DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
-                    jobs
-                ){
-                    it.completionTime=completionTime
-                }
-                _workingStatus.value = dataEvent(true)
-            }catch (e:Exception){
-                _workingStatus.value = errorEvent(e)
-            }
-        }
-    }
-
-    fun backtrackSelectedJobs(sourceId: String){
-        val jobs=jobSelections.asList()
-        viewModelScope.launch {
-            try{
-                _workingStatus.value= loadingEvent("One moment please")
-                repository.backtrackJobs(sourceId,jobs)
-                _workingStatus.value = dataEvent(true)
-            }catch (e:Exception){
                 _workingStatus.value = errorEvent(e)
             }
         }

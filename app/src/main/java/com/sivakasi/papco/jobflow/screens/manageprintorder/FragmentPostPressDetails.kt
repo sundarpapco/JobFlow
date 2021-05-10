@@ -17,14 +17,15 @@ import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPostPressDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.toast
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
+@AndroidEntryPoint
 class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogListener {
 
     companion object {

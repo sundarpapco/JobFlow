@@ -6,15 +6,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.ItemTouchHelperCallBack
 import com.sivakasi.papco.jobflow.common.JobListSelection
+import com.sivakasi.papco.jobflow.common.JobsAdapterListener
 import com.sivakasi.papco.jobflow.common.ListAdapter
-import com.sivakasi.papco.jobflow.common.ListAdapterListener
 import com.sivakasi.papco.jobflow.databinding.ListItemJobBinding
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModelDiff
@@ -22,7 +21,7 @@ import com.sivakasi.papco.jobflow.models.PrintOrderUIModelDiff
 class JobsAdapter(
     private val context: Context,
     private val selections: JobListSelection,
-    private val callback: ListAdapterListener<PrintOrderUIModel>
+    private val callback: JobsAdapterListener
 ) :
     ListAdapter<PrintOrderUIModel, JobListViewHolder>(PrintOrderUIModelDiff()),
     ItemTouchHelperCallBack.DragCallBack {
@@ -35,7 +34,7 @@ class JobsAdapter(
         val viewBinding =
             ListItemJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        val viewHolder = JobListViewHolder(context,viewBinding)
+        val viewHolder = JobListViewHolder(context, viewBinding)
         viewBinding.root.setOnClickListener {
             callback.onItemClick(
                 getData(viewHolder.bindingAdapterPosition),
@@ -61,13 +60,14 @@ class JobsAdapter(
             )
             true
         }
+
         return viewHolder
     }
 
     override fun onBindViewHolder(holder: JobListViewHolder, position: Int) {
 
         val item = getData(holder.bindingAdapterPosition)
-        holder.bind(item, selections.contains(item.printOrderNumber))
+        holder.bind(item, selections.contains(item.printOrderNumber), callback)
     }
 
     override fun onDragging(fromPosition: Int, toPosition: Int) {
@@ -94,14 +94,18 @@ class JobsAdapter(
 
 
 class JobListViewHolder(
-    private val context: Context,
+    context: Context,
     private val viewBinding: ListItemJobBinding
 ) : RecyclerView.ViewHolder(viewBinding.root) {
 
     private val accentColor = ContextCompat.getColor(context, R.color.colorAccent)
     private val borderColor = ContextCompat.getColor(context, R.color.border_grey)
 
-    fun bind(printOrderModel: PrintOrderUIModel, isSelected: Boolean) {
+    fun bind(
+        printOrderModel: PrintOrderUIModel,
+        isSelected: Boolean,
+        callback: JobsAdapterListener
+    ) {
 
         with(printOrderModel) {
             viewBinding.lblPoNumber.text = poNumberAndAge
@@ -115,24 +119,24 @@ class JobListViewHolder(
             viewBinding.lblPaperDetail.text = printingSizePaperDetail
             viewBinding.lblColors.text = colors
 
-            if(hasSpotColors)
+            if (hasSpotColors)
                 viewBinding.lblColors.setTextColor(accentColor)
             else
                 viewBinding.lblColors.setTextColor(borderColor)
 
-            if(isPending()){
-                viewBinding.iconPending.visibility=View.VISIBLE
+            if (isPending()) {
+                viewBinding.iconPending.visibility = View.VISIBLE
                 viewBinding.iconPending.setOnClickListener {
-                    Toast.makeText(context, pendingReason, Toast.LENGTH_SHORT).show()
+                    callback.showPendingRemarks(this)
                 }
-            }else {
+            } else {
                 viewBinding.iconPending.setOnClickListener(null)
                 viewBinding.iconPending.visibility = View.GONE
             }
 
             viewBinding.iconPending.visibility = if (isPending()) {
                 View.VISIBLE
-            }else {
+            } else {
                 View.GONE
             }
         }

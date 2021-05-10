@@ -1,24 +1,32 @@
 package com.sivakasi.papco.jobflow.data
 
-import android.util.Log
+import android.app.Application
+import androidx.core.text.isDigitsOnly
 import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.extensions.poReference
+import com.sivakasi.papco.jobflow.extensions.toPrintOrder
+import com.sivakasi.papco.jobflow.extensions.toPrintOrderUIModel
+import com.sivakasi.papco.jobflow.extensions.toSearchModel
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
+import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.transactions.*
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @ExperimentalCoroutinesApi
-class Repository @Inject constructor() {
+@ViewModelScoped
+class Repository @Inject constructor(
+    private val application: Application
+) {
 
     private val database = FirebaseFirestore.getInstance()
 
@@ -64,7 +72,7 @@ class Repository @Inject constructor() {
                     }
                 else
                     try {
-                        offer(documentSnapshot.toObject(PrintOrder::class.java))
+                        offer(documentSnapshot.toPrintOrder())
                     } catch (e: Exception) {
 
                     }
@@ -75,7 +83,7 @@ class Repository @Inject constructor() {
     }
 
 
-    suspend fun searchPrintOrderByPlateNumber(plateNumber: Int): PrintOrder? {
+    suspend fun getLatestPrintOrderWithPlateNumber(plateNumber: Int): PrintOrder? {
 
         if (!isValidReprintPlateNumber(plateNumber))
             throw IllegalArgumentException()
@@ -83,14 +91,14 @@ class Repository @Inject constructor() {
         return suspendCancellableCoroutine { continuation ->
 
             database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
-                .whereEqualTo("plateMakingDetail.plateNumber", plateNumber)
-                .orderBy("creationTime", Query.Direction.DESCENDING).limit(1)
+                .whereEqualTo(PrintOrder.FIELD_PLATE_NUMBER, plateNumber)
+                .orderBy(PrintOrder.FIELD_CREATION_TIME, Query.Direction.DESCENDING).limit(1)
                 .get(Source.SERVER)
                 .addOnSuccessListener {
                     if (it.documents.isEmpty())
                         continuation.resume(null)
                     else {
-                        val result = it.documents[0].toObject(PrintOrder::class.java)
+                        val result = it.documents[0].toPrintOrder()
                         continuation.resume(result)
                     }
                 }
@@ -102,17 +110,17 @@ class Repository @Inject constructor() {
     }
 
 
-    suspend fun searchPrintOrder(poNumber: Int): PrintOrder? =
+    suspend fun fetchPrintOrder(poNumber: Int): PrintOrder? =
         suspendCancellableCoroutine { continuation ->
 
             database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
-                .whereEqualTo("printOrderNumber", poNumber)
+                .whereEqualTo(PrintOrder.FIELD_PRINT_ORDER_NUMBER, poNumber)
                 .get()
                 .addOnSuccessListener {
                     if (it.documents.isEmpty())
                         continuation.resume(null)
                     else {
-                        val result = it.documents[0].toObject(PrintOrder::class.java)
+                        val result = it.documents[0].toPrintOrder()
                         continuation.resume(result)
                     }
                 }
@@ -121,6 +129,98 @@ class Repository @Inject constructor() {
                 }
 
         }
+
+    private suspend fun searchByNumber(poNumber: Int): SearchModel? =
+        suspendCancellableCoroutine { continuation ->
+
+            database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+                .whereEqualTo(PrintOrder.FIELD_PRINT_ORDER_NUMBER, poNumber)
+                .get()
+                .addOnSuccessListener {
+                    if (it.documents.isEmpty())
+                        continuation.resume(null)
+                    else {
+                        val result = it.documents[0].toSearchModel(application)
+                        continuation.resume(result)
+                    }
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+
+        }
+
+    private suspend fun searchByRid(rid: Int): List<SearchModel> =
+        suspendCancellableCoroutine { continuation ->
+
+            database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+                .whereEqualTo(PrintOrder.FIELD_PLATE_NUMBER, rid)
+                .get()
+                .addOnSuccessListener {
+                    if (it.documents.isEmpty())
+                        continuation.resume(emptyList())
+                    else {
+                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
+                        continuation.resume(result)
+                    }
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+
+        }
+
+    private suspend fun searchByInvoice(invoiceNumber: String): List<SearchModel> =
+        suspendCancellableCoroutine { continuation ->
+
+            database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+                .whereEqualTo(PrintOrder.FIELD_INVOICE_NUMBER, invoiceNumber)
+                .get()
+                .addOnSuccessListener {
+                    if (it.documents.isEmpty())
+                        continuation.resume(emptyList())
+                    else {
+                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
+                        continuation.resume(result)
+                    }
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+
+        }
+
+    suspend fun search(searchQuery: String): List<SearchModel> = withContext(Dispatchers.IO) {
+        val searchByNumber = async {
+            if (!searchQuery.isDigitsOnly())
+                emptyList()
+            else {
+                val model = searchByNumber(searchQuery.toInt())
+                model?.let {
+                    listOf(it)
+                } ?: emptyList()
+            }
+        }
+
+        val searchByRid = async{
+            if (!searchQuery.isDigitsOnly())
+                emptyList()
+            else
+                searchByRid(searchQuery.toInt())
+        }
+
+        val searchByInvoice=async{
+            searchByInvoice(searchQuery)
+        }
+
+        val result = LinkedList<SearchModel>()
+        result.addAll(searchByRid.await())
+        result.addAll(searchByInvoice.await())
+        result.addAll(searchByNumber.await())
+        result.sortByDescending {it.creationTime}
+        result.distinctBy {it.printOrderNumber}
+    }
+
 
     fun jobsOfDestination(destinationId: String) = callbackFlow {
 
@@ -146,8 +246,7 @@ class Repository @Inject constructor() {
         awaitClose { listenerRegistration.remove() }
     }.map {
         it.map { doc ->
-            val po = doc.toObject(PrintOrder::class.java)
-            PrintOrderUIModel.fromPrintOrder(po ?: error("Null print order found"))
+            doc.toPrintOrderUIModel()
         }
     }.flowOn(Dispatchers.IO)
 
@@ -246,6 +345,16 @@ class Repository @Inject constructor() {
 
     suspend fun backtrackJobs(sourceId: String, jobs: List<PrintOrderUIModel>) =
         runTransaction(BackTrackPrintOrderTransaction(sourceId, jobs))
+
+    suspend fun clearPendingStatus(destinationId: String, jobs: List<PrintOrderUIModel>) =
+        runTransaction(ClearPendingStatusTransaction(destinationId, jobs))
+
+    suspend fun markAsPending(
+        destinationId: String,
+        remark: String,
+        jobs: List<PrintOrderUIModel>
+    ) =
+        runTransaction(MarkAsPendingTransaction(destinationId, remark, jobs))
 
 
     private suspend fun runTransaction(transaction: Transaction.Function<Boolean>) =

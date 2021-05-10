@@ -28,29 +28,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="11548 - 10 days ago" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/icon_star"
-        android:layout_width="23dp"
-        android:layout_height="23dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:src="@drawable/ic_star"
-        android:tint="@color/colorAccent"
-        app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
-        app:layout_constraintStart_toEndOf="@+id/lbl_po_number"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/icon_pending"
-        android:layout_width="23dp"
-        android:layout_height="23dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:src="@drawable/ic_error"
-        android:tint="@android:color/holo_red_dark"
-        app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
-        app:layout_constraintStart_toEndOf="@+id/icon_star"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/lbl_client_name"
@@ -64,7 +41,7 @@
         android:textColor="?attr/colorPrimary"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@id/lbl_time"
+        app:layout_constraintEnd_toStartOf="@id/lbl_invoice_number"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lbl_po_number"
         tools:text="Suri Graphics" />
@@ -98,41 +75,43 @@
         app:layout_constraintTop_toBottomOf="@+id/lbl_colors"
         tools:text="58.5 X 91 Cms 130 GSM Real art paper - 5200 Sheets" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/icon_drag"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:tint="@drawable/color_activation_grey_primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_hamburger" />
-
     <TextView
-        android:id="@+id/lbl_time"
+        android:id="@+id/lbl_invoice_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/arial"
         android:textSize="12sp"
-        android:textColor="@color/border_grey"
+        android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="@+id/lbl_client_name"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/icon_drag"
-        tools:text="06:85" />
+        tools:text="B/88" />
 
     <TextView
-        android:id="@+id/lbl_reprint"
+        android:id="@+id/lbl_rid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:padding="4dp"
         android:text="@string/reprint"
         android:textColor="@color/colorAccent"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/icon_drag"
-        app:layout_constraintTop_toTopOf="@+id/icon_drag"
+        app:layout_constraintTop_toTopOf="@id/lbl_po_number"
+        app:layout_constraintBottom_toBottomOf="@id/lbl_po_number"
+        app:layout_constraintStart_toEndOf="@+id/lbl_po_number"
         tools:ignore="SmallSp" />
+
+    <TextView
+        android:id="@+id/lbl_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorAccent"
+        android:paddingTop="4dp"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/lbl_po_number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/lbl_po_number"
+        tools:ignore="SmallSp"
+        tools:text="@string/reprint" />
 
     <TextView
         android:id="@+id/lbl_colors"
@@ -150,7 +129,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="start"
-        app:constraint_referenced_ids="icon_drag,lbl_time"
+        app:constraint_referenced_ids="lbl_invoice_number"
         tools:layout_editor_absoluteX="377dp" />
 
 

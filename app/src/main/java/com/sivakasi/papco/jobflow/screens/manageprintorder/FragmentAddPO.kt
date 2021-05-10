@@ -16,7 +16,6 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.util.EventObserver
@@ -26,9 +25,11 @@ import com.sivakasi.papco.jobflow.util.toast
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.ValidNumberRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
+@AndroidEntryPoint
 class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener {
 
     companion object {
@@ -48,7 +49,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     private val viewBinding: FragmentAddPoBinding
         get() = _viewBinding!!
 
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow) { defaultViewModelProviderFactory }
     private var searchByPlateNumber: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +82,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if(item.itemId==android.R.id.home){
+        if (item.itemId == android.R.id.home) {
             findNavController().popBackStack()
             return true
         }
@@ -121,7 +122,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     }
 
     private fun observeViewModel() {
-        viewModel.reprintLoadingStatus.observe(viewLifecycleOwner,EventObserver {
+        viewModel.reprintLoadingStatus.observe(viewLifecycleOwner, EventObserver {
             if (isEditMode())
                 handleJobLoadInEditMode(it)
             else
@@ -129,7 +130,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
         })
 
-        viewModel.loadedJob.observe(viewLifecycleOwner){
+        viewModel.loadedJob.observe(viewLifecycleOwner) {
             //A valid print order has been successfully loaded. So, navigate to next screen
             navigateToNextScreen()
         }
@@ -279,19 +280,19 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
             is LoadingStatus.Error -> {
                 hideLoadingState()
-                when(loadingStatus.exception){
-                    is ResourceNotFoundException->{
+                when (loadingStatus.exception) {
+                    is ResourceNotFoundException -> {
                         if (searchByPlateNumber)
                             showPlateNumberNotFoundDialog()
                         else
                             showPrintOrderNotFoundDialog()
                     }
 
-                    is IllegalArgumentException->{
+                    is IllegalArgumentException -> {
                         showUnExpectedError(getString(R.string.invalid_rid_entered))
                     }
 
-                    else->showUnExpectedError(
+                    else -> showUnExpectedError(
                         loadingStatus.exception.message ?: getString(R.string.error_unknown_error)
                     )
                 }

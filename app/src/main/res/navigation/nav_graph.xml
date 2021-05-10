@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_manageMachinesFragment2"
             app:destination="@id/manageMachinesFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPrintOrderFragment"
@@ -58,4 +61,12 @@
         android:id="@+id/notesFragment"
         android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.NotesFragment"
         android:label="NotesFragment" />
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.search.SearchFragment"
+        android:label="SearchFragment" >
+        <action
+            android:id="@+id/action_searchFragment_to_viewPrintOrderFragment"
+            app:destination="@id/viewPrintOrderFragment" />
+    </fragment>
 </navigation>

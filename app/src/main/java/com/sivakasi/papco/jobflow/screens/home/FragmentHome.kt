@@ -1,9 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
@@ -38,6 +36,7 @@ class FragmentHome : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         disableBackArrow()
+        setHasOptionsMenu(true)
     }
 
     override fun onResume() {
@@ -53,6 +52,20 @@ class FragmentHome : Fragment() {
     ): View {
         _viewBinding = FragmentHomeBinding.inflate(inflater, container, false)
         return viewBinding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.fragment_home,menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if(item.itemId==R.id.mnu_search){
+            findNavController().navigate(R.id.action_fragmentHome_to_searchFragment)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
