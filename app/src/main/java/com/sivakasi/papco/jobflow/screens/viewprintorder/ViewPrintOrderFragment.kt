@@ -15,7 +15,10 @@ import com.sivakasi.papco.jobflow.asDateString
 import com.sivakasi.papco.jobflow.calendarWithTime
 import com.sivakasi.papco.jobflow.common.hideWaitDialog
 import com.sivakasi.papco.jobflow.common.showWaitDialog
-import com.sivakasi.papco.jobflow.data.*
+import com.sivakasi.papco.jobflow.data.PaperDetail
+import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentViewPrintOrderBinding
 import com.sivakasi.papco.jobflow.databinding.PaperDetailBinding
 import com.sivakasi.papco.jobflow.databinding.PostPressDetailBinding
@@ -37,12 +40,10 @@ class ViewPrintOrderFragment : Fragment() {
 
     companion object {
         private const val KEY_DESTINATION_ID = "key:destination:id"
-        private const val KEY_DESTINATION_TYPE = "key:destination:type"
         private const val KEY_PO_ID = "key:printOrder:id"
 
-        fun getArguments(destinationId: String, destinationType: Int, poId: String) =
+        fun getArguments(destinationId: String, poId: String) =
             Bundle().apply {
-                putInt(KEY_DESTINATION_TYPE, destinationType)
                 putString(KEY_DESTINATION_ID, destinationId)
                 putString(KEY_PO_ID, poId)
             }
@@ -62,10 +63,10 @@ class ViewPrintOrderFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadPrintOrder(getDestinationId(), getPoId())
-        if (getDestinationType() == Destination.TYPE_FIXED)
-            setHasOptionsMenu(true)
-        else
+        if (isPrinterVersionApp())
             setHasOptionsMenu(false)
+        else
+            setHasOptionsMenu(true)
 
 
     }
@@ -94,7 +95,7 @@ class ViewPrintOrderFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (getDestinationType() == Destination.TYPE_FIXED)
+        if (!isPrinterVersionApp())
             inflater.inflate(R.menu.fragment_view_print_order, menu)
     }
 
@@ -407,7 +408,4 @@ class ViewPrintOrderFragment : Fragment() {
 
     private fun getPoId(): String =
         arguments?.getString(KEY_PO_ID) ?: error("PO Id argument not found")
-
-    private fun getDestinationType(): Int =
-        arguments?.getInt(KEY_DESTINATION_TYPE) ?: error("Destination type argument not found")
 }

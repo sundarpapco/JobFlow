@@ -128,7 +128,6 @@ class SearchFragment : Fragment(), SearchAdapterListener {
     private fun navigateToViewPrintOrderScreen(item:SearchModel){
         val args=ViewPrintOrderFragment.getArguments(
             item.destinationId,
-            item.destinationType(),
             PrintOrder.documentId(item.printOrderNumber)
         )
         findNavController().navigate(R.id.action_searchFragment_to_viewPrintOrderFragment,args)

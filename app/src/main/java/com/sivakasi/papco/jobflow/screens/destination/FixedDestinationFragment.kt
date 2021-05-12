@@ -454,7 +454,6 @@ class FixedDestinationFragment : Fragment(),
             R.id.action_fixedDestinationFragment_to_viewPrintOrderFragment,
             ViewPrintOrderFragment.getArguments(
                 getDestinationId(),
-                getDestinationType(),
                 printOrderId
             )
         )

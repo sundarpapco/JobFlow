@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
-import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 
@@ -39,26 +38,6 @@ class SearchModel(private val context: Context) {
             }
         }
 
-    fun destinationType(): Int =
-        when (destinationId) {
-
-            DatabaseContract.DOCUMENT_DEST_COMPLETED -> {
-                Destination.TYPE_FIXED
-            }
-            DatabaseContract.DOCUMENT_DEST_NEW_JOBS -> {
-                Destination.TYPE_FIXED
-            }
-            DatabaseContract.DOCUMENT_DEST_IN_PROGRESS -> {
-                Destination.TYPE_FIXED
-            }
-            DatabaseContract.DOCUMENT_DEST_CANCELLED -> {
-                Destination.TYPE_FIXED
-            }
-            else -> {
-                Destination.TYPE_DYNAMIC
-            }
-
-        }
 
     fun status(): String {
         Log.d("SUNDAR", "destinationId: $destinationId")
@@ -76,8 +55,5 @@ class SearchModel(private val context: Context) {
             }
         }
     }
-
-    fun isCancelled(): Boolean =
-        status() == context.getString(R.string.cancelled)
 
 }
