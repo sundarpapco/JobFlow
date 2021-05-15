@@ -130,6 +130,23 @@ class Repository @Inject constructor(
 
         }
 
+    suspend fun invoiceHistory():QuerySnapshot =
+        suspendCancellableCoroutine { continuation->
+
+            database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+                .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
+                .collection(DatabaseContract.COLLECTION_JOBS)
+                .limit(100)
+                .orderBy(PrintOrder.FIELD_COMPLETED_TIME,Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener {
+                    continuation.resume(it)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+
     private suspend fun searchByNumber(poNumber: Int): SearchModel? =
         suspendCancellableCoroutine { continuation ->
 
@@ -213,11 +230,11 @@ class Repository @Inject constructor(
             searchByInvoice(searchQuery)
         }
 
-        val result = LinkedList<SearchModel>()
+        var result = LinkedList<SearchModel>()
         result.addAll(searchByRid.await())
         result.addAll(searchByInvoice.await())
         result.addAll(searchByNumber.await())
-        result.sortByDescending {it.creationTime}
+        result.sortByDescending {it.printOrderNumber}
         result.distinctBy {it.printOrderNumber}
     }
 

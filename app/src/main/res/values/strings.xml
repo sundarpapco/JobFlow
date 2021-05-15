@@ -158,6 +158,7 @@
     <string name="cancelled">CANCELLED</string>
     <string name="xx_results">%1$d Result(s)</string>
     <string name="no_results_found">No results found!</string>
+    <string name="invoice_history">Recently Invoiced orders</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>

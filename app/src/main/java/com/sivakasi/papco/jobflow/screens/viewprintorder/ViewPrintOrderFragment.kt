@@ -15,10 +15,7 @@ import com.sivakasi.papco.jobflow.asDateString
 import com.sivakasi.papco.jobflow.calendarWithTime
 import com.sivakasi.papco.jobflow.common.hideWaitDialog
 import com.sivakasi.papco.jobflow.common.showWaitDialog
-import com.sivakasi.papco.jobflow.data.PaperDetail
-import com.sivakasi.papco.jobflow.data.PlateMakingDetail
-import com.sivakasi.papco.jobflow.data.PrintOrder
-import com.sivakasi.papco.jobflow.data.PrintingDetail
+import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.databinding.FragmentViewPrintOrderBinding
 import com.sivakasi.papco.jobflow.databinding.PaperDetailBinding
 import com.sivakasi.papco.jobflow.databinding.PostPressDetailBinding
@@ -113,7 +110,7 @@ class ViewPrintOrderFragment : Fragment() {
                 true
             }
 
-            R.id.mnu_notes->{
+            R.id.mnu_notes -> {
                 navigateToNotesScreen()
                 true
             }
@@ -124,8 +121,12 @@ class ViewPrintOrderFragment : Fragment() {
         }
     }
 
-    private fun initViews(){
-        if(isPrinterVersionApp())
+    private fun initViews() {
+
+        //Disable editing of this print order if this it printer version of app or this print order
+        //is completed
+
+        if (isPrinterVersionApp() || getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED)
             viewBinding.fab.hide()
         else
             viewBinding.fab.setOnClickListener {
@@ -380,12 +381,12 @@ class ViewPrintOrderFragment : Fragment() {
 
     }
 
-    private fun showPrintOrderRemovedDialog(){
+    private fun showPrintOrderRemovedDialog() {
 
-        val builder= AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext())
         builder.setMessage(getString(R.string.po_not_found_desc))
         builder.setTitle(getString(R.string.po_not_found))
-        builder.setPositiveButton(getString(R.string.exit)){_,_->
+        builder.setPositiveButton(getString(R.string.exit)) { _, _ ->
             findNavController().popBackStack()
         }
         builder.setCancelable(false)
@@ -396,10 +397,10 @@ class ViewPrintOrderFragment : Fragment() {
         requireContext().shareReport(filePath)
     }
 
-    private fun navigateToNotesScreen(){
+    private fun navigateToNotesScreen() {
         findNavController().navigate(
             R.id.action_viewPrintOrderFragment_to_notesFragment,
-            NotesFragment.getArguments(getDestinationId(),getPoId(),printOrder.notes)
+            NotesFragment.getArguments(getDestinationId(), getPoId(), printOrder.notes)
         )
     }
 

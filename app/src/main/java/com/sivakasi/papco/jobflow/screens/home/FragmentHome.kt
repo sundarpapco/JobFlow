@@ -65,6 +65,11 @@ class FragmentHome : Fragment() {
             return true
         }
 
+        if(item.itemId==R.id.mnu_invoice_history){
+            findNavController().navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
+            return true
+        }
+
         return super.onOptionsItemSelected(item)
     }
 

@@ -13,6 +13,7 @@ class PrintOrder {
         const val FIELD_PRINT_ORDER_NUMBER="printOrderNumber"
         const val FIELD_CREATION_TIME="creationTime"
         const val FIELD_INVOICE_NUMBER="invoiceDetails"
+        const val FIELD_COMPLETED_TIME="completionTime"
 
         fun documentId(poNumber:Int):String{
             require(poNumber > 0) { "Invalid print order number while generating document ID" }
