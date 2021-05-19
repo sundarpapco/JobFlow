@@ -18,6 +18,8 @@ import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.number
+import com.sivakasi.papco.jobflow.extensions.updateSubTitle
+import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
@@ -76,6 +78,13 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         enableBackAsClose()
+
+        if(isEditMode())
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+        updateSubTitle("")
+
         initViews()
         observeViewModel()
     }

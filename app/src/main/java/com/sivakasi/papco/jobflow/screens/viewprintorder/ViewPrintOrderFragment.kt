@@ -170,6 +170,15 @@ class ViewPrintOrderFragment : Fragment() {
                 getString(R.string.new_job)
             else
                 getString(R.string.repeat_job)
+
+            if(printOrder.invoiceDetails.isNotBlank()){
+                poDetails.lblInvoiceNumber.visibility=View.VISIBLE
+                poDetails.txtInvoiceNumber.visibility=View.VISIBLE
+                poDetails.txtInvoiceNumber.text=printOrder.invoiceDetails
+            }else{
+                poDetails.lblInvoiceNumber.visibility=View.GONE
+                poDetails.txtInvoiceNumber.visibility=View.GONE
+            }
         }
     }
 

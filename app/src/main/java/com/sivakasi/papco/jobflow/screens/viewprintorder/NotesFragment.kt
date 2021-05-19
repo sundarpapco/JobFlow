@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
-import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -14,10 +13,7 @@ import com.sivakasi.papco.jobflow.common.ConfirmationDialog
 import com.sivakasi.papco.jobflow.common.hideWaitDialog
 import com.sivakasi.papco.jobflow.common.showWaitDialog
 import com.sivakasi.papco.jobflow.databinding.FragmentNotesBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.hideKeyboard
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
@@ -106,7 +102,9 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         updateSubTitle("")
         initViews()
         observeViewModel()
-        registerBackPressedListener()
+        registerBackPressedListener(){
+            checkAndExitFragment()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -142,14 +140,6 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         viewModel.isPrintOrderMovedOrRemoved.observe(viewLifecycleOwner){removedOrMoved->
             if(removedOrMoved)
                 showPrintOrderRemovedDialog()
-        }
-
-    }
-
-    private fun registerBackPressedListener() {
-
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            checkAndExitFragment()
         }
 
     }
