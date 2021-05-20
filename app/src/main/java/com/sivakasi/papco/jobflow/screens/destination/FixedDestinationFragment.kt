@@ -59,12 +59,13 @@ class FixedDestinationFragment : Fragment(),
     //True when the ActionMode is finishing cause of back arrow key and false when the action mode
     //is finishing as the result of allocation completion
     private var refreshAdapterNeeded: Boolean = true
-    private var clearSelections: Boolean = true
     private var actionMode: ActionMode? = null
-    private lateinit var selections: JobListSelection
     private var _viewBinding: DestinationFixedBinding? = null
     private val viewBinding: DestinationFixedBinding
         get() = _viewBinding!!
+
+    private val selection: JobListSelection
+        get() = viewModel.jobSelections
 
 
     private val viewModel: FixedDestinationVM by lazy {
@@ -73,14 +74,13 @@ class FixedDestinationFragment : Fragment(),
 
 
     private val adapter: JobsAdapter by lazy {
-        JobsAdapter(requireContext(), viewModel.jobSelections, this)
+        JobsAdapter(requireContext(), selection, this)
     }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadJobsFromDestination(getDestinationId())
-        selections = viewModel.jobSelections
     }
 
     override fun onCreateView(
@@ -95,6 +95,8 @@ class FixedDestinationFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         enableBackArrow()
+        //Unlock the selection first in case it may be locked
+        selection.locked = false
         initViews()
         observeViewModel()
     }
@@ -112,10 +114,8 @@ class FixedDestinationFragment : Fragment(),
     override fun onDestroyView() {
         super.onDestroyView()
         //Clear the action mode without clearing the selection
-        if (actionMode != null) {
-            clearSelections = false
-            actionMode?.finish()
-        }
+        selection.locked = true
+        actionMode?.finish()
         actionMode = null
         adapter.itemTouchHelper = null
         viewBinding.recycler.adapter = null
@@ -123,6 +123,7 @@ class FixedDestinationFragment : Fragment(),
     }
 
     private fun initViews() {
+
         viewBinding.fab.setOnClickListener {
             navigateToCreatePOScreen()
         }
@@ -165,7 +166,7 @@ class FixedDestinationFragment : Fragment(),
             }
         }
 
-        viewModel.jobSelections.updates.observe(viewLifecycleOwner) { selectionSize ->
+        viewModel.jobSelections.observe(viewLifecycleOwner) { selectionSize ->
             onSelectionChange(selectionSize)
         }
 
@@ -275,7 +276,7 @@ class FixedDestinationFragment : Fragment(),
 
             val itemMark = it.findItem(R.id.mnu_mark_as_pending)
             val itemClear = it.findItem(R.id.mnu_clear_pending)
-            if (selections.hasPendingItems()) {
+            if (selection.hasPendingItems()) {
                 itemMark.isVisible = false
                 itemClear.isVisible = true
             } else {
@@ -304,10 +305,9 @@ class FixedDestinationFragment : Fragment(),
 
     override fun onDestroyActionMode(mode: ActionMode?) {
         actionMode = null
-        if (clearSelections)
-            viewModel.jobSelections.clear()
-        else
-            clearSelections = true
+        //If the selection is locked or already nothing selected, the following clearing
+        // line wont have any effect
+        viewModel.jobSelections.clear()
     }
 
     private fun renderTitle(destination: Destination) {
@@ -360,11 +360,12 @@ class FixedDestinationFragment : Fragment(),
             is LoadingStatus.Success<*> -> {
                 hideWaitDialog()
 
-                //Finish the action mode. But don't refresh the adapter as the DiffUtil will take
-                //care of it automatically
-                //refreshAdapterNeeded = !(loadingStatus.data as Boolean)
-                refreshAdapterNeeded = false
+                //Finish the action mode. Whether we need to call notifyDataSetChanged after finishing
+                //action mode is determined by the job while running and given to us via data.
+                // Use the result to determine it
+                refreshAdapterNeeded = loadingStatus.data as Boolean
                 actionMode?.finish()
+
             }
 
 

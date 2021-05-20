@@ -1,59 +1,73 @@
 package com.sivakasi.papco.jobflow.common
 
+import android.app.Application
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.util.Duration
 import java.util.*
 import kotlin.collections.HashMap
 
-class JobListSelection {
+class JobListSelection(
+    private val application: Application
+) : LiveData<Int>() {
 
     private var selectionDuration = Duration()
 
-    private val selection = HashMap<Int,PrintOrderUIModel>()
-    private val _updates = MutableLiveData<Int>()
-    val updates: LiveData<Int> = _updates
-    private var pendingJobSelectionCount=0
+    private val selection = HashMap<Int, PrintOrderUIModel>()
+    private var pendingJobSelectionCount = 0
+
+    /*
+    This selection can be locked by setting the locked to true. If locked, then toggling or clearing
+    the selection wont have any effect and those calls will be simply ignored until the lock is
+    turned off again.
+     */
+    var locked = false
 
     fun toggle(item: PrintOrderUIModel) {
 
-        if(selection.contains(item.printOrderNumber)){
+        if(locked)
+            return
+
+        if (selection.contains(item.printOrderNumber)) {
             selection.remove(item.printOrderNumber)
-            selectionDuration-=item.runningTime
-            if(item.isPending())
+            selectionDuration -= item.runningTime
+            if (item.isPending())
                 pendingJobSelectionCount--
-        }else{
-            selection[item.printOrderNumber]=item
-            selectionDuration+=item.runningTime
-            if(item.isPending())
+        } else {
+            selection[item.printOrderNumber] = item
+            selectionDuration += item.runningTime
+            if (item.isPending())
                 pendingJobSelectionCount++
         }
 
-        _updates.value = selection.size
+        value = selection.size
     }
 
-    fun contains(key:Int):Boolean = selection.contains(key)
-    fun size():Int=selection.size
+    fun contains(key: Int): Boolean = selection.contains(key)
+    fun size(): Int = selection.size
 
     fun clear() {
-        if(selection.size>0) {
+
+        if(locked)
+            return
+
+        if (selection.size > 0) {
             selection.clear()
-            selectionDuration=Duration()
-            pendingJobSelectionCount=0
-            _updates.value=selection.size
+            selectionDuration = Duration()
+            pendingJobSelectionCount = 0
+            value = selection.size
         }
     }
 
-    fun hasPendingItems():Boolean =
+    fun hasPendingItems(): Boolean =
         pendingJobSelectionCount > 0
 
 
-    fun title():String="${selection.size} Jobs"
-    fun subTitle():String=selectionDuration.toString()
+    fun title(): String = application.getString(R.string.xx_jobs,selection.size)
+    fun subTitle(): String = selectionDuration.toString()
 
     fun asList(): List<PrintOrderUIModel> = LinkedList<PrintOrderUIModel>().apply {
         addAll(selection.values)
     }
-
 }

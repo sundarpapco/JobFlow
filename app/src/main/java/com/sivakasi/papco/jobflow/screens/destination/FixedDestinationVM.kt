@@ -1,7 +1,10 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.JobListSelection
 import com.sivakasi.papco.jobflow.currentTimeInMillis
@@ -19,12 +22,11 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class FixedDestinationVM @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
     private val application: Application,
     private val repository: Repository
 ) : ViewModel() {
 
-    val jobSelections = JobListSelection()
+    val jobSelections = JobListSelection(application)
     private var isAlreadyLoaded = false
     private val _loadedJobs = MutableLiveData<LoadingStatus>()
     private val _destination = MutableLiveData<Destination>()
@@ -52,8 +54,6 @@ class FixedDestinationVM @Inject constructor(
             return
         else
             isAlreadyLoaded = true
-
-
         observeDestination(destinationId)
         triggerJobsLoading(destinationId)
     }
@@ -136,13 +136,13 @@ class FixedDestinationVM @Inject constructor(
     }
 
 
-    private inline fun doWork(crossinline block: suspend () -> Unit) {
+    private inline fun doWork(crossinline block: suspend () -> Boolean) {
         viewModelScope.launch {
             try {
                 _workingStatus.value =
                     loadingEvent(application.getString(R.string.one_moment_please))
-                block()
-                _workingStatus.value = dataEvent(true)
+                val result=block()
+                _workingStatus.value = dataEvent(result)
             } catch (e: Exception) {
                 _workingStatus.value = errorEvent(e)
             }

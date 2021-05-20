@@ -20,7 +20,9 @@ class BackTrackPrintOrderTransaction(
     private val database = FirebaseFirestore.getInstance()
     private val destinationsToUpdate: MutableList<Destination> = LinkedList()
 
-
+    //Return value is a boolean which indicates whether we should refresh the recyclerview adapter
+    //after this operation. We need to refresh if some jobs in the selection are unaffected by this
+    //transaction.
     override fun apply(transaction: Transaction): Boolean {
 
         var totalRunningTime: Int
@@ -61,7 +63,9 @@ class BackTrackPrintOrderTransaction(
         writeDestinations(transaction, destinationsToUpdate)
         writeSourceDestination(transaction, source)
 
-        return true
+        //returning false because we don't need to refresh the adapter after this operation as
+        //DiffUtil will take of it automatically since the jobs have been moved destinations
+        return false
     }
 
     private fun readSourceDestination(

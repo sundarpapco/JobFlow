@@ -230,7 +230,7 @@ class Repository @Inject constructor(
             searchByInvoice(searchQuery)
         }
 
-        var result = LinkedList<SearchModel>()
+        val result = LinkedList<SearchModel>()
         result.addAll(searchByRid.await())
         result.addAll(searchByInvoice.await())
         result.addAll(searchByNumber.await())
@@ -378,7 +378,7 @@ class Repository @Inject constructor(
         suspendCancellableCoroutine<Boolean> { continuation ->
             database.runTransaction(transaction)
                 .addOnSuccessListener {
-                    continuation.resume(true)
+                    continuation.resume(it)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }

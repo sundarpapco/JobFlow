@@ -15,7 +15,7 @@ class MovePrintOrdersTransaction(
     private val sourceDocumentId: String,
     private val destinationDocumentId: String,
     private val movingJobs: List<PrintOrderUIModel>,
-    private val apply:(PrintOrder)->Unit
+    private inline val apply:(PrintOrder)->Unit
 ) : Transaction.Function<Boolean> {
 
     private val database = FirebaseFirestore.getInstance()
@@ -76,7 +76,6 @@ class MovePrintOrdersTransaction(
             totalMovingJobsDuration+=tempPrintOrder.printingDetail.runningMinutes
             tempPrintOrder.listPosition=listPosition
             tempPrintOrder.previousDestinationId=sourceDocumentId
-            //tempPrintOrder.invoiceDetails=invoiceDetail
             apply(tempPrintOrder)
             listPosition++
             movingPrintOrders.add(tempPrintOrder)
@@ -116,6 +115,8 @@ class MovePrintOrdersTransaction(
             transaction.set(tempDocumentRef,printOrder)
         }
 
-        return true
+        //returning false because we don't need to refresh the adapter after this operation as
+        //DiffUtil will take of it automatically since the jobs have been moved destinations
+        return false
     }
 }
