@@ -5,7 +5,20 @@
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/compose_screen.xml" value="0.21981981981981982" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/destination_fixed.xml" value="0.21981981981981982" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/fragment_machines.xml" value="0.3666416228399699" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/fragment_notes.xml" value="0.21981981981981982" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/list_item_destination.xml" value="0.6" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/layout/list_item_job.xml" value="0.536" />
+        <entry key="..\:/Users/msund/AndroidStudioProjects/JobFlow/app/src/main/res/menu/fragment_home.xml" value="0.21981981981981982" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

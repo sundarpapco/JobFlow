@@ -70,6 +70,11 @@ class FragmentHome : Fragment() {
             return true
         }
 
+        if(item.itemId==R.id.mnu_clients){
+            findNavController().navigate(R.id.action_fragmentHome_to_clientsFragment)
+            return true
+        }
+
         return super.onOptionsItemSelected(item)
     }
 

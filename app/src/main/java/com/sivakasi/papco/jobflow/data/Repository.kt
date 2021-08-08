@@ -167,6 +167,7 @@ class Repository @Inject constructor(
 
         }
 
+
     private suspend fun searchByRid(rid: Int): List<SearchModel> =
         suspendCancellableCoroutine { continuation ->
 

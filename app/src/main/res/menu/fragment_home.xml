@@ -10,8 +10,14 @@
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
 
-    <item android:id="@+id/mnu_invoice_history"
+    <item android:id="@+id/mnu_clients"
         android:orderInCategory="200"
+        android:title="@string/clients"
+        app:showAsAction="never"
+        tools:ignore="AlwaysShowAction" />
+
+    <item android:id="@+id/mnu_invoice_history"
+        android:orderInCategory="300"
         android:icon="@drawable/ic_history"
         android:title="@string/invoice_history"
         app:showAsAction="never"/>
