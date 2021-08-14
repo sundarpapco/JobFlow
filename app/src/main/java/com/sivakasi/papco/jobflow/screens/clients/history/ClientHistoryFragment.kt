@@ -1,41 +1,40 @@
-package com.sivakasi.papco.jobflow.screens.clients
+package com.sivakasi.papco.jobflow.screens.clients.history
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
+import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
-import com.sivakasi.papco.jobflow.screens.clients.ui.ClientsScreen
+import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.screens.clients.history.ui.ClientHistoryScreen
+import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 
-@FlowPreview
-@ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
-class ClientsFragment : Fragment() {
+class ClientHistoryFragment : Fragment() {
 
     companion object {
+        const val KEY_CLIENT = "key:client"
 
-        const val KEY_CLIENT = "key:client:bundle"
-        private const val KEY_SELECTION_MODE = "key:selection:mode"
-
-        fun getArguments(isSelectionMode: Boolean = false): Bundle {
+        fun getArgumentBundle(client: Client): Bundle {
             return Bundle().apply {
-                putBoolean(KEY_SELECTION_MODE, isSelectionMode)
+                putParcelable(KEY_CLIENT, client)
             }
         }
     }
@@ -44,8 +43,13 @@ class ClientsFragment : Fragment() {
     private val viewBinding: ComposeScreenBinding
         get() = _viewBinding!!
 
-    private val viewModel: ClientsFragmentVM by lazy {
-        ViewModelProvider(this).get(ClientsFragmentVM::class.java)
+    private val client: Client by lazy {
+        arguments?.getParcelable<Client>(KEY_CLIENT)
+            ?: error("ClientHistoryFragment should be launched with a client argument")
+    }
+
+    private val viewModel: ClientHistoryVM by lazy {
+        ViewModelProvider(this).get(ClientHistoryVM::class.java)
     }
 
     override fun onCreateView(
@@ -56,7 +60,7 @@ class ClientsFragment : Fragment() {
         _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
         viewBinding.composeView.setContent {
             JobFlowTheme {
-                ClientsScreen(viewModel, isSelectionMode())
+                ClientHistoryScreen(viewModel)
             }
         }
         return viewBinding.root
@@ -64,9 +68,11 @@ class ClientsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.loadClientHistory(client.id)
+
         enableBackArrow()
-        updateTitle(if (isSelectionMode()) getString(R.string.select_client) else getString(R.string.clients))
-        updateSubTitle("")
+        updateTitle(client.name)
+        updateSubTitle(getString(R.string.client_history))
         observeViewModel()
     }
 
@@ -85,32 +91,18 @@ class ClientsFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun observeViewModel() {
-        viewModel.clientsList.observe(viewLifecycleOwner) { status ->
-            if (status is LoadingStatus.Success<*>) {
-                val list = (status.data as List<Client>)
-                if (list.isNotEmpty())
-                    updateSubTitle(getString(R.string.xx_clients, list.size))
-                else
-                    updateSubTitle("")
-            }
-        }
-
-        viewModel.selectedClient.observe(viewLifecycleOwner) {
-            selectClientAndClose(it)
-        }
+    private fun observeViewModel(){
+        viewModel.clickedResult.observe(viewLifecycleOwner,EventObserver{
+            navigateToViewPrintOrderScreen(it)
+        })
     }
 
-    private fun selectClientAndClose(selectedClient: Client) {
-        val controller = findNavController()
-        controller.previousBackStackEntry?.savedStateHandle?.set(
-            KEY_CLIENT,
-            selectedClient
+
+    private fun navigateToViewPrintOrderScreen(searchModel:SearchModel){
+        val args= ViewPrintOrderFragment.getArguments(
+            searchModel.destinationId,
+            PrintOrder.documentId(searchModel.printOrderNumber)
         )
-        controller.popBackStack()
+        findNavController().navigate(R.id.action_clientHistoryFragment_to_viewPrintOrderFragment,args)
     }
-
-    private fun isSelectionMode(): Boolean =
-        arguments?.getBoolean(KEY_SELECTION_MODE, false) ?: false
 }

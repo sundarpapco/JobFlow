@@ -51,6 +51,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_clientsFragment"
             app:destination="@id/clientsFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_clientHistoryFragment"
+            app:destination="@id/clientHistoryFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPrintOrderFragment"
@@ -87,4 +90,12 @@
         android:id="@+id/clientsFragment"
         android:name="com.sivakasi.papco.jobflow.screens.clients.ClientsFragment"
         android:label="ClientsFragment" />
+    <fragment
+        android:id="@+id/clientHistoryFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryFragment"
+        android:label="ClientHistoryFragment" >
+        <action
+            android:id="@+id/action_clientHistoryFragment_to_viewPrintOrderFragment"
+            app:destination="@id/viewPrintOrderFragment" />
+    </fragment>
 </navigation>

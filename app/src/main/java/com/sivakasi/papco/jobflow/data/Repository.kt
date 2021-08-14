@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.app.Application
+import android.util.Log
 import androidx.core.text.isDigitsOnly
 import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.extensions.poReference
@@ -130,14 +131,14 @@ class Repository @Inject constructor(
 
         }
 
-    suspend fun invoiceHistory():QuerySnapshot =
-        suspendCancellableCoroutine { continuation->
+    suspend fun invoiceHistory(): QuerySnapshot =
+        suspendCancellableCoroutine { continuation ->
 
             database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
                 .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
                 .collection(DatabaseContract.COLLECTION_JOBS)
                 .limit(100)
-                .orderBy(PrintOrder.FIELD_COMPLETED_TIME,Query.Direction.DESCENDING)
+                .orderBy(PrintOrder.FIELD_COMPLETED_TIME, Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener {
                     continuation.resume(it)
@@ -208,6 +209,28 @@ class Repository @Inject constructor(
 
         }
 
+    suspend fun searchByClientId(clientId:Int): List<SearchModel> =
+        suspendCancellableCoroutine { continuation ->
+
+            database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+                .whereEqualTo(PrintOrder.FIELD_CLIENT_ID, clientId)
+                .limit(100)
+                .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER, Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener {
+                    if (it.documents.isEmpty())
+                        continuation.resume(emptyList())
+                    else {
+                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
+                        continuation.resume(result)
+                    }
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+
+        }
+
     suspend fun search(searchQuery: String): List<SearchModel> = withContext(Dispatchers.IO) {
         val searchByNumber = async {
             if (!searchQuery.isDigitsOnly())
@@ -220,14 +243,14 @@ class Repository @Inject constructor(
             }
         }
 
-        val searchByRid = async{
+        val searchByRid = async {
             if (!searchQuery.isDigitsOnly())
                 emptyList()
             else
                 searchByRid(searchQuery.toInt())
         }
 
-        val searchByInvoice=async{
+        val searchByInvoice = async {
             searchByInvoice(searchQuery)
         }
 
@@ -235,8 +258,8 @@ class Repository @Inject constructor(
         result.addAll(searchByRid.await())
         result.addAll(searchByInvoice.await())
         result.addAll(searchByNumber.await())
-        result.sortByDescending {it.printOrderNumber}
-        result.distinctBy {it.printOrderNumber}
+        result.sortByDescending { it.printOrderNumber }
+        result.distinctBy { it.printOrderNumber }
     }
 
 
@@ -298,6 +321,30 @@ class Repository @Inject constructor(
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    suspend fun loadAllClients() = callbackFlow {
+
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_CLIENTS)
+            .orderBy(Client.FIELD_NAME, Query.Direction.ASCENDING)
+            .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
+
+                if (firebaseFireStoreException != null)
+                    throw firebaseFireStoreException
+
+                if (querySnapshot == null)
+                    throw ResourceNotFoundException("Clients cannot be loaded")
+                else
+                    trySend(querySnapshot.documents)
+
+
+            }
+        awaitClose { listenerRegistration.remove() }
+
+    }.map {
+        it.map { document ->
+            document.toObject(Client::class.java)!!
+        }
+    }
 
 
     suspend fun machineAlreadyExist(machineName: String): Boolean =
@@ -366,6 +413,13 @@ class Repository @Inject constructor(
 
     suspend fun clearPendingStatus(destinationId: String, jobs: List<PrintOrderUIModel>) =
         runTransaction(ClearPendingStatusTransaction(destinationId, jobs))
+
+    suspend fun createClient(client: Client) =
+        runTransaction(CreateClientTransaction(client))
+
+    suspend fun updateClient(client: Client) =
+        runTransaction(UpdateClientTransaction(client))
+
 
     suspend fun markAsPending(
         destinationId: String,

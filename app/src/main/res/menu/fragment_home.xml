@@ -16,8 +16,15 @@
         app:showAsAction="never"
         tools:ignore="AlwaysShowAction" />
 
-    <item android:id="@+id/mnu_invoice_history"
+    <item android:id="@+id/mnu_client_history"
         android:orderInCategory="300"
+        android:title="@string/client_history"
+        app:showAsAction="never"
+        tools:ignore="AlwaysShowAction" />
+
+
+    <item android:id="@+id/mnu_invoice_history"
+        android:orderInCategory="400"
         android:icon="@drawable/ic_history"
         android:title="@string/invoice_history"
         app:showAsAction="never"/>

@@ -5,20 +5,26 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
+import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentJobDetailsBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
 import com.sivakasi.papco.jobflow.extensions.hideKeyboard
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.screens.clients.ClientsFragment
 import com.sivakasi.papco.jobflow.util.FormValidator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
+@FlowPreview
+@ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class FragmentJobDetails : Fragment() {
@@ -67,6 +73,11 @@ class FragmentJobDetails : Fragment() {
     }
 
     private fun initViews() {
+
+        viewBinding.txtClientName.setOnClickListener {
+            navigateToClientSelectionScreen()
+        }
+
         viewBinding.btnNext.setOnClickListener {
             if (validateForm()) {
                 saveJobDetails()
@@ -84,6 +95,19 @@ class FragmentJobDetails : Fragment() {
             printOrder = it
             renderJobDetails()
         }
+
+        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Client>(
+            ClientsFragment.KEY_CLIENT
+        )?.observe(viewLifecycleOwner) {
+
+            findNavController().currentBackStackEntry?.savedStateHandle?.remove<Client>(
+                ClientsFragment.KEY_CLIENT
+            )
+
+            printOrder.billingName=it.name
+            printOrder.clientId=it.id
+            renderJobDetails()
+        }
     }
 
     private fun renderJobDetails() {
@@ -94,6 +118,20 @@ class FragmentJobDetails : Fragment() {
     }
 
     private fun validateForm(): Boolean {
+
+        /*
+        This is a special case validation because clientID was introduced as late feature.
+        The following validation will force the user to select a valid client with an Id while editing the PO.
+        If the user is editing an old Print Order, then that print order will have a valid client name.
+        But the id will be -1. The following condition will check that condition and will force user to select
+        a valid client so that, that PO can be searched in client history in future.
+         */
+        val clientName=viewBinding.txtClientName.text.toString()
+        if(clientName.isNotBlank() && printOrder.clientId ==-1){
+            //Will prompt the user to select the client again so that we can get the Id of the client
+            viewBinding.textLayoutClientName.error=getString(R.string.invalid_client_name)
+            return false
+        }
 
         val errorMsg = getString(R.string.required_field)
         val validator = FormValidator()
@@ -113,6 +151,11 @@ class FragmentJobDetails : Fragment() {
             printOrder.billingName = txtClientName.text.toString().trim()
             printOrder.pendingRemarks = txtPendingRemarks.text.toString()
         }
+    }
+
+    private fun navigateToClientSelectionScreen(){
+        findNavController().navigate(R.id.action_fragmentJobDetails_to_clientSelectionFragment,
+        ClientsFragment.getArguments(true))
     }
 
     private fun navigateToNextScreen() =

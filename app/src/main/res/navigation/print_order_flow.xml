@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_fragmentJobDetails_to_fragmentPaperDetails"
             app:destination="@id/fragmentPaperDetails" />
+        <action
+            android:id="@+id/action_fragmentJobDetails_to_clientSelectionFragment"
+            app:destination="@id/clientSelectionFragment" />
     </fragment>
     <fragment
         android:id="@+id/fragmentPaperDetails"
@@ -49,4 +52,8 @@
             android:id="@+id/action_fragmentPrintingDetail_to_fragmentPostPressDetails"
             app:destination="@id/fragmentPostPressDetails" />
     </fragment>
+    <fragment
+        android:id="@+id/clientSelectionFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.clients.ClientsFragment"
+        android:label="ClientSelectionFragment" />
 </navigation>

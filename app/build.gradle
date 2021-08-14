@@ -14,8 +14,8 @@ android {
         applicationId "com.sivakasi.papco.jobflow"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -63,7 +63,6 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerVersion "1.5.21"
         kotlinCompilerExtensionVersion "1.0.1"
     }
 }

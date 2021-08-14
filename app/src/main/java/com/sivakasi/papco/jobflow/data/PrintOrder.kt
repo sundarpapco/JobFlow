@@ -9,13 +9,14 @@ class PrintOrder {
         const val TYPE_NEW_JOB = -1
         const val TYPE_REPEAT_JOB = -2
         const val PO_NUMBER_NOT_YET_ALLOCATED = -3
-        const val FIELD_PLATE_NUMBER="plateMakingDetail.plateNumber"
-        const val FIELD_PRINT_ORDER_NUMBER="printOrderNumber"
-        const val FIELD_CREATION_TIME="creationTime"
-        const val FIELD_INVOICE_NUMBER="invoiceDetails"
-        const val FIELD_COMPLETED_TIME="completionTime"
+        const val FIELD_PLATE_NUMBER = "plateMakingDetail.plateNumber"
+        const val FIELD_PRINT_ORDER_NUMBER = "printOrderNumber"
+        const val FIELD_CREATION_TIME = "creationTime"
+        const val FIELD_INVOICE_NUMBER = "invoiceDetails"
+        const val FIELD_COMPLETED_TIME = "completionTime"
+        const val FIELD_CLIENT_ID = "clientId"
 
-        fun documentId(poNumber:Int):String{
+        fun documentId(poNumber: Int): String {
             require(poNumber > 0) { "Invalid print order number while generating document ID" }
             return "po$poNumber"
         }
@@ -25,6 +26,7 @@ class PrintOrder {
     var emergency: Boolean = false
     var jobType: Int = TYPE_NEW_JOB
     var printOrderNumber: Int = PO_NUMBER_NOT_YET_ALLOCATED
+    var clientId: Int = -1
     var billingName: String = ""
     var jobName: String = ""
     var pendingRemarks: String = ""
@@ -32,10 +34,10 @@ class PrintOrder {
     var plateMakingDetail: PlateMakingDetail = PlateMakingDetail()
     var printingDetail: PrintingDetail = PrintingDetail()
     var listPosition: Long = 0
-    var invoiceDetails:String=""
-    var previousDestinationId:String=""
-    var completionTime:Long=0
-    var notes:String=""
+    var invoiceDetails: String = ""
+    var previousDestinationId: String = ""
+    var completionTime: Long = 0
+    var notes: String = ""
 
     var lamination: Lamination? = null
     var foil: String? = null
@@ -48,10 +50,12 @@ class PrintOrder {
     var packing: String? = null
 
 
-    fun prepareForReprint(){
-        creationTime= currentTimeInMillis()
-        jobType=TYPE_REPEAT_JOB
-        invoiceDetails=""
+    fun prepareForReprint() {
+        creationTime = currentTimeInMillis()
+        jobType = TYPE_REPEAT_JOB
+        invoiceDetails = ""
+        if (clientId == -1)
+            billingName = ""
     }
 
 
@@ -90,10 +94,10 @@ class PrintOrder {
 
         result.height = trimHeight
         result.width = trimWidth
-        if(paperDetails!!.size > 1){
-            result.gsm=0
-            result.name=""
-        }else{
+        if (paperDetails!!.size > 1) {
+            result.gsm = 0
+            result.name = ""
+        } else {
             result.gsm = paperDetails!![0].gsm
             result.name = paperDetails!![0].name
         }

@@ -161,6 +161,8 @@
     <string name="invoice_history">Recently Invoiced orders</string>
     <string name="create_job">Create New Job</string>
     <string name="edit_job">Edit Job</string>
+    <string name="select_client">Select Client</string>
+    <string name="invalid_client_name">Invalid Client Name. Please select a client again</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>
@@ -174,6 +176,9 @@
     <string name="notes_title">Notes - %1$s</string>
     <string name="menu_share_as_pdf">Share as PDF</string>
     <string name="clients">Clients</string>
+    <string name="client_history">Client History</string>
+    <string name="xx_clients">%1$d Clients</string>
+    <string name="no_clients_found">No Clients Found</string>
 
 
     <!-- Accessibility -->

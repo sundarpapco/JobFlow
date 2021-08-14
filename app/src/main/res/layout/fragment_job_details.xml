@@ -55,6 +55,9 @@
                     android:inputType="text"
                     android:maxLines="1"
                     android:imeOptions="actionNext"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
                     android:nextFocusForward="@id/txt_job_name"/>
 
             </com.google.android.material.textfield.TextInputLayout>

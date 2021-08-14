@@ -2,11 +2,14 @@ package com.sivakasi.papco.jobflow.screens.home
 
 import android.os.Bundle
 import android.view.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.FixedDestinationBinding
@@ -15,12 +18,18 @@ import com.sivakasi.papco.jobflow.extensions.disableBackArrow
 import com.sivakasi.papco.jobflow.extensions.isPrinterVersionApp
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.screens.clients.ClientsFragment
+import com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryFragment
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.util.Duration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
+@ExperimentalMaterialApi
+@FlowPreview
+@ExperimentalComposeUiApi
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class FragmentHome : Fragment() {
@@ -29,7 +38,7 @@ class FragmentHome : Fragment() {
     private val viewBinding: FragmentHomeBinding
         get() = _viewBinding!!
 
-    private val viewModel:FragmentHomeVM by lazy{
+    private val viewModel: FragmentHomeVM by lazy {
         ViewModelProvider(this).get(FragmentHomeVM::class.java)
     }
 
@@ -41,7 +50,7 @@ class FragmentHome : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if(isPrinterVersionApp())
+        if (isPrinterVersionApp())
             navigateToMachinesFragment()
     }
 
@@ -55,23 +64,31 @@ class FragmentHome : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.fragment_home,menu)
+        inflater.inflate(R.menu.fragment_home, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if(item.itemId==R.id.mnu_search){
+        if (item.itemId == R.id.mnu_search) {
             findNavController().navigate(R.id.action_fragmentHome_to_searchFragment)
             return true
         }
 
-        if(item.itemId==R.id.mnu_invoice_history){
+        if (item.itemId == R.id.mnu_invoice_history) {
             findNavController().navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
             return true
         }
 
-        if(item.itemId==R.id.mnu_clients){
+        if (item.itemId == R.id.mnu_clients) {
             findNavController().navigate(R.id.action_fragmentHome_to_clientsFragment)
+            return true
+        }
+
+        if (item.itemId == R.id.mnu_client_history) {
+            findNavController().navigate(
+                R.id.action_fragmentHome_to_clientsFragment,
+                ClientsFragment.getArguments(true)
+            )
             return true
         }
 
@@ -95,11 +112,11 @@ class FragmentHome : Fragment() {
     private fun initViews() {
 
         viewBinding.newJobs.icon.setImageResource(R.drawable.ic_new_jobs)
-        viewBinding.newJobs.destinationName.text=getString(R.string.new_jobs)
+        viewBinding.newJobs.destinationName.text = getString(R.string.new_jobs)
         viewBinding.inProgress.icon.setImageResource(R.drawable.ic_in_progress)
-        viewBinding.inProgress.destinationName.text=getString(R.string.in_progress)
+        viewBinding.inProgress.destinationName.text = getString(R.string.in_progress)
         viewBinding.machines.icon.setImageResource(R.drawable.ic_machine)
-        viewBinding.machines.destinationName.text=getString(R.string.machines)
+        viewBinding.machines.destinationName.text = getString(R.string.machines)
 
 
         viewBinding.newJobs.root.setOnClickListener {
@@ -121,42 +138,59 @@ class FragmentHome : Fragment() {
         }
     }
 
-    private fun observeViewModel(){
-        viewModel.newJobs.observe(viewLifecycleOwner){
-            renderDestination(it,viewBinding.newJobs)
+    private fun observeViewModel() {
+        viewModel.newJobs.observe(viewLifecycleOwner) {
+            renderDestination(it, viewBinding.newJobs)
         }
 
-        viewModel.inProgress.observe(viewLifecycleOwner){
-            renderDestination(it,viewBinding.inProgress)
+        viewModel.inProgress.observe(viewLifecycleOwner) {
+            renderDestination(it, viewBinding.inProgress)
         }
 
-        viewModel.machines.observe(viewLifecycleOwner){
-            renderDestination(it,viewBinding.machines)
+        viewModel.machines.observe(viewLifecycleOwner) {
+            renderDestination(it, viewBinding.machines)
+        }
+
+        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Client>(
+            ClientsFragment.KEY_CLIENT
+        )?.observe(viewLifecycleOwner) {
+
+            findNavController().currentBackStackEntry?.savedStateHandle?.remove<Client>(
+                ClientsFragment.KEY_CLIENT
+            )
+            navigateToClientHistoryScreen(it)
         }
     }
 
-    private fun renderDestination(destination:Destination,binding:FixedDestinationBinding){
+    private fun renderDestination(destination: Destination, binding: FixedDestinationBinding) {
 
-        with(binding){
-            destinationName.text=destination.name
-            jobCount.text=getString(R.string.xx_jobs,destination.jobCount)
-            runningTime.text=Duration.fromMinutes(destination.runningTime).asFullString()
+        with(binding) {
+            destinationName.text = destination.name
+            jobCount.text = getString(R.string.xx_jobs, destination.jobCount)
+            runningTime.text = Duration.fromMinutes(destination.runningTime).asFullString()
         }
 
     }
 
-    private fun navigateToMachinesFragment(){
+    private fun navigateToClientHistoryScreen(client: Client) {
+        findNavController().navigate(
+            R.id.action_fragmentHome_to_clientHistoryFragment,
+            ClientHistoryFragment.getArgumentBundle(client)
+        )
+    }
 
-        if(isPrinterVersionApp()){
-            val navOptions=NavOptions.Builder()
-                .setPopUpTo(R.id.fragmentHome,true)
+    private fun navigateToMachinesFragment() {
+
+        if (isPrinterVersionApp()) {
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.fragmentHome, true)
                 .build()
             findNavController().navigate(
                 R.id.action_fragmentHome_to_manageMachinesFragment,
                 ManageMachinesFragment.getArguments(false),
                 navOptions
             )
-        }else{
+        } else {
             findNavController().navigate(
                 R.id.action_fragmentHome_to_manageMachinesFragment,
                 ManageMachinesFragment.getArguments(false)
