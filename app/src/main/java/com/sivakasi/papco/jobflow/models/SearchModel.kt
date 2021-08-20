@@ -44,7 +44,7 @@ class SearchModel(private val context: Context) {
         return when (destinationId) {
 
             DatabaseContract.DOCUMENT_DEST_COMPLETED -> {
-                context.getString(R.string.completed)
+                invoiceNumber
             }
 
             DatabaseContract.DOCUMENT_DEST_CANCELLED -> {

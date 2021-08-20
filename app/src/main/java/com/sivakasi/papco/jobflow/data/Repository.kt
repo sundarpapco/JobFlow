@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.app.Application
-import android.util.Log
 import androidx.core.text.isDigitsOnly
 import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.extensions.poReference

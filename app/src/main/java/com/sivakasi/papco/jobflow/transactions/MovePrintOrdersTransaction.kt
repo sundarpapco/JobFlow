@@ -1,9 +1,6 @@
 package com.sivakasi.papco.jobflow.transactions
 
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Transaction
+import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
@@ -15,7 +12,7 @@ class MovePrintOrdersTransaction(
     private val sourceDocumentId: String,
     private val destinationDocumentId: String,
     private val movingJobs: List<PrintOrderUIModel>,
-    private inline val apply:(PrintOrder)->Unit
+    private inline val apply: (PrintOrder) -> Unit
 ) : Transaction.Function<Boolean> {
 
     private val database = FirebaseFirestore.getInstance()
@@ -31,7 +28,7 @@ class MovePrintOrdersTransaction(
     //Temp variables to read and process all the moving jobs
     private lateinit var tempDocumentRef: DocumentReference
     private lateinit var tempDocumentSnapshot: DocumentSnapshot
-    private lateinit var tempPrintOrder:PrintOrder
+    private lateinit var tempPrintOrder: PrintOrder
 
     private lateinit var source: Destination
     private var destination: Destination = Destination().apply {
@@ -55,7 +52,7 @@ class MovePrintOrdersTransaction(
             destination = destinationDocumentSnapshot.toObject(Destination::class.java)!!
 
 
-        var listPosition= currentTimeInMillis()
+        var listPosition = currentTimeInMillis()
         //Fetch and ready all the jobs which are moving
         for (job in movingJobs) {
 
@@ -72,17 +69,28 @@ class MovePrintOrdersTransaction(
                 continue
 
             //Make ready
-            tempPrintOrder=tempDocumentSnapshot.toObject(PrintOrder::class.java)!!
-            totalMovingJobsDuration+=tempPrintOrder.printingDetail.runningMinutes
-            tempPrintOrder.listPosition=listPosition
-            tempPrintOrder.previousDestinationId=sourceDocumentId
+            tempPrintOrder = tempDocumentSnapshot.toObject(PrintOrder::class.java)!!
+            totalMovingJobsDuration += tempPrintOrder.printingDetail.runningMinutes
+            tempPrintOrder.listPosition = listPosition
+            tempPrintOrder.previousDestinationId = sourceDocumentId
             apply(tempPrintOrder)
             listPosition++
+
+            /*
+            Since we have added Clients as a late feature, this check is made to make sure no print order
+            from now on can be moved without having a valid client ID
+             */
+            if (tempPrintOrder.clientId < 0)
+                throw FirebaseFirestoreException(
+                    "Invalid client ID found in ${tempPrintOrder.documentId()}",
+                    FirebaseFirestoreException.Code.ABORTED
+                )
+
             movingPrintOrders.add(tempPrintOrder)
         }
 
         //Make ready of source and destination documents
-        source.lastJobCompletion= currentTimeInMillis()
+        source.lastJobCompletion = currentTimeInMillis()
         source.jobCount -= movingPrintOrders.size
         source.runningTime -= totalMovingJobsDuration
 
@@ -92,12 +100,12 @@ class MovePrintOrdersTransaction(
 
         // Write all the values to the database
         //write the source and destination
-        transaction.set(sourceDocumentRef,source)
-        transaction.set(destinationDocumentRef,destination)
+        transaction.set(sourceDocumentRef, source)
+        transaction.set(destinationDocumentRef, destination)
 
         //Delete jobs from source
-        for(printOrder in movingPrintOrders){
-            tempDocumentRef=database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+        for (printOrder in movingPrintOrders) {
+            tempDocumentRef = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
                 .document(sourceDocumentId)
                 .collection(DatabaseContract.COLLECTION_JOBS)
                 .document(printOrder.documentId())
@@ -106,13 +114,13 @@ class MovePrintOrdersTransaction(
         }
 
         //Write all the jobs in the new destination
-        for(printOrder in movingPrintOrders){
-            tempDocumentRef=database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+        for (printOrder in movingPrintOrders) {
+            tempDocumentRef = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
                 .document(destinationDocumentId)
                 .collection(DatabaseContract.COLLECTION_JOBS)
                 .document(printOrder.documentId())
 
-            transaction.set(tempDocumentRef,printOrder)
+            transaction.set(tempDocumentRef, printOrder)
         }
 
         //returning false because we don't need to refresh the adapter after this operation as

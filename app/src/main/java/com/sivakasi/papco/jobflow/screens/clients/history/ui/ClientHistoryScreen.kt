@@ -9,17 +9,21 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.DatabaseContract
+import com.sivakasi.papco.jobflow.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryVM
 import com.sivakasi.papco.jobflow.screens.clients.ui.InformationScreen
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -49,9 +53,9 @@ private fun ContentMain(loadingStatus: LoadingStatus, onResultClicked: (SearchMo
             )
         }
 
-        is LoadingStatus.Success<*>->{
-            val history= loadingStatus.data as List<SearchModel>
-            if(history.isEmpty())
+        is LoadingStatus.Success<*> -> {
+            val history = loadingStatus.data as List<SearchModel>
+            if (history.isEmpty())
                 InformationScreen(message = stringResource(id = R.string.no_results_found))
             else
                 HistoryList(history = history, onResultClicked = onResultClicked)
@@ -96,10 +100,6 @@ private fun SearchListItem(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-        /* .clickable(
-             interactionSource = remember{ MutableInteractionSource()},
-             indication = rememberRipple(color = MaterialTheme.colors.primary.copy(alpha=0.3f))
-         ) { onClick() }*/
     ) {
         Column(
             modifier = Modifier
@@ -139,26 +139,15 @@ private fun SearchListItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row {
-                Text(
-                    text = searchModel.billingName,
-                    color = MaterialTheme.colors.primary,
-                    style = MaterialTheme.typography.h6,
-                    modifier = Modifier.weight(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
 
-                Text(
-                    text = searchModel.invoiceNumber,
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .align(Alignment.Bottom)
-                )
-
-            }
+            Text(
+                text = searchModel.billingName,
+                color = MaterialTheme.colors.primary,
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.fillMaxWidth(),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
 
             Row {
                 Text(
@@ -194,3 +183,28 @@ private fun SearchListItem(
     }
 }
 
+
+@ExperimentalMaterialApi
+@Preview
+@Composable
+private fun SearchListItemPreview() {
+
+    val searchModel = SearchModel(LocalContext.current)
+    searchModel.apply {
+        printOrderNumber = 18531
+        printOrderDate = "12/05/2021"
+        billingName = "Suri Graphix, Sivakasi"
+        jobName = "Naiduhall Boxes 6V"
+        plateNumber = 12022
+        paperDetails = "58.5 x 91 Cms 100 GSM Real art paper - 5200 Sheets"
+        invoiceNumber = "B/52"
+        colors = "5 (CMYK+LT)"
+        creationTime = getCalendarInstance().timeInMillis
+        destinationId = DatabaseContract.DOCUMENT_DEST_COMPLETED
+    }
+
+    JobFlowTheme {
+        SearchListItem(searchModel = searchModel, onClick = {})
+    }
+
+}

@@ -10,12 +10,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -115,12 +119,17 @@ private fun ContentMain(
     onQueryChange: (String) -> Unit,
     content: @Composable () -> Unit
 ) {
+    val searchBarFocus = remember { FocusRequester() }
     Surface(
         color = MaterialTheme.colors.background,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            SearchBar(query = query, onQueryChange = onQueryChange)
+            SearchBar(
+                query = query,
+                onQueryChange = onQueryChange,
+                Modifier.focusRequester(searchBarFocus)
+            )
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -129,14 +138,24 @@ private fun ContentMain(
         }
 
     }
+
+    DisposableEffect(Unit){
+        searchBarFocus.requestFocus()
+        onDispose {  }
+    }
+
 }
 
 @Composable
-private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         singleLine = true,
@@ -172,7 +191,9 @@ private fun ClientsList(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            itemsIndexed(clientsList, key = { _, item -> item.id }) { index, client:ClientUIModel ->
+            itemsIndexed(
+                clientsList,
+                key = { _, item -> item.id }) { index, client: ClientUIModel ->
                 SingleLineListItem(
                     data = client,
                     textBlock = { it.name },

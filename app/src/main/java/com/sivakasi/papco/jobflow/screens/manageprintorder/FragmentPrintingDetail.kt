@@ -14,6 +14,8 @@ import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPrintingDetailBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
+import com.sivakasi.papco.jobflow.extensions.updateSubTitle
+import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
@@ -47,6 +49,12 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         enableBackAsClose()
         initViews()
         observeViewModel()
+
+        if (viewModel.isEditMode)
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+        updateSubTitle("")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

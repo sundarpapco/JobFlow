@@ -18,6 +18,8 @@ import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPostPressDetailsBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
+import com.sivakasi.papco.jobflow.extensions.updateSubTitle
+import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.toast
@@ -60,6 +62,13 @@ class FragmentPostPressDetails : Fragment(), ResultDialogFragment.ResultDialogLi
         enableBackAsClose()
         initViews()
         observeViewModel()
+
+        if (viewModel.isEditMode)
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+
+        updateSubTitle("")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

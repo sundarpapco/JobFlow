@@ -14,6 +14,8 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPaperDetailsBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
+import com.sivakasi.papco.jobflow.extensions.updateSubTitle
+import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -55,6 +57,12 @@ class FragmentPaperDetails : Fragment(),
         enableBackAsClose()
         initViews()
         observeViewModel()
+
+        if (viewModel.isEditMode)
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+        updateSubTitle("")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -13,9 +13,7 @@ import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPlateMakingDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.number
-import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.NoFilterArrayAdapter
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
@@ -83,6 +81,13 @@ class FragmentPlateMakingDetails : Fragment() {
         initViews()
         attachEditTextListeners()
         observeViewModel()
+
+        if (viewModel.isEditMode)
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+
+        updateSubTitle("")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

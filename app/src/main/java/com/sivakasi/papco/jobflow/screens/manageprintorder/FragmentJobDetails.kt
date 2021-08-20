@@ -14,9 +14,7 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentJobDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.hideKeyboard
-import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.screens.clients.ClientsFragment
 import com.sivakasi.papco.jobflow.util.FormValidator
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +48,12 @@ class FragmentJobDetails : Fragment() {
         enableBackAsClose()
         initViews()
         observeViewModel()
+
+        if (viewModel.isEditMode)
+            updateTitle(getString(R.string.edit_job))
+        else
+            updateTitle(getString(R.string.create_job))
+        updateSubTitle("")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -104,8 +108,8 @@ class FragmentJobDetails : Fragment() {
                 ClientsFragment.KEY_CLIENT
             )
 
-            printOrder.billingName=it.name
-            printOrder.clientId=it.id
+            printOrder.billingName = it.name
+            printOrder.clientId = it.id
             renderJobDetails()
         }
     }
@@ -126,10 +130,10 @@ class FragmentJobDetails : Fragment() {
         But the id will be -1. The following condition will check that condition and will force user to select
         a valid client so that, that PO can be searched in client history in future.
          */
-        val clientName=viewBinding.txtClientName.text.toString()
-        if(clientName.isNotBlank() && printOrder.clientId ==-1){
+        val clientName = viewBinding.txtClientName.text.toString()
+        if (clientName.isNotBlank() && printOrder.clientId == -1) {
             //Will prompt the user to select the client again so that we can get the Id of the client
-            viewBinding.textLayoutClientName.error=getString(R.string.invalid_client_name)
+            viewBinding.textLayoutClientName.error = getString(R.string.invalid_client_name)
             return false
         }
 
@@ -153,9 +157,11 @@ class FragmentJobDetails : Fragment() {
         }
     }
 
-    private fun navigateToClientSelectionScreen(){
-        findNavController().navigate(R.id.action_fragmentJobDetails_to_clientSelectionFragment,
-        ClientsFragment.getArguments(true))
+    private fun navigateToClientSelectionScreen() {
+        findNavController().navigate(
+            R.id.action_fragmentJobDetails_to_clientSelectionFragment,
+            ClientsFragment.getArguments(true)
+        )
     }
 
     private fun navigateToNextScreen() =
