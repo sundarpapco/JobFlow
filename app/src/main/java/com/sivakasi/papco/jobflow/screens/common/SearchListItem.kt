@@ -1,93 +1,24 @@
-package com.sivakasi.papco.jobflow.screens.clients.history.ui
+package com.sivakasi.papco.jobflow.screens.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryVM
-import com.sivakasi.papco.jobflow.screens.clients.ui.InformationScreen
-import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-
-@ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
-@Composable
-fun ClientHistoryScreen(viewModel: ClientHistoryVM) {
-
-    val history by viewModel.clientHistory.observeAsState(LoadingStatus.Loading(""))
-    ContentMain(loadingStatus = history, onResultClicked = viewModel::onResultClicked)
-}
-
-@ExperimentalMaterialApi
-@Suppress("UNCHECKED_CAST")
-@Composable
-private fun ContentMain(loadingStatus: LoadingStatus, onResultClicked: (SearchModel) -> Unit) {
-
-    when (loadingStatus) {
-        is LoadingStatus.Loading -> {
-            LoadingScreen()
-        }
-
-        is LoadingStatus.Error -> {
-            InformationScreen(
-                message = loadingStatus.exception.message
-                    ?: stringResource(id = R.string.error_unknown_error)
-            )
-        }
-
-        is LoadingStatus.Success<*> -> {
-            val history = loadingStatus.data as List<SearchModel>
-            if (history.isEmpty())
-                InformationScreen(message = stringResource(id = R.string.no_results_found))
-            else
-                HistoryList(history = history, onResultClicked = onResultClicked)
-        }
-    }
-
-}
 
 @ExperimentalMaterialApi
 @Composable
-private fun HistoryList(history: List<SearchModel>, onResultClicked: (SearchModel) -> Unit) {
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
-    ) {
-        LazyColumn(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(history, key = { it.printOrderNumber }) {
-                SearchListItem(it, onResultClicked)
-            }
-        }
-    }
-
-}
-
-
-@ExperimentalMaterialApi
-@Composable
-private fun SearchListItem(
+fun SearchListItem(
     searchModel: SearchModel,
     onClick: (SearchModel) -> Unit
 ) {
@@ -182,7 +113,6 @@ private fun SearchListItem(
         }
     }
 }
-
 
 @ExperimentalMaterialApi
 @Preview

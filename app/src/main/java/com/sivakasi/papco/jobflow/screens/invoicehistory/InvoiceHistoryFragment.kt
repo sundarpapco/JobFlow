@@ -7,36 +7,32 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PrintOrder
-import com.sivakasi.papco.jobflow.databinding.DestinationFixedBinding
+import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.screens.search.SearchAdapter
 import com.sivakasi.papco.jobflow.screens.search.SearchAdapterListener
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.toast
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class InvoiceHistoryFragment : Fragment(), SearchAdapterListener {
 
-    private var _viewBinding: DestinationFixedBinding? = null
-    private val viewBinding: DestinationFixedBinding
+    private var _viewBinding: ComposeScreenBinding? = null
+    private val viewBinding: ComposeScreenBinding
         get() = _viewBinding!!
 
-    private val adapter: SearchAdapter by lazy {
-        SearchAdapter(this)
-    }
 
     private val viewModel: InvoiceHistoryVM by lazy {
         ViewModelProvider(this).get(InvoiceHistoryVM::class.java)
@@ -52,7 +48,12 @@ class InvoiceHistoryFragment : Fragment(), SearchAdapterListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = DestinationFixedBinding.inflate(inflater, container, false)
+        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
+        viewBinding.composeView.setContent {
+            JobFlowTheme {
+                InvoiceHistoryScreen(viewModel = viewModel, onItemClicked = this::onItemClick)
+            }
+        }
         return viewBinding.root
     }
 
@@ -60,8 +61,7 @@ class InvoiceHistoryFragment : Fragment(), SearchAdapterListener {
         super.onViewCreated(view, savedInstanceState)
         updateTitle(getString(R.string.invoice_history))
         updateSubTitle("")
-        initViews()
-        observeViewModel()
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -76,26 +76,9 @@ class InvoiceHistoryFragment : Fragment(), SearchAdapterListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewBinding.recycler.adapter = null
         _viewBinding = null
     }
 
-    private fun initViews() {
-        viewBinding.lblLastCompletionTime.visibility = View.GONE
-        viewBinding.fab.hide()
-        initRecycler()
-    }
-
-    private fun initRecycler() {
-        viewBinding.recycler.layoutManager = LinearLayoutManager(requireContext())
-        viewBinding.recycler.adapter = adapter
-    }
-
-    private fun observeViewModel() {
-        viewModel.invoiceHistory.observe(viewLifecycleOwner) {
-            handleLoadingStatus(it)
-        }
-    }
 
     //Navigate to view Print order screen
     override fun onItemClick(item: SearchModel) {
@@ -108,36 +91,6 @@ class InvoiceHistoryFragment : Fragment(), SearchAdapterListener {
             R.id.action_invoiceHistoryFragment_to_viewPrintOrderFragment,
             arguments
         )
-    }
-
-    private fun handleLoadingStatus(status: LoadingStatus) {
-
-        when (status) {
-
-            is LoadingStatus.Loading -> {
-                renderLoadingState()
-            }
-
-            is LoadingStatus.Success<*> -> {
-                renderDataState(status.data as List<SearchModel>)
-            }
-
-            is LoadingStatus.Error -> {
-                toast(status.exception.message ?: getString(R.string.error_unknown_error))
-                findNavController().popBackStack()
-            }
-
-        }
-
-    }
-
-    private fun renderLoadingState() {
-        viewBinding.progressBar.root.visibility = View.VISIBLE
-    }
-
-    private fun renderDataState(data: List<SearchModel>) {
-        viewBinding.progressBar.root.visibility = View.GONE
-        adapter.submitList(data)
     }
 
 }

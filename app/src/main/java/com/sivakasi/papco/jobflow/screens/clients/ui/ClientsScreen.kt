@@ -29,7 +29,7 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.ClientUIModel
 import com.sivakasi.papco.jobflow.screens.clients.ClientsFragmentVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.ui.SingleLineListItem
+import com.sivakasi.papco.jobflow.screens.common.SingleLineListItem
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

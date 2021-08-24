@@ -1,22 +1,19 @@
-package com.sivakasi.papco.jobflow.ui
+package com.sivakasi.papco.jobflow.screens.common
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.models.ClientUIModel
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @Composable
 fun <T> SingleLineListItem(
@@ -24,8 +21,6 @@ fun <T> SingleLineListItem(
     textBlock: (T) -> AnnotatedString,
     onClick: (T) -> Unit
 ) {
-
-    val someState= rememberScaffoldState()
 
     Surface(
         color=MaterialTheme.colors.background,

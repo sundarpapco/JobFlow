@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.models
 
 import android.content.Context
-import android.util.Log
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
@@ -19,6 +18,7 @@ class SearchModel(private val context: Context) {
     var colors: String = "4"
     var destinationId: String = ""
     var creationTime:Long=0L
+    var completionTime:Long=0L
 
     fun poNumberAndDate(): String =
         context.getString(R.string.po_number_and_date, printOrderNumber, printOrderDate)
@@ -40,7 +40,6 @@ class SearchModel(private val context: Context) {
 
 
     fun status(): String {
-        Log.d("SUNDAR", "destinationId: $destinationId")
         return when (destinationId) {
 
             DatabaseContract.DOCUMENT_DEST_COMPLETED -> {

@@ -20,7 +20,6 @@ import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.clients.history.ui.ClientHistoryScreen
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -58,9 +57,10 @@ class ClientHistoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
+        viewModel.clientId=client.id
         viewBinding.composeView.setContent {
             JobFlowTheme {
-                ClientHistoryScreen(viewModel)
+                ClientHistoryScreen(viewModel,this::navigateToViewPrintOrderScreen)
             }
         }
         return viewBinding.root
@@ -68,12 +68,10 @@ class ClientHistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.loadClientHistory(client.id)
 
         enableBackArrow()
         updateTitle(client.name)
         updateSubTitle(getString(R.string.client_history))
-        observeViewModel()
     }
 
     override fun onDestroyView() {
@@ -90,13 +88,6 @@ class ClientHistoryFragment : Fragment() {
 
         return super.onOptionsItemSelected(item)
     }
-
-    private fun observeViewModel(){
-        viewModel.clickedResult.observe(viewLifecycleOwner,EventObserver{
-            navigateToViewPrintOrderScreen(it)
-        })
-    }
-
 
     private fun navigateToViewPrintOrderScreen(searchModel:SearchModel){
         val args= ViewPrintOrderFragment.getArguments(

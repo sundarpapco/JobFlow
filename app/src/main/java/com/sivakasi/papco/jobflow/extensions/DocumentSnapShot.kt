@@ -29,6 +29,7 @@ fun DocumentSnapshot.toSearchModel(context: Context): SearchModel {
         colors = printOrder.printingDetail.colours
         destinationId = reference.parent.parent?.id ?: error("Invalid Job path")
         paperDetails=printOrder.printingSizePaperDetail().toString()
+        completionTime=printOrder.completionTime
     }
     return result
 }

@@ -2,6 +2,8 @@ package com.sivakasi.papco.jobflow.data
 
 import android.app.Application
 import androidx.core.text.isDigitsOnly
+import androidx.paging.PagingSource.LoadParams
+import androidx.paging.PagingSource.LoadResult
 import com.google.firebase.firestore.*
 import com.sivakasi.papco.jobflow.extensions.poReference
 import com.sivakasi.papco.jobflow.extensions.toPrintOrder
@@ -44,12 +46,12 @@ class Repository @Inject constructor(
 
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
-                        offer(null)
+                        trySend(null).isSuccess
                     } catch (e: Exception) {
                     }
                 } else
                     try {
-                        offer(documentSnapshot.toObject(Destination::class.java))
+                        trySend(documentSnapshot.toObject(Destination::class.java)).isSuccess
                     } catch (e: Exception) {
                     }
             }
@@ -67,12 +69,12 @@ class Repository @Inject constructor(
 
                 if (documentSnapshot == null || !documentSnapshot.exists())
                     try {
-                        offer(null)
+                        trySend(null).isSuccess
                     } catch (e: Exception) {
                     }
                 else
                     try {
-                        offer(documentSnapshot.toPrintOrder())
+                        trySend(documentSnapshot.toPrintOrder()).isSuccess
                     } catch (e: Exception) {
 
                     }
@@ -130,20 +132,43 @@ class Repository @Inject constructor(
 
         }
 
-    suspend fun invoiceHistory(): QuerySnapshot =
+
+    suspend fun invoiceHistory(loadParams: LoadParams<DocumentSnapshot>): LoadResult<DocumentSnapshot, SearchModel> =
         suspendCancellableCoroutine { continuation ->
 
-            database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+            var query = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
                 .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
                 .collection(DatabaseContract.COLLECTION_JOBS)
-                .limit(100)
                 .orderBy(PrintOrder.FIELD_COMPLETED_TIME, Query.Direction.DESCENDING)
+
+            loadParams.key?.let {
+                query = query.startAfter(it)
+            }
+
+            query.limit(loadParams.loadSize.toLong())
                 .get()
                 .addOnSuccessListener {
-                    continuation.resume(it)
+
+                    val nextPageKey = if (it.documents.size < loadParams.loadSize) {
+                        //There is no next page to load
+                        null
+                    } else {
+                        //Store the last documentSnapshot as nextPageKey
+                        it.documents.last()
+                    }
+
+                    val loadedList = if (it.documents.isEmpty()) {
+                        //There is no next Page
+                        emptyList()
+                    } else {
+                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
+                        result
+                    }
+
+                    continuation.resume(LoadResult.Page(loadedList, null, nextPageKey))
                 }
                 .addOnFailureListener {
-                    continuation.resumeWithException(it)
+                    continuation.resume(LoadResult.Error(it))
                 }
         }
 
@@ -208,27 +233,46 @@ class Repository @Inject constructor(
 
         }
 
-    suspend fun searchByClientId(clientId:Int): List<SearchModel> =
+    suspend fun clientHistory(
+        clientId: Int,
+        loadParams: LoadParams<DocumentSnapshot>
+    ): LoadResult<DocumentSnapshot,SearchModel> =
         suspendCancellableCoroutine { continuation ->
 
-            database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+            var query = database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
                 .whereEqualTo(PrintOrder.FIELD_CLIENT_ID, clientId)
-                .limit(100)
                 .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER, Query.Direction.DESCENDING)
+
+            loadParams.key?.let {
+                query = query.startAfter(it)
+            }
+
+            query.limit(loadParams.loadSize.toLong())
                 .get()
                 .addOnSuccessListener {
-                    if (it.documents.isEmpty())
-                        continuation.resume(emptyList())
-                    else {
-                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
-                        continuation.resume(result)
+                    val nextPageKey = if (it.documents.size < loadParams.loadSize) {
+                        //There is no next page to load
+                        null
+                    } else {
+                        //Store the last documentSnapshot as nextPageKey
+                        it.documents.last()
                     }
+
+                    val loadedList = if (it.documents.isEmpty()) {
+                        //There is no next Page
+                        emptyList()
+                    } else {
+                        val result = it.documents.map { doc -> doc.toSearchModel(application) }
+                        result
+                    }
+
+                    continuation.resume(LoadResult.Page(loadedList, null, nextPageKey))
                 }
                 .addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
-
         }
+
 
     suspend fun search(searchQuery: String): List<SearchModel> = withContext(Dispatchers.IO) {
         val searchByNumber = async {
@@ -276,7 +320,7 @@ class Repository @Inject constructor(
                     throw ResourceNotFoundException("Jobs cannot be loaded")
                 else {
                     try {
-                        offer(querySnapshot.documents)
+                        trySend(querySnapshot.documents).isSuccess
                     } catch (e: Exception) {
 
                     }
@@ -305,7 +349,7 @@ class Repository @Inject constructor(
                     throw ResourceNotFoundException("machines cannot be loaded")
                 else
                     try {
-                        offer(querySnapshot.documents)
+                        trySend(querySnapshot.documents).isSuccess
                     } catch (e: Exception) {
 
                     }
