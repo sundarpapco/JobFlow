@@ -158,7 +158,7 @@
     <string name="cancelled">CANCELLED</string>
     <string name="xx_results">%1$d Result(s)</string>
     <string name="no_results_found">No results found!</string>
-    <string name="invoice_history">Recently Invoiced orders</string>
+    <string name="invoice_history">Invoice History</string>
     <string name="create_job">Create New Job</string>
     <string name="edit_job">Edit Job</string>
     <string name="select_client">Select Client</string>

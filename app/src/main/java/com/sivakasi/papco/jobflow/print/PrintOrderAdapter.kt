@@ -29,7 +29,7 @@ class PrintOrderAdapter @Inject constructor(
         }
 
         //Build the PrintDocumentInfo and return
-        val info=PrintDocumentInfo.Builder("PrintOrder.pdf")
+        val info=PrintDocumentInfo.Builder("PrintOrder ${printOrder.printOrderNumber}")
             .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
             .setPageCount(1)
             .build()
