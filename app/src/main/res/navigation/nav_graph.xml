@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/fragmentHome">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/fixedDestinationFragment"
@@ -98,4 +98,12 @@
             android:id="@+id/action_clientHistoryFragment_to_viewPrintOrderFragment"
             app:destination="@id/viewPrintOrderFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.login.LoginFragment"
+        android:label="LoginFragment" >
+        <action
+            android:id="@+id/action_loginFragment_to_fragmentHome"
+            app:destination="@id/fragmentHome" />
+    </fragment><action android:id="@+id/action_global_loginFragment" app:destination="@id/loginFragment"/>
 </navigation>

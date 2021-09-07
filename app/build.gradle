@@ -122,7 +122,13 @@ dependencies {
     //Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0'
-    implementation 'com.google.firebase:firebase-firestore:23.0.3'
+
+    //Firebase Libraries
+    //When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation platform('com.google.firebase:firebase-bom:28.4.0')
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+
 
     //Leak canary for leak detection
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'

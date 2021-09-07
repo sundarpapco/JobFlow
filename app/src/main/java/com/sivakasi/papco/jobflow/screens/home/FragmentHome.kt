@@ -7,7 +7,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.DatabaseContract
@@ -89,6 +91,13 @@ class FragmentHome : Fragment() {
                 R.id.action_fragmentHome_to_clientsFragment,
                 ClientsFragment.getArguments(true)
             )
+            return true
+        }
+
+        if (item.itemId == R.id.mnu_sign_out) {
+            FirebaseAuth.getInstance().signOut()
+            val navOptions = NavOptions.Builder().setPopUpTo(R.id.fragmentHome,true).build()
+            findNavController().navigate(R.id.action_global_loginFragment,null,navOptions)
             return true
         }
 
