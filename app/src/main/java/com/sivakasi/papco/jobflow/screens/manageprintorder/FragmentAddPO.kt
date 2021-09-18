@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -126,6 +127,16 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
                 hideSearchLayout()
             } else {
                 showSearchLayout()
+            }
+        }
+
+        viewBinding.txtPlateNumber.setOnEditorActionListener { _, actionId, _ ->
+
+            if(actionId == EditorInfo.IME_ACTION_DONE){
+                onNextPressed()
+                true
+            }else {
+                false
             }
         }
     }

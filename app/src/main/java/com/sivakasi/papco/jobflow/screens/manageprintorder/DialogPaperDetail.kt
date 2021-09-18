@@ -5,14 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.databinding.DialogPaperDetailBinding
-import com.sivakasi.papco.jobflow.extensions.number
-import com.sivakasi.papco.jobflow.extensions.numberDecimal
-import com.sivakasi.papco.jobflow.extensions.validateForGreaterThanZero
-import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.sivakasi.papco.jobflow.util.toast
 
@@ -23,13 +21,16 @@ class DialogPaperDetail : DialogFragment() {
         const val TAG = "papco.jobFlow.screens.managePrintOrder.dialogPaperDetail"
         private const val KEY_PAPER_DETAIL = "paper:detail:to:edit"
         private const val KEY_MODE_EDIT = "edit:mode"
-        private const val KEY_FIRST_RUN="first:run"
-        private const val KEY_EDIT_INDEX="edit:index"
+        private const val KEY_FIRST_RUN = "first:run"
+        private const val KEY_EDIT_INDEX = "edit:index"
 
-        fun getInstance(editIndex:Int=-1,paperDetailToEdit: PaperDetail? = null): DialogPaperDetail {
+        fun getInstance(
+            editIndex: Int = -1,
+            paperDetailToEdit: PaperDetail? = null
+        ): DialogPaperDetail {
 
             val args = Bundle()
-            args.putInt(KEY_EDIT_INDEX,editIndex)
+            args.putInt(KEY_EDIT_INDEX, editIndex)
             if (paperDetailToEdit != null) {
                 args.putBoolean(KEY_MODE_EDIT, true)
                 args.putParcelable(KEY_PAPER_DETAIL, paperDetailToEdit)
@@ -49,11 +50,11 @@ class DialogPaperDetail : DialogFragment() {
         getTheCallBack()
     }
 
-    private var isFirstRun=true
+    private var isFirstRun = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isFirstRun=savedInstanceState?.getBoolean(KEY_FIRST_RUN) ?: true
+        isFirstRun = savedInstanceState?.getBoolean(KEY_FIRST_RUN) ?: true
     }
 
     override fun onCreateView(
@@ -81,7 +82,7 @@ class DialogPaperDetail : DialogFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(KEY_FIRST_RUN,false)
+        outState.putBoolean(KEY_FIRST_RUN, false)
     }
 
     override fun onDestroyView() {
@@ -99,28 +100,54 @@ class DialogPaperDetail : DialogFragment() {
             txtSheets.clearErrorOnTextChange()
         }
 
+        viewBinding.txtExpression.setOnFocusChangeListener { thisView, hasFocus ->
+
+            if (!hasFocus) {
+                val enteredExpression = (thisView as EditText).text.toString().trim()
+                if (enteredExpression.isNotBlank()) {
+                    /*
+                    Try to evaluate the expression.
+                    Surrounding inside the try..catch block to handle exception cases like user purposely
+                    entered a very very long number string inside the expression field which will throw
+                    Numeric exception like calculated total sheets exceeds Int or even long
+                     */
+                    try {
+                        val expressionEvaluator = SheetsExpressionChecker(enteredExpression)
+                        if (expressionEvaluator.isValid)
+                            viewBinding.txtSheets.setText(
+                                expressionEvaluator.totalSheets().toString()
+                            )
+                        else
+                            viewBinding.txtSheets.setText("0")
+                    } catch (e: Exception) {
+                        viewBinding.txtSheets.setText("0")
+                    }
+                }
+            }
+        }
+
         viewBinding.btnSave.setOnClickListener {
             onSaveClicked()
         }
 
     }
 
-    private fun loadPaperDetailIfEditMode(){
+    private fun loadPaperDetailIfEditMode() {
 
-        if(!isFirstRun || !isEditMode())
+        if (!isFirstRun || !isEditMode())
             return
 
-        val paperDetail=getPaperDetailFromParcel()
+        val paperDetail = getPaperDetailFromParcel()
         with(viewBinding) {
             txtHeight.setText(paperDetail.height.toString())
             txtWidth.setText(paperDetail.width.toString())
             txtGsm.setText(paperDetail.gsm.toString())
             txtSheets.setText(paperDetail.sheets.toString())
             txtSubstrate.setText(paperDetail.name)
-            if(paperDetail.partyPaper)
-                radioButtonPartyOwn.isChecked=true
+            if (paperDetail.partyPaper)
+                radioButtonPartyOwn.isChecked = true
             else
-                radioButtonOurOwn.isChecked=true
+                radioButtonOurOwn.isChecked = true
         }
 
     }
@@ -201,7 +228,7 @@ class DialogPaperDetail : DialogFragment() {
     private fun isEditMode(): Boolean =
         arguments?.getBoolean(KEY_MODE_EDIT) ?: false
 
-    private fun getEditIndex():Int=
+    private fun getEditIndex(): Int =
         arguments?.getInt(KEY_EDIT_INDEX) ?: -1
 
     private fun getPaperDetailFromParcel(): PaperDetail =
@@ -209,7 +236,7 @@ class DialogPaperDetail : DialogFragment() {
             ?: throw IllegalStateException("Cannot find the paper details in the parcel")
 
     interface DialogPaperDetailListener {
-        fun onSubmitPaperDetail(editIndex:Int, paperDetail: PaperDetail)
+        fun onSubmitPaperDetail(editIndex: Int, paperDetail: PaperDetail)
     }
 
 }

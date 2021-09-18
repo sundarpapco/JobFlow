@@ -66,6 +66,7 @@
                 android:inputType="numberDecimal"
                 android:imeOptions="actionNext"
                 android:nextFocusForward="@id/txt_width"
+                android:selectAllOnFocus="true"
                 android:maxLength="5"
                 android:maxLines="1"/>
 
@@ -91,6 +92,7 @@
                 android:inputType="numberDecimal"
                 android:imeOptions="actionNext"
                 android:nextFocusForward="@id/txt_gsm"
+                android:selectAllOnFocus="true"
                 android:maxLength="5"
                 android:maxLines="1"/>
 
@@ -116,6 +118,7 @@
                 android:inputType="numberDecimal"
                 android:imeOptions="actionNext"
                 android:nextFocusForward="@id/txt_substrate"
+                android:selectAllOnFocus="true"
                 android:maxLength="3"
                 android:maxLines="1"/>
 
@@ -140,10 +143,37 @@
                 android:layout_height="wrap_content"
                 android:inputType="text"
                 android:imeOptions="actionNext"
-                android:nextFocusForward="@id/txt_sheets"
-                android:maxLines="2"/>
+                android:nextFocusForward="@id/txt_expression"
+                android:selectAllOnFocus="true"
+                android:maxLines="1"/>
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_expression"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/expression"
+            app:layout_constraintEnd_toEndOf="@id/guideline_center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layout_substrate">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txt_expression"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:nextFocusForward="@id/txt_sheets"
+                android:selectAllOnFocus="true"
+                android:imeOptions="actionNext"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layout_sheets"
@@ -155,7 +185,7 @@
             android:layout_marginEnd="16dp"
             android:hint="@string/sheets"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_center"
             app:layout_constraintTop_toBottomOf="@+id/layout_substrate">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -163,7 +193,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
+                android:selectAllOnFocus="true"
                 android:imeOptions="actionDone"
+                android:maxLength="6"
                 android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -192,6 +224,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.66" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
