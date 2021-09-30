@@ -1,64 +1,97 @@
 package com.sivakasi.papco.jobflow.screens.login
 
 import android.app.Application
-import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.functions.FirebaseFunctions
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.wajahatkarim3.easyvalidation.core.view_ktx.validEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginFragmentVM @Inject constructor(
     private val application: Application
-): ViewModel() {
+) : ViewModel() {
 
-    val loginState=LoginState()
+    val loginSuccess = MutableLiveData(false)
+    val authState = AuthenticationState(application)
     private val auth = FirebaseAuth.getInstance()
+    private val functions = FirebaseFunctions.getInstance()
 
-    fun onLogin(){
+    fun onFormSubmit() {
 
-        loginState.email=loginState.email.trim()
-        loginState.password=loginState.password.trim()
+        authState.email = authState.email.trim()
+        authState.password = authState.password.trim()
+        authState.confirmPassword = authState.confirmPassword.trim()
 
-        if(!validEmail() || !validPassword())
+        if (!authState.isValid())
             return
 
-        loginState.loggingStatus=LoadingStatus.Loading("")
-        viewModelScope.launch {
-            delay(3000)
-            auth.signInWithEmailAndPassword(loginState.email,loginState.password).addOnSuccessListener {
-                loginState.loggingStatus=LoadingStatus.Success("")
-            }.addOnFailureListener{
-                it.printStackTrace()
-                loginState.loggingStatus=LoadingStatus.Error(it)
+        if (authState.mode == AuthenticationMode.LOGIN)
+            onLogin()
+        else
+            onRegisterUsingCloudFunction()
+    }
+
+    private fun onLogin() {
+
+        authState.startLogin()
+        authState.clearErrors()
+
+        launchLoginCoroutine()
+    }
+
+    fun onModeChanged(targetMode: AuthenticationMode) {
+        authState.authError = null
+        if (targetMode == AuthenticationMode.LOGIN) {
+            authState.confirmPassword = ""
+            authState.confirmPasswordError = null
+            authState.name = ""
+            authState.nameError = null
+        }
+        authState.mode = targetMode
+    }
+
+    private fun onRegisterUsingCloudFunction() {
+
+        authState.clearErrors()
+        authState.startLogin()
+
+        val data = hashMapOf(
+            "email" to authState.email,
+            "password" to authState.password,
+            "displayName" to authState.name
+        )
+
+        functions.getHttpsCallable("createNewUser")
+            .call(data)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    launchLoginCoroutine()
+                } else {
+                    val error = it.exception?.message
+                        ?: application.getString(R.string.error_unknown_error)
+                    authState.loginFailed(error)
+                }
             }
-        }
     }
 
-    private fun validEmail():Boolean{
-
-        return if(loginState.email.validEmail()){
-            loginState.emailError=null
-            true
-        }else{
-            loginState.emailError=application.getString(R.string.invalid_email)
-            false
-        }
-    }
-
-    private fun validPassword():Boolean{
-        return if(loginState.password.length < 8){
-            loginState.passwordError=application.getString(R.string.invalid_password)
-            false
-        } else {
-            loginState.passwordError=null
-            true
+    private fun launchLoginCoroutine() {
+        viewModelScope.launch {
+            auth.signInWithEmailAndPassword(
+                authState.email,
+                authState.password
+            ).addOnSuccessListener {
+                authState.loginSuccess()
+                loginSuccess.value = true
+            }.addOnFailureListener {
+                authState.loginFailed(
+                    it.message ?: application.getString(R.string.error_unknown_error)
+                )
+            }
         }
     }
 

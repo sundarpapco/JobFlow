@@ -8,31 +8,21 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import dagger.hilt.android.AndroidEntryPoint
 
-@ExperimentalAnimationApi
 @ExperimentalComposeUiApi
+@ExperimentalAnimationApi
 @AndroidEntryPoint
-class LoginFragment : Fragment() {
+class ForgotPasswordFragment : Fragment() {
 
-    private var currentUser = FirebaseAuth.getInstance().currentUser
     private var _viewBinding: ComposeScreenBinding? = null
     private val viewBinding: ComposeScreenBinding
         get() = _viewBinding!!
 
     private val viewModel by lazy {
-        ViewModelProvider(this).get(LoginFragmentVM::class.java)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (currentUser != null)
-            onSuccessfulLogin()
+        ViewModelProvider(this).get(ForgotPasswordVM::class.java)
     }
 
 
@@ -43,11 +33,9 @@ class LoginFragment : Fragment() {
     ): View {
         _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
         viewBinding.composeView.setContent {
-            LoginScreen(
-                authState = viewModel.authState,
-                onFormSubmit = viewModel::onFormSubmit,
-                onForgotPassword = this::navigateToForgotPasswordScreen,
-                onModeChange = viewModel::onModeChanged
+            ForgotPasswordScreen(
+                state = viewModel.forgotPasswordState,
+                onFormSubmit = viewModel::onFormSubmit
             )
         }
         return viewBinding.root
@@ -58,11 +46,12 @@ class LoginFragment : Fragment() {
         observeViewModel()
     }
 
-    private fun observeViewModel(){
-        viewModel.loginSuccess.observe(viewLifecycleOwner){success->
-            if(success)
-                onSuccessfulLogin()
+    private fun observeViewModel() {
+        viewModel.passwordResetMailSent.observe(viewLifecycleOwner) { success ->
+            if (success)
+                findNavController().popBackStack()
         }
+
     }
 
     override fun onDestroyView() {
@@ -70,12 +59,5 @@ class LoginFragment : Fragment() {
         _viewBinding = null
     }
 
-    private fun onSuccessfulLogin() {
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.loginFragment, true).build()
-        findNavController().navigate(R.id.action_loginFragment_to_fragmentHome, null, navOptions)
-    }
 
-    private fun navigateToForgotPasswordScreen(){
-        findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
-    }
 }

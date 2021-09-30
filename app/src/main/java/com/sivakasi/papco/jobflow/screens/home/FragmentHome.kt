@@ -1,13 +1,13 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.R
@@ -111,6 +111,17 @@ class FragmentHome : Fragment() {
         updateTitle(getString(R.string.papco_jobs))
         updateSubTitle("")
         observeViewModel()
+        logTheUserClaim()
+    }
+
+    private fun logTheUserClaim(){
+        val currentUser=FirebaseAuth.getInstance().currentUser
+        currentUser?.getIdToken(false)
+            ?.addOnSuccessListener {
+                val claim=it.claims["role"]
+                Log.d("SUNDAR","Current user role is: $claim")
+            } ?: Log.d("SUNDAR","Failed to get token")
+
     }
 
     override fun onDestroyView() {
