@@ -54,6 +54,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_clientHistoryFragment"
             app:destination="@id/clientHistoryFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_updateRoleFragment"
+            app:destination="@id/updateRoleFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPrintOrderFragment"
@@ -103,9 +106,6 @@
         android:name="com.sivakasi.papco.jobflow.screens.login.LoginFragment"
         android:label="LoginFragment" >
         <action
-            android:id="@+id/action_loginFragment_to_fragmentHome"
-            app:destination="@id/fragmentHome" />
-        <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment" />
     </fragment><action android:id="@+id/action_global_loginFragment" app:destination="@id/loginFragment"/>
@@ -113,4 +113,15 @@
         android:id="@+id/forgotPasswordFragment"
         android:name="com.sivakasi.papco.jobflow.screens.login.ForgotPasswordFragment"
         android:label="ForgotPasswordFragment" />
+    <fragment
+        android:id="@+id/guestFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.login.GuestFragment"
+        android:label="GuestFragment" />
+    <fragment
+        android:id="@+id/updateRoleFragment"
+        android:name="com.sivakasi.papco.jobflow.admin.UpdateRoleFragment"
+        android:label="UpdateRoleFragment" />
+    <action android:id="@+id/action_global_fragmentHome" app:destination="@id/fragmentHome" />
+    <action android:id="@+id/action_global_manageMachinesFragment" app:destination="@id/manageMachinesFragment" />
+    <action android:id="@+id/action_global_guestFragment" app:destination="@id/guestFragment" />
 </navigation>

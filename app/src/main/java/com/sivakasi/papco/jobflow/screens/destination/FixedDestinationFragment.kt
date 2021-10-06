@@ -17,12 +17,16 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.DestinationFixedBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
-import com.sivakasi.papco.jobflow.util.*
+import com.sivakasi.papco.jobflow.util.Duration
+import com.sivakasi.papco.jobflow.util.EventObserver
+import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.util.SafeActionModeCallBack
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.text.SimpleDateFormat

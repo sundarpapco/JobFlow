@@ -11,9 +11,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.databinding.DialogAddMachineBinding
+import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 

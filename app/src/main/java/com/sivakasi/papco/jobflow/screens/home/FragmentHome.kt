@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -9,15 +8,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.FixedDestinationBinding
 import com.sivakasi.papco.jobflow.databinding.FragmentHomeBinding
+import com.sivakasi.papco.jobflow.extensions.currentUserRole
 import com.sivakasi.papco.jobflow.extensions.disableBackArrow
-import com.sivakasi.papco.jobflow.extensions.isPrinterVersionApp
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.screens.clients.ClientsFragment
@@ -25,9 +23,11 @@ import com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryFragment
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.util.Duration
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import javax.inject.Inject
 
 @ExperimentalMaterialApi
 @FlowPreview
@@ -44,16 +44,13 @@ class FragmentHome : Fragment() {
         ViewModelProvider(this).get(FragmentHomeVM::class.java)
     }
 
+    @Inject
+    lateinit var auth:JobFlowAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         disableBackArrow()
         setHasOptionsMenu(true)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isPrinterVersionApp())
-            navigateToMachinesFragment()
     }
 
     override fun onCreateView(
@@ -65,9 +62,17 @@ class FragmentHome : Fragment() {
         return viewBinding.root
     }
 
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.fragment_home, menu)
     }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.mnu_change_role).isVisible = currentUserRole() == "root"
+
+    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
@@ -94,10 +99,15 @@ class FragmentHome : Fragment() {
             return true
         }
 
+        if(item.itemId == R.id.mnu_change_role){
+            findNavController().navigate(R.id.action_fragmentHome_to_updateRoleFragment)
+            return true
+        }
+
         if (item.itemId == R.id.mnu_sign_out) {
-            FirebaseAuth.getInstance().signOut()
-            val navOptions = NavOptions.Builder().setPopUpTo(R.id.fragmentHome,true).build()
-            findNavController().navigate(R.id.action_global_loginFragment,null,navOptions)
+            auth.logout()
+            val navOptions = NavOptions.Builder().setPopUpTo(R.id.fragmentHome, true).build()
+            findNavController().navigate(R.id.action_global_loginFragment, null, navOptions)
             return true
         }
 
@@ -111,17 +121,6 @@ class FragmentHome : Fragment() {
         updateTitle(getString(R.string.papco_jobs))
         updateSubTitle("")
         observeViewModel()
-        logTheUserClaim()
-    }
-
-    private fun logTheUserClaim(){
-        val currentUser=FirebaseAuth.getInstance().currentUser
-        currentUser?.getIdToken(false)
-            ?.addOnSuccessListener {
-                val claim=it.claims["role"]
-                Log.d("SUNDAR","Current user role is: $claim")
-            } ?: Log.d("SUNDAR","Failed to get token")
-
     }
 
     override fun onDestroyView() {
@@ -137,7 +136,6 @@ class FragmentHome : Fragment() {
         viewBinding.inProgress.destinationName.text = getString(R.string.in_progress)
         viewBinding.machines.icon.setImageResource(R.drawable.ic_machine)
         viewBinding.machines.destinationName.text = getString(R.string.machines)
-
 
         viewBinding.newJobs.root.setOnClickListener {
             findNavController().navigate(R.id.action_fragmentHome_to_fixedDestinationFragment)
@@ -201,7 +199,7 @@ class FragmentHome : Fragment() {
 
     private fun navigateToMachinesFragment() {
 
-        if (isPrinterVersionApp()) {
+        if (currentUserRole()=="printer") {
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.fragmentHome, true)
                 .build()

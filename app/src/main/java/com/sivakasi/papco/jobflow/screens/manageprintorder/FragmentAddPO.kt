@@ -16,14 +16,10 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentAddPoBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.number
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
-import com.sivakasi.papco.jobflow.util.toast
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.ValidNumberRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator

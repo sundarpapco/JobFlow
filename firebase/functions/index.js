@@ -43,3 +43,23 @@ exports.createNewUser = functions.https.onCall(async (data, context) => {
   return userRecord;
 
 });
+
+
+exports.updateUserClaim = functions.https.onCall(async (data,context) => {
+
+  //The user calling this function should be a root
+  if(context.auth.token.role != "root"){
+    throw new HttpsError("permission-denied","Only root can update user claims");
+  }else{
+    //A root cannot change the role of himself to de-promote him
+    //This action will make sure that atleast one root user is always there in the app
+    if(context.auth.token.email===data.email){
+      throw new HttpsError("failed-precondition","You cannot change the role of yourself");
+    }
+  }
+  
+  //Ok. the calling user is a root. Now get and update the claim
+  const userToUpdate = await admin.auth().getUserByEmail(data.email);
+  await admin.auth().setCustomUserClaims(userToUpdate.uid,{ role: data.role });
+
+});

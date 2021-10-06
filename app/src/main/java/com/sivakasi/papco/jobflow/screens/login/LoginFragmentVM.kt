@@ -4,22 +4,40 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.functions.FirebaseFunctions
-import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.extensions.getMessage
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginFragmentVM @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val auth: JobFlowAuth
 ) : ViewModel() {
 
-    val loginSuccess = MutableLiveData(false)
+    val loginSuccess = MutableLiveData("none")
     val authState = AuthenticationState(application)
-    private val auth = FirebaseAuth.getInstance()
-    private val functions = FirebaseFunctions.getInstance()
+
+    init {
+        checkUserStatus()
+    }
+
+    private fun checkUserStatus() {
+
+        //Hide the splash screen and show the login screen if no user is logged in
+        if (auth.currentUser == null) {
+            authState.isSplashScreenShown = false
+            return
+        }
+
+        //Some user has logged in. so, check the claim and inform the fragment to navigate
+        viewModelScope.launch {
+            val claim = auth.fetchUserClaim(auth.currentUser)
+            loginSuccess.value = claim
+        }
+    }
 
     fun onFormSubmit() {
 
@@ -30,19 +48,15 @@ class LoginFragmentVM @Inject constructor(
         if (!authState.isValid())
             return
 
-        if (authState.mode == AuthenticationMode.LOGIN)
-            onLogin()
-        else
-            onRegisterUsingCloudFunction()
-    }
-
-    private fun onLogin() {
-
         authState.startLogin()
         authState.clearErrors()
 
-        launchLoginCoroutine()
+        if (authState.mode == AuthenticationMode.LOGIN)
+            logInAndGetClaim(registerBeforeLogin = false)
+        else
+            logInAndGetClaim(registerBeforeLogin = true)
     }
+
 
     fun onModeChanged(targetMode: AuthenticationMode) {
         authState.authError = null
@@ -55,42 +69,22 @@ class LoginFragmentVM @Inject constructor(
         authState.mode = targetMode
     }
 
-    private fun onRegisterUsingCloudFunction() {
 
-        authState.clearErrors()
-        authState.startLogin()
+    private fun logInAndGetClaim(registerBeforeLogin: Boolean = false) {
 
-        val data = hashMapOf(
-            "email" to authState.email,
-            "password" to authState.password,
-            "displayName" to authState.name
-        )
+        viewModelScope.launch(Dispatchers.IO) {
 
-        functions.getHttpsCallable("createNewUser")
-            .call(data)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    launchLoginCoroutine()
-                } else {
-                    val error = it.exception?.message
-                        ?: application.getString(R.string.error_unknown_error)
-                    authState.loginFailed(error)
-                }
-            }
-    }
+            try {
 
-    private fun launchLoginCoroutine() {
-        viewModelScope.launch {
-            auth.signInWithEmailAndPassword(
-                authState.email,
-                authState.password
-            ).addOnSuccessListener {
-                authState.loginSuccess()
-                loginSuccess.value = true
-            }.addOnFailureListener {
-                authState.loginFailed(
-                    it.message ?: application.getString(R.string.error_unknown_error)
-                )
+                if (registerBeforeLogin)
+                    auth.registerUser(authState.email, authState.password, authState.name)
+
+                val loggedInUser = auth.logIn(authState.email, authState.password)
+                val loggedInUserClaim = auth.fetchUserClaim(loggedInUser.user)
+                loginSuccess.postValue(loggedInUserClaim)
+
+            } catch (e: Exception) {
+                authState.loginFailed(e.getMessage(application))
             }
         }
     }

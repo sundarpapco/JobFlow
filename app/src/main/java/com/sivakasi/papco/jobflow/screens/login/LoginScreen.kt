@@ -3,13 +3,11 @@ package com.sivakasi.papco.jobflow.screens.login
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -22,11 +20,15 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,32 +48,36 @@ fun LoginScreen(
     JobFlowTheme {
         Surface {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 32.dp, end = 32.dp)
-            ) {
+            if (authState.isSplashScreenShown) {
+                SplashScreen()
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 32.dp, end = 32.dp)
+                ) {
 
-                Heading(mode = authState.mode)
+                    Heading(mode = authState.mode)
 
-                Spacer(Modifier.height(50.dp))
+                    Spacer(Modifier.height(50.dp))
 
-                LoginFields(
-                    authState = authState,
-                    onForgotPassword = onForgotPassword,
-                    onFormSubmit = onFormSubmit
-                )
+                    LoginFields(
+                        authState = authState,
+                        onForgotPassword = onForgotPassword,
+                        onFormSubmit = onFormSubmit
+                    )
 
-                Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(24.dp))
 
-                RegisterOrLogin(
-                    authState.mode,
-                    onModeChange
-                )
+                    RegisterOrLogin(
+                        authState,
+                        onModeChange
+                    )
 
-                Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
+                }
             }
         }
     }
@@ -131,7 +137,7 @@ private fun LoginFields(
         JobFlowTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top=16.dp)
+                .padding(top = 16.dp)
                 .focusRequester(emailFocus),
             onTabPressed = { passwordFocus.requestFocus() },
             error = authState.emailError,
@@ -176,16 +182,20 @@ private fun LoginFields(
                     authState.password = it
             },
             label = stringResource(id = R.string.password),
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (authState.isPasswordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
             enabled = !authState.isLoading,
             keyboardActions = KeyboardActions {
                 if (authState.mode == AuthenticationMode.LOGIN) {
-                    focusManager.clearFocus() //Hides the softkeyboard
+                    focusManager.clearFocus() //Hides the soft keyboard
                     onFormSubmit()
                 } else
                     confirmPasswordFocus.requestFocus()
             },
             keyboardOptions = KeyboardOptions(
+                keyboardType=KeyboardType.Password,
                 imeAction = if (authState.mode == AuthenticationMode.LOGIN)
                     ImeAction.Done
                 else
@@ -196,7 +206,27 @@ private fun LoginFields(
                     imageVector = Icons.Filled.Lock,
                     contentDescription = "Password"
                 )
-            })
+            },
+            trailingIcon = {
+                if (authState.isPasswordVisible) {
+                    Icon(
+                        modifier = Modifier.clickable {
+                            authState.isPasswordVisible = !authState.isPasswordVisible
+                        },
+                        painter = painterResource(id = R.drawable.ic_visibility_off),
+                        contentDescription = "Hide password"
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier.clickable {
+                            authState.isPasswordVisible = !authState.isPasswordVisible
+                        },
+                        painter = painterResource(id = R.drawable.ic_visibility),
+                        contentDescription = "Show password"
+                    )
+                }
+            }
+        )
 
         //Confirmation password Field
         AnimatedVisibility(visible = authState.mode == AuthenticationMode.SIGNUP) {
@@ -263,7 +293,10 @@ private fun LoginFields(
                 .fillMaxWidth()
                 .focusRequester(submitButtonFocus)
                 .focusable(true),
-            onClick = { onFormSubmit() },
+            onClick = {
+                focusManager.clearFocus()
+                onFormSubmit()
+            },
             enabled = !authState.isLoading
         ) {
             if (authState.mode == AuthenticationMode.LOGIN)
@@ -285,7 +318,7 @@ private fun LoginFields(
 }
 
 @Composable
-private fun AuthError(error: String, modifier: Modifier = Modifier) {
+fun AuthError(error: String, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
     ) {
@@ -311,22 +344,24 @@ private fun AuthError(error: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun RegisterOrLogin(
-    mode: AuthenticationMode,
+    authState: AuthenticationState,
     onModeChange: (AuthenticationMode) -> Unit
 ) {
 
-    Crossfade(targetState = mode) { authMode ->
+    Crossfade(targetState = authState.mode) { authMode ->
         when (authMode) {
 
             AuthenticationMode.LOGIN -> {
                 Register(
-                    onRegister = { onModeChange(AuthenticationMode.SIGNUP) }
+                    onRegister = { onModeChange(AuthenticationMode.SIGNUP) },
+                    isEnabled = !authState.isLoading
                 )
             }
 
             AuthenticationMode.SIGNUP -> {
                 Login(
-                    onSelect = { onModeChange(AuthenticationMode.LOGIN) }
+                    onSelect = { onModeChange(AuthenticationMode.LOGIN) },
+                    isEnabled = !authState.isLoading
                 )
             }
 
@@ -337,7 +372,7 @@ private fun RegisterOrLogin(
 }
 
 @Composable
-private fun Register(onRegister: () -> Unit) {
+private fun Register(onRegister: () -> Unit, isEnabled: Boolean = true) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -352,7 +387,10 @@ private fun Register(onRegister: () -> Unit) {
             Spacer(Modifier.width(8.dp))
 
             Text(
-                modifier = Modifier.clickable { onRegister() },
+                modifier = Modifier.clickable {
+                    if (isEnabled)
+                        onRegister()
+                },
                 text = stringResource(R.string.register),
                 color = MaterialTheme.colors.secondary,
                 style = MaterialTheme.typography.caption
@@ -363,7 +401,7 @@ private fun Register(onRegister: () -> Unit) {
 }
 
 @Composable
-private fun Login(onSelect: () -> Unit) {
+private fun Login(onSelect: () -> Unit, isEnabled: Boolean = true) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -378,7 +416,10 @@ private fun Login(onSelect: () -> Unit) {
             Spacer(Modifier.width(8.dp))
 
             Text(
-                modifier = Modifier.clickable { onSelect() },
+                modifier = Modifier.clickable {
+                    if (isEnabled)
+                        onSelect()
+                },
                 text = stringResource(R.string.login),
                 color = MaterialTheme.colors.secondary,
                 style = MaterialTheme.typography.caption
@@ -410,6 +451,31 @@ private fun Heading(mode: AuthenticationMode) {
                     style = MaterialTheme.typography.h3
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SplashScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo_svg),
+            contentDescription = "Splash Screen"
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewSplashScreen() {
+    JobFlowTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            SplashScreen()
         }
     }
 }

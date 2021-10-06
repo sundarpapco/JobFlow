@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +43,7 @@ fun ForgotPasswordScreen(
         Surface {
 
             val configuration = LocalConfiguration.current
+            val focusManager = LocalFocusManager.current
             val buttonFocus = remember { FocusRequester() }
 
             Column(
@@ -103,7 +105,10 @@ fun ForgotPasswordScreen(
                         .fillMaxWidth()
                         .focusRequester(buttonFocus)
                         .focusable(true),
-                    onClick = { onFormSubmit() },
+                    onClick = {
+                        focusManager.clearFocus()
+                        onFormSubmit()
+                    },
                     enabled = !state.isLoading
                 ) {
                     Text(text = stringResource(id = R.string.send_email_caps))
@@ -125,43 +130,6 @@ fun ForgotPasswordScreen(
         }
     }
 }
-
-@Composable
-private fun AuthError(error: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-    ) {
-        Icon(
-            modifier = Modifier
-                .padding(end = 8.dp)
-                .align(Alignment.CenterVertically),
-            imageVector = Icons.Filled.Info,
-            contentDescription = "Password",
-            tint = MaterialTheme.colors.error
-        )
-
-        Text(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            text = error,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.error
-        )
-    }
-}
-
-/*
-@Preview
-@Composable
-private fun AuthErrorPreview() {
-
-    JobFlowTheme {
-        Surface {
-            AuthError(error = "This user does not exist or this user has a different password. Try again with different password")
-        }
-    }
-}*/
 
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi

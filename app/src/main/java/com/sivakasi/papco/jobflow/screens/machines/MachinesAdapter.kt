@@ -10,11 +10,12 @@ import com.sivakasi.papco.jobflow.common.ListAdapter
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.DestinationDiff
 import com.sivakasi.papco.jobflow.databinding.ListItemDestinationBinding
-import com.sivakasi.papco.jobflow.extensions.isPrinterVersionApp
 import com.sivakasi.papco.jobflow.util.Duration
 
 class MachinesAdapter(private val callback: MachinesAdapterListener) :
     ListAdapter<Destination, MachineViewHolder>(DestinationDiff()) {
+
+    var userRole="guest"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MachineViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -24,10 +25,10 @@ class MachinesAdapter(private val callback: MachinesAdapterListener) :
             callback.onMachineClicked(getData(viewHolder.bindingAdapterPosition))
         }
 
-        if(isPrinterVersionApp())
-            viewBinding.iconMore.visibility=View.GONE
+        if (userRole == "printer")
+            viewBinding.iconMore.visibility = View.GONE
         else {
-            viewBinding.iconMore.visibility=View.VISIBLE
+            viewBinding.iconMore.visibility = View.VISIBLE
             viewBinding.iconMore.setOnClickListener {
                 showPopupMenu(it, viewHolder.bindingAdapterPosition)
             }
@@ -39,15 +40,15 @@ class MachinesAdapter(private val callback: MachinesAdapterListener) :
         holder.bind(getData(holder.bindingAdapterPosition))
     }
 
-    private fun showPopupMenu(view:View,position: Int){
-        val menu=PopupMenu(view.context,view)
+    private fun showPopupMenu(view: View, position: Int) {
+        val menu = PopupMenu(view.context, view)
         menu.inflate(R.menu.edit_delete_machine)
         menu.setOnMenuItemClickListener {
-            if(it.itemId==R.id.mnu_edit_machine) {
+            if (it.itemId == R.id.mnu_edit_machine) {
                 callback.onEditMachineClicked(getData(position))
             }
 
-            if(it.itemId==R.id.mnu_delete_machine)
+            if (it.itemId == R.id.mnu_delete_machine)
                 callback.onDeleteMachineClicked(getData(position))
 
             true
@@ -71,9 +72,9 @@ class MachineViewHolder(private val viewBinding: ListItemDestinationBinding) :
     }
 }
 
-interface MachinesAdapterListener{
-    fun onMachineClicked(machine:Destination)
-    fun onMachineLongClicked(machine:Destination){}
+interface MachinesAdapterListener {
+    fun onMachineClicked(machine: Destination)
+    fun onMachineLongClicked(machine: Destination) {}
     fun onEditMachineClicked(machine: Destination)
-    fun onDeleteMachineClicked(machine:Destination)
+    fun onDeleteMachineClicked(machine: Destination)
 }

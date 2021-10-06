@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.sivakasi.papco.jobflow.util.toast
+import com.sivakasi.papco.jobflow.extensions.toast
 
 class ConfirmationDialog : DialogFragment() {
 

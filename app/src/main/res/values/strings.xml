@@ -170,6 +170,7 @@
     <string name="confirmation_password_match_error">Password and confirmation password should match</string>
     <string name="login">Login</string>
     <string name="sign_in_caps">SIGN IN</string>
+    <string name="sign_out_caps">SIGN OUT</string>
     <string name="invalid_email">Invalid Email</string>
     <string name="invalid_password">Password must be at least 8 characters long</string>
     <string name="user_not_found">No user found with this Email</string>
@@ -182,10 +183,29 @@
     <string name="forgot_password_desc">To reset your password, enter your email address
         below to send a password reset mail. Then check your mail and follow the
         instructions in the mail</string>
+    <string name="reset_password">Reset Password</string>
     <string name="send_email_caps">SEND EMAIL</string>
     <string name="email_to_reset">Email to reset</string>
     <string name="password_reset_mail_sent">Password reset mail sent successfully</string>
     <string name="name">Name</string>
+    <string name="refresh_caps">REFRESH</string>
+    <string name="guest_greeting">Welcome</string>
+    <string name="activation_description">This account now needs to be activated before you can
+        use this app. Kindly contact the administrator of this app with your registered email
+        address for activation.\n\nOnce Activated, you can refresh to proceed</string>
+    <string name="clients">Clients</string>
+    <string name="client_history">Client History</string>
+    <string name="xx_clients">%1$d Clients</string>
+    <string name="no_clients_found">No Clients Found</string>
+    <string name="change_user_role">Change user role</string>
+    <string name="update_role">Update Role</string>
+    <string name="update_role_caps">UPDATE ROLE</string>
+    <string name="update_role_desc">Enter the email address of the user for whom you wish
+        to update the role</string>
+    <string name="user_role">User Role</string>
+    <string name="role_update_success">User role updated successfully!</string>
+    <string name="activation_needed">Activation Needed</string>
+
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>
@@ -198,10 +218,7 @@
     <string name="notes">Notes</string>
     <string name="notes_title">Notes - %1$s</string>
     <string name="menu_share_as_pdf">Share as PDF</string>
-    <string name="clients">Clients</string>
-    <string name="client_history">Client History</string>
-    <string name="xx_clients">%1$d Clients</string>
-    <string name="no_clients_found">No Clients Found</string>
+
 
 
     <!-- Accessibility -->

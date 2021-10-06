@@ -1,35 +1,33 @@
-package com.sivakasi.papco.jobflow.screens.login
+package com.sivakasi.papco.jobflow.admin
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import androidx.compose.animation.ExperimentalAnimationApi
+import android.view.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.screens.login.LoginFragmentVM
+import com.sivakasi.papco.jobflow.screens.login.LoginScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalComposeUiApi
-@ExperimentalAnimationApi
 @AndroidEntryPoint
-class ForgotPasswordFragment : Fragment() {
+class UpdateRoleFragment: Fragment() {
 
     private var _viewBinding: ComposeScreenBinding? = null
     private val viewBinding: ComposeScreenBinding
         get() = _viewBinding!!
 
     private val viewModel by lazy {
-        ViewModelProvider(this).get(ForgotPasswordVM::class.java)
+        ViewModelProvider(this).get(UpdateRoleVM::class.java)
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,19 +36,15 @@ class ForgotPasswordFragment : Fragment() {
     ): View {
         _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
         viewBinding.composeView.setContent {
-            ForgotPasswordScreen(
-                state = viewModel.forgotPasswordState,
-                onFormSubmit = viewModel::onFormSubmit
-            )
+            UpdateRoleScreen(updateRoleState = viewModel.state,viewModel::onUpdateRole)
         }
         return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observeViewModel()
-        updateFragmentTitle()
         enableBackArrow()
+        updateFragmentTitle()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -63,23 +57,13 @@ class ForgotPasswordFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun observeViewModel() {
-        viewModel.passwordResetMailSent.observe(viewLifecycleOwner) { success ->
-            if (success)
-                findNavController().popBackStack()
-        }
-
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        _viewBinding = null
+        _viewBinding=null
     }
 
     private fun updateFragmentTitle(){
-        updateTitle(getString(R.string.reset_password))
+        updateTitle(getString(R.string.update_role))
         updateSubTitle("")
     }
-
-
 }

@@ -29,9 +29,14 @@
         android:title="@string/invoice_history"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/mnu_sign_out"
+    <item android:id="@+id/mnu_change_role"
         android:orderInCategory="500"
-        android:icon="@drawable/ic_history"
+        android:title="@string/change_user_role"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/mnu_sign_out"
+        android:orderInCategory="600"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
 

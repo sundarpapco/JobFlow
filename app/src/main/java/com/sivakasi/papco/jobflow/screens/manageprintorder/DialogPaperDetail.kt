@@ -9,12 +9,8 @@ import androidx.fragment.app.DialogFragment
 import com.sivakasi.papco.jobflow.*
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.databinding.DialogPaperDetailBinding
-import com.sivakasi.papco.jobflow.extensions.number
-import com.sivakasi.papco.jobflow.extensions.numberDecimal
-import com.sivakasi.papco.jobflow.extensions.validateForGreaterThanZero
-import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.FormValidator
-import com.sivakasi.papco.jobflow.util.toast
 
 
 class DialogPaperDetail : DialogFragment() {

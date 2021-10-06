@@ -3,12 +3,10 @@
 package com.sivakasi.papco.jobflow.screens.machines
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
@@ -19,10 +17,11 @@ import com.sivakasi.papco.jobflow.databinding.FragmentMachinesBinding
 import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.util.EventObserver
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -51,6 +50,14 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
         ViewModelProvider(this).get(ManageMachinesVM::class.java)
     }
 
+    @Inject
+    lateinit var auth:JobFlowAuth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -63,15 +70,15 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (isPrinterVersionApp())
-            disableBackArrow()
-        else
-            enableBackArrow()
-
         initViews()
         initRecycler()
         observeViewModel()
         updateFragmentTitle()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (currentUserRole() == "printer")
+            inflater.inflate(R.menu.fragment_machines, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -81,21 +88,34 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
             return true
         }
 
+        if (item.itemId == R.id.mnu_sign_out) {
+            auth.logout()
+            val navOptions =
+                NavOptions.Builder().setPopUpTo(R.id.manageMachinesFragment, true).build()
+            findNavController().navigate(R.id.action_global_loginFragment, null, navOptions)
+            return true
+        }
+
         return super.onOptionsItemSelected(item)
     }
 
     private fun initViews() {
 
-        if (isPrinterVersionApp())
-            viewBinding.fab.hide()
-        else
+        if (currentUserRole() == "root" || currentUserRole() == "admin") {
+            enableBackArrow()
+            viewBinding.fab.show()
             viewBinding.fab.setOnClickListener {
                 showCreateMachineDialog()
             }
+        } else {
+            disableBackArrow()
+            viewBinding.fab.hide()
+        }
     }
 
     private fun initRecycler() {
         viewBinding.recycler.layoutManager = LinearLayoutManager(requireContext())
+        adapter.userRole=currentUserRole()
         viewBinding.recycler.adapter = adapter
     }
 

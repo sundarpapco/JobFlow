@@ -16,6 +16,7 @@ enum class AuthenticationMode {
 class AuthenticationState(private val context: Context) {
 
     var mode: AuthenticationMode by mutableStateOf(AuthenticationMode.LOGIN)
+    var isSplashScreenShown by mutableStateOf(true)
     var authError: String? by mutableStateOf(null)
     var isLoading: Boolean by mutableStateOf(false)
     var name:String by mutableStateOf("")
@@ -23,6 +24,7 @@ class AuthenticationState(private val context: Context) {
     var email: String by mutableStateOf("")
     var emailError: String? by mutableStateOf(null)
     var password: String by mutableStateOf("")
+    var isPasswordVisible by mutableStateOf(false)
     var passwordError: String? by mutableStateOf(null)
     var confirmPassword: String by mutableStateOf("")
     var confirmPasswordError: String? by mutableStateOf(null)
