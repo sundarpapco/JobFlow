@@ -40,6 +40,15 @@ exports.createNewUser = functions.https.onCall(async (data, context) => {
   else
     await admin.auth().setCustomUserClaims(userRecord.uid, { role: "guest" });
 
+
+    //Crate the document for the current user and update the role change timestamp
+    const document=admin.firestore().doc('/users/' + userRecord.uid);
+    await document.set({
+      displayName:userRecord.displayName,
+      email:userRecord.email,
+      refreshTime: new Date().getTime()
+    });
+
   return userRecord;
 
 });
@@ -47,6 +56,11 @@ exports.createNewUser = functions.https.onCall(async (data, context) => {
 
 exports.updateUserClaim = functions.https.onCall(async (data,context) => {
 
+  //First things first. The role of papcopvtltd@gmail.com is always root and cannot be changed even by another root
+  if(data.email==="papcopvtltd@gmail.com"){
+    throw new HttpsError("failed-precondition","This account role cannot be channged and will always be root")
+  }
+  
   //The user calling this function should be a root
   if(context.auth.token.role != "root"){
     throw new HttpsError("permission-denied","Only root can update user claims");
@@ -61,5 +75,19 @@ exports.updateUserClaim = functions.https.onCall(async (data,context) => {
   //Ok. the calling user is a root. Now get and update the claim
   const userToUpdate = await admin.auth().getUserByEmail(data.email);
   await admin.auth().setCustomUserClaims(userToUpdate.uid,{ role: data.role });
+
+  //modify the refresh time of the user in the user document so that any clients
+  //watching this document will be notififed immediately about the role change to take action
+  const document=admin.firestore().doc('/users/' + userToUpdate.uid);
+  await document.update({
+    refreshTime: new Date().getTime()
+  });
+
+});
+
+exports.deleteUserDocument = functions.auth.user().onDelete((user) => {
+
+  const document=admin.firestore().doc('/users/' + user.uid);
+  document.delete();
 
 });

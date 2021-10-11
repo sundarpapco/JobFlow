@@ -1,25 +1,35 @@
 package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.RelocationRequester
 import androidx.compose.ui.layout.relocationRequester
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import com.sivakasi.papco.jobflow.admin.MenuItem
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
@@ -98,6 +108,101 @@ fun JobFlowTextField(
         }
     }
 }
+
+@Composable
+fun JobFlowTopBar(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String? = null,
+    navigationIcon: @Composable (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+    backgroundColor: Color = MaterialTheme.colors.surface.copy(0.99f),
+    contentColor: Color = MaterialTheme.colors.onSurface,
+    elevation: Dp = AppBarDefaults.TopAppBarElevation
+) {
+    TopAppBar(
+        backgroundColor = backgroundColor,
+        modifier = modifier,
+        navigationIcon = navigationIcon,
+        title = {
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold
+                )
+
+                if (subtitle != null)
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.subtitle2
+                    )
+            }
+        },
+        contentColor = contentColor,
+        elevation = elevation,
+        actions = actions
+    )
+}
+
+@Composable
+fun OptionsMenu(
+    menuItems: List<MenuAction>,
+    onItemClick: (String) -> Unit
+) {
+
+    val actions = remember { menuItems.filter { it.iconId != null || it.imageVector != null } }
+    val overFlowItems =
+        remember { menuItems.filter { it.iconId == null && it.imageVector == null } }
+
+    var expanded by rememberSaveable(Unit) { mutableStateOf(false) }
+
+    actions.forEach {
+        IconButton(onClick = {
+            onItemClick(it.label)
+            expanded = false
+        }) {
+            if (it.imageVector != null)
+                Icon(
+                    imageVector = it.imageVector!!,
+                    contentDescription = it.label,
+                    tint = MaterialTheme.colors.onSurface
+                )
+            else
+                Icon(
+                    painterResource(id = it.iconId!!),
+                    contentDescription = it.label,
+                    tint = MaterialTheme.colors.onSurface
+                )
+        }
+    }
+
+    if (overFlowItems.isNotEmpty()) {
+        Box(
+            modifier = Modifier.wrapContentSize(Alignment.TopEnd)
+        ) {
+            IconButton(onClick = { expanded = true }) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "Overflow menu",
+                    tint = MaterialTheme.colors.onSurface
+                )
+            }
+
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+
+                overFlowItems.forEach {
+                    MenuItem(text = it.label) {
+                        expanded = false
+                        onItemClick(it.label)
+                    }
+                }
+            }
+        }
+    }
+
+}
+
 
 @ExperimentalComposeUiApi
 @Preview

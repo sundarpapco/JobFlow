@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
@@ -17,11 +16,9 @@ import com.sivakasi.papco.jobflow.databinding.FragmentMachinesBinding
 import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.util.EventObserver
-import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -49,9 +46,6 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
     private val viewModel: ManageMachinesVM by lazy {
         ViewModelProvider(this).get(ManageMachinesVM::class.java)
     }
-
-    @Inject
-    lateinit var auth:JobFlowAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,10 +83,7 @@ class ManageMachinesFragment : Fragment(), MachinesAdapterListener {
         }
 
         if (item.itemId == R.id.mnu_sign_out) {
-            auth.logout()
-            val navOptions =
-                NavOptions.Builder().setPopUpTo(R.id.manageMachinesFragment, true).build()
-            findNavController().navigate(R.id.action_global_loginFragment, null, navOptions)
+            signOut()
             return true
         }
 

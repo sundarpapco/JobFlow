@@ -5,10 +5,11 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -22,8 +23,6 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @Composable
 fun GuestScreen(
-    isLoading:MutableState<Boolean>,
-    onRefresh: () -> Unit,
     onSignOut: () -> Unit
 ) {
     JobFlowTheme {
@@ -67,30 +66,12 @@ fun GuestScreen(
                         .fillMaxWidth()
                         .focusRequester(buttonFocus)
                         .focusable(true),
-                    onClick = { onRefresh() },
-                    enabled = !isLoading.value
-                ) {
-                    Text(text = stringResource(id = R.string.refresh_caps))
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(buttonFocus)
-                        .focusable(true),
-                    onClick = { onSignOut() },
-                    enabled = !isLoading.value
+                    onClick = { onSignOut() }
                 ) {
                     Text(text = stringResource(id = R.string.sign_out_caps))
                 }
 
                 Spacer(Modifier.height(24.dp))
-
-                if (isLoading.value) {
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                }
 
             }
 
@@ -103,9 +84,7 @@ fun GuestScreen(
 @Composable
 private fun GuestScreenPreview() {
 
-    val loadingState = remember{ mutableStateOf(false)}
-
-    GuestScreen (loadingState,{}){
+    GuestScreen{
 
     }
 }

@@ -1,14 +1,14 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.app.Application
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.Repository
+import com.sivakasi.papco.jobflow.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class FragmentHomeVM @Inject constructor(
@@ -23,12 +24,20 @@ class FragmentHomeVM @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _newJobs = MutableLiveData<Destination>()
-    private val _inProgress = MutableLiveData<Destination>()
-    private val _machines = MutableLiveData<Destination>()
-    val newJobs: LiveData<Destination> = _newJobs
-    val inProgress: LiveData<Destination> = _inProgress
-    val machines: LiveData<Destination> = _machines
+    private val newJobsState = JobGroupState().apply {
+        groupName=application.getString(R.string.new_jobs)
+        iconResourceId = R.drawable.ic_new_jobs
+    }
+
+    private val inProgressState = JobGroupState().apply {
+        groupName=application.getString(R.string.in_progress)
+        iconResourceId = R.drawable.ic_in_progress
+    }
+
+    private val machinesState = JobGroupState().apply {
+        groupName=application.getString(R.string.machines)
+        iconResourceId = R.drawable.ic_machine
+    }
 
     init {
         observeNewJobs()
@@ -36,19 +45,17 @@ class FragmentHomeVM @Inject constructor(
         observeDynamicDestinations()
     }
 
+    fun getStates() = listOf(newJobsState,inProgressState,machinesState)
+
     private fun observeNewJobs() {
         viewModelScope.launch {
             try {
                 repository.observeDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
                     .collect { destination ->
-                        if (destination == null) {
-                            _newJobs.value =
-                                emptyDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
-                        } else
-                            _newJobs.value = destination
+                        renderDestinationToState(destination,newJobsState)
                     }
             } catch (e: Exception) {
-                _newJobs.value = emptyDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
+                renderDestinationToState(destination = null,newJobsState)
             }
         }
     }
@@ -58,14 +65,10 @@ class FragmentHomeVM @Inject constructor(
             try {
                 repository.observeDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
                     .collect { destination ->
-                        if (destination == null) {
-                            _inProgress.value =
-                                emptyDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
-                        } else
-                            _inProgress.value = destination
+                        renderDestinationToState(destination,inProgressState)
                     }
             } catch (e: Exception) {
-                _inProgress.value = emptyDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
+                renderDestinationToState(destination=null,newJobsState)
             }
         }
     }
@@ -84,14 +87,25 @@ class FragmentHomeVM @Inject constructor(
                         else
                             emptyDestination(application.getString(R.string.machines))
                     }.collect {
-                        it.name = application.getString(R.string.machines)
-                        _machines.value = it
+                        renderDestinationToState(it,machinesState)
                     }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                _machines.value = emptyDestination(application.getString(R.string.machines))
+                renderDestinationToState(destination = null,machinesState)
             }
+        }
+
+    }
+
+    private fun renderDestinationToState(destination: Destination?, state: JobGroupState) {
+
+        if (destination == null) {
+            state.jobCount = application.getString(R.string.xx_jobs, 0)
+            state.jobTime = Duration.fromMinutes(0).asFullString()
+        } else {
+            state.jobCount = application.getString(R.string.xx_jobs, destination.jobCount)
+            state.jobTime = Duration.fromMinutes(destination.runningTime).asFullString()
         }
 
     }

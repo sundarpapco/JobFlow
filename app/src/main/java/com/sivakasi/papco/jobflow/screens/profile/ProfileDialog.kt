@@ -1,27 +1,31 @@
-package com.sivakasi.papco.jobflow.screens.login
+package com.sivakasi.papco.jobflow.screens.profile
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import com.sivakasi.papco.jobflow.R
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
-import com.sivakasi.papco.jobflow.extensions.disableBackArrow
-import com.sivakasi.papco.jobflow.extensions.signOut
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.currentUserRole
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
-class GuestFragment : Fragment() {
+class ProfileDialog : BottomSheetDialogFragment() {
+
+    companion object {
+        const val TAG = "com.sivakasi.papco.jobflow.ProfileDialog.Tag"
+    }
 
     private var _viewBinding: ComposeScreenBinding? = null
     private val viewBinding: ComposeScreenBinding
         get() = _viewBinding!!
 
+    @Inject
+    lateinit var auth: JobFlowAuth
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,25 +34,18 @@ class GuestFragment : Fragment() {
     ): View {
         _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
         viewBinding.composeView.setContent {
-            GuestScreen(
-                onSignOut = this::logOut
+            ProfileScreen(
+                name=auth.currentUser?.displayName ?: error("User not logged in"),
+                email = auth.currentUser?.email ?: error("User not logged in"),
+                role = currentUserRole()
             )
         }
+        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
         return viewBinding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        disableBackArrow()
-        updateTitle(getString(R.string.activation_needed))
-        updateSubTitle("")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _viewBinding = null
     }
-
-    private fun logOut() = signOut()
-
 }

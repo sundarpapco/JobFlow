@@ -10,6 +10,7 @@ import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -34,12 +35,15 @@ class UpdateRoleVM @Inject constructor(
                     state.email,
                     state.roles[state.selectedRoleIndex].lowercase(Locale.getDefault())
                 )
-                state.loadingSuccess()
-                Toast.makeText(
-                    application,
-                    application.getString(R.string.role_update_success),
-                    Toast.LENGTH_SHORT
-                ).show()
+                //We can toast only from the main thread. So, switching to main thread
+                withContext(Dispatchers.Main) {
+                    state.loadingSuccess()
+                    Toast.makeText(
+                        application,
+                        application.getString(R.string.role_update_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             } catch (e: Exception) {
                 state.loadingFailed(e.getMessage(application))
             }
