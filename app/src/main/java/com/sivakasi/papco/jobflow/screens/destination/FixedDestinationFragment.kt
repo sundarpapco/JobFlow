@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -17,17 +19,25 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.DestinationFixedBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
-import com.sivakasi.papco.jobflow.util.*
+import com.sivakasi.papco.jobflow.util.Duration
+import com.sivakasi.papco.jobflow.util.EventObserver
+import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.util.SafeActionModeCallBack
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import java.text.SimpleDateFormat
 import java.util.*
 
+@FlowPreview
+@ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class FixedDestinationFragment : Fragment(),
@@ -144,6 +154,9 @@ class FixedDestinationFragment : Fragment(),
         touchHelper.attachToRecyclerView(viewBinding.recycler)
     }
 
+    @FlowPreview
+    @ExperimentalComposeUiApi
+    @ExperimentalMaterialApi
     @Suppress("UNCHECKED_CAST")
     private fun observeViewModel() {
         viewModel.loadedJobs.observe(viewLifecycleOwner) {

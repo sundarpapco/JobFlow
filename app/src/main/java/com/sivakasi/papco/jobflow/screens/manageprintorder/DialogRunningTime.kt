@@ -10,9 +10,9 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.databinding.DialogRunningTimeBinding
 import com.sivakasi.papco.jobflow.extensions.number
+import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
-import com.sivakasi.papco.jobflow.util.toast
 import com.wajahatkarim3.easyvalidation.core.rules.GreaterThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.rules.LessThanOrEqualRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator

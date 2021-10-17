@@ -18,11 +18,11 @@ import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPostPressDetailsBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
+import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 

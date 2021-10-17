@@ -23,13 +23,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.ClientUIModel
 import com.sivakasi.papco.jobflow.screens.clients.ClientsFragmentVM
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.screens.common.SingleLineListItem
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -43,8 +42,8 @@ import kotlinx.coroutines.FlowPreview
 fun ClientsScreen(viewModel: ClientsFragmentVM, selectionMode: Boolean = false) {
 
     val loadingState by viewModel.clientsList.observeAsState(initial = LoadingStatus.Loading(""))
-    val newClientDialog = viewModel.newClientDialogState.observeAsState(initial = null)
-    val editClientDialog = viewModel.editClientDialogState.observeAsState(initial = null)
+    val newClientDialog = viewModel.newClientDialogState
+    val editClientDialog = viewModel.editClientDialogState
     val query = viewModel.query
 
     Scaffold(
@@ -70,7 +69,7 @@ fun ClientsScreen(viewModel: ClientsFragmentVM, selectionMode: Boolean = false) 
 
 
     newClientDialog.value?.let {
-        ClientDialog(
+        TextInputDialog(
             dialogState = it,
             onPositiveClick = viewModel::onAddClient,
             onNegativeClick = viewModel::cancelNewClientDialog
@@ -78,7 +77,7 @@ fun ClientsScreen(viewModel: ClientsFragmentVM, selectionMode: Boolean = false) 
     }
 
     editClientDialog.value?.let {
-        ClientDialog(
+        TextInputDialog(
             dialogState = it,
             onPositiveClick = viewModel::onUpdateClient,
             onNegativeClick = viewModel::cancelEditClientDialog
@@ -205,93 +204,8 @@ private fun ClientsList(
                     Spacer(Modifier.height(60.dp))
             }
         }
-
 }
 
-@ExperimentalComposeUiApi
-@Composable
-private fun ClientDialog(
-    dialogState: ClientDialogState,
-    onPositiveClick: (String) -> Unit = {},
-    onNegativeClick: () -> Unit = {}
-) {
-
-    Dialog(
-        onDismissRequest = { },
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        )
-    ) {
-        DialogContent(
-            dialogState = dialogState,
-            onPositiveClick = onPositiveClick,
-            onNegativeClick = onNegativeClick
-        )
-    }
-
-}
-
-@Composable
-private fun DialogContent(
-    dialogState: ClientDialogState,
-    onPositiveClick: (String) -> Unit,
-    onNegativeClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(dialogState.title, style = MaterialTheme.typography.h5)
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = dialogState.name,
-                onValueChange = { dialogState.error = null;dialogState.name = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                label = { Text("Client Name") },
-                readOnly = dialogState.isLoading,
-                isError = dialogState.error != null
-            )
-
-            Text(
-                dialogState.error ?: "",
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.overline
-            )
-
-
-            Spacer(Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    if (dialogState.isLoading)
-                        CircularProgressIndicator()
-                }
-
-                Button(
-                    onClick = onNegativeClick,
-                    enabled = !dialogState.isLoading
-                ) {
-                    Text(dialogState.negativeButtonText)
-                }
-
-                Spacer(Modifier.width(16.dp))
-
-                Button(
-                    onClick = { onPositiveClick(dialogState.name) },
-                    enabled = !dialogState.isLoading && dialogState.name.isNotBlank()
-                ) {
-                    Text(dialogState.positiveButtonText)
-                }
-            }
-
-        }
-    }
-}
 
 @Composable
 fun LoadingScreen() {

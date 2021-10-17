@@ -3,13 +3,15 @@ package com.sivakasi.papco.jobflow.screens.clients
 import android.app.Application
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.models.ClientUIModel
-import com.sivakasi.papco.jobflow.screens.clients.ui.ClientDialogState
+import com.sivakasi.papco.jobflow.ui.TextInputDialogState
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -26,8 +28,8 @@ class ClientsFragmentVM @Inject constructor(
 ) : ViewModel() {
 
     val clientsList = MutableLiveData<LoadingStatus>()
-    val newClientDialogState = MutableLiveData<ClientDialogState?>()
-    val editClientDialogState = MutableLiveData<ClientDialogState?>()
+    val newClientDialogState = mutableStateOf<TextInputDialogState<Int>?>(null)
+    val editClientDialogState = mutableStateOf<TextInputDialogState<Int>?>(null)
     val selectedClient = MutableLiveData<Client>()
     private val queryFlow = MutableStateFlow("")
     var query = mutableStateOf("")
@@ -49,7 +51,7 @@ class ClientsFragmentVM @Inject constructor(
                             return@combine list
 
                         list.filter { clientToFilter ->
-                            clientToFilter.name.lowercase().contains(query,true)
+                            clientToFilter.name.lowercase().contains(query, true)
                         }
                     }.map {
                         it.map { client ->
@@ -73,9 +75,13 @@ class ClientsFragmentVM @Inject constructor(
     }
 
     fun onClientClicked(client: ClientUIModel) {
-        val dialogState = ClientDialogState("Edit Client", "SAVE", "CANCEL")
-        dialogState.id = client.id
-        dialogState.name = client.name.text
+        val dialogState = TextInputDialogState<Int>("SAVE", "CANCEL").apply {
+            title = "Edit Client"
+            label = "Client Name"
+        }
+        dialogState.data = client.id
+        dialogState.text = TextFieldValue( client.name.text,
+            TextRange(client.name.text.length,client.name.text.length))
         editClientDialogState.value = dialogState
     }
 
@@ -86,7 +92,10 @@ class ClientsFragmentVM @Inject constructor(
     }
 
     fun onFabClicked() {
-        val dialogState = ClientDialogState("Add Client", "SAVE", "CANCEL")
+        val dialogState = TextInputDialogState<Int>("SAVE", "CANCEL").apply{
+            title="Add Client"
+            label="Client Name"
+        }
         newClientDialogState.value = dialogState
     }
 
@@ -94,12 +103,12 @@ class ClientsFragmentVM @Inject constructor(
 
         viewModelScope.launch {
             newClientDialogState.value?.let {
-                it.isLoading = true
+                it.isProcessing = true
                 try {
                     repository.createClient(Client(name = name))
                     newClientDialogState.value = null
                 } catch (e: Exception) {
-                    it.isLoading = false
+                    it.isProcessing = false
                     Toast.makeText(
                         application,
                         e.message ?: "Unknown Error",
@@ -119,12 +128,13 @@ class ClientsFragmentVM @Inject constructor(
     fun onUpdateClient(name: String) {
         viewModelScope.launch {
             editClientDialogState.value?.let {
-                it.isLoading = true
+                it.isProcessing = true
+                require(it.data!=null){"Client ID should not be null while updating a client"}
                 try {
-                    repository.updateClient(Client(it.id, name))
+                    repository.updateClient(Client(it.data!!, name))
                     editClientDialogState.value = null
                 } catch (e: Exception) {
-                    it.isLoading = false
+                    it.isProcessing = false
                     Toast.makeText(
                         application,
                         e.message ?: "Unknown Error",

@@ -8,6 +8,7 @@ class DatabaseContract {
         const val COLLECTION_COUNTERS="Counters"
         const val COLLECTION_JOBS="Jobs"
         const val COLLECTION_CLIENTS="Clients"
+        const val COLLECTION_USERS="users"
 
         const val DOCUMENT_DEST_NEW_JOBS="New Jobs"
         const val DOCUMENT_DEST_COMPLETED="Completed"

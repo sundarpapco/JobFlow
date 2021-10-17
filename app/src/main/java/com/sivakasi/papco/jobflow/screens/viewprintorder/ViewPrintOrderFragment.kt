@@ -26,7 +26,6 @@ import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
-import com.sivakasi.papco.jobflow.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -60,7 +59,7 @@ class ViewPrintOrderFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadPrintOrder(getDestinationId(), getPoId())
-        if (isPrinterVersionApp())
+        if (currentUserRole()=="printer")
             setHasOptionsMenu(false)
         else
             setHasOptionsMenu(true)
@@ -92,7 +91,7 @@ class ViewPrintOrderFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (!isPrinterVersionApp())
+        if (currentUserRole()!="printer")
             inflater.inflate(R.menu.fragment_view_print_order, menu)
     }
 
@@ -126,7 +125,7 @@ class ViewPrintOrderFragment : Fragment() {
         //Disable editing of this print order if this it printer version of app or this print order
         //is completed
 
-        if (isPrinterVersionApp() || getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED)
+        if (currentUserRole()=="printer" || getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED)
             viewBinding.fab.hide()
         else
             viewBinding.fab.setOnClickListener {

@@ -3,7 +3,7 @@ package com.sivakasi.papco.jobflow.common
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
-import com.sivakasi.papco.jobflow.util.toast
+import com.sivakasi.papco.jobflow.extensions.toast
 
 open class ResultDialogFragment:DialogFragment() {
 

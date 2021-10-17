@@ -33,6 +33,33 @@ class Repository @Inject constructor(
     private val database = FirebaseFirestore.getInstance()
 
 
+    suspend fun observeUser(
+        userId: String,
+    ) = callbackFlow {
+
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_USERS)
+            .document(userId)
+            .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
+
+                if (firebaseFirestoreException != null)
+                    throw firebaseFirestoreException
+
+                if (documentSnapshot == null || !documentSnapshot.exists()) {
+                    try {
+                        trySend(null).isSuccess
+                    } catch (e: Exception) {
+                    }
+                } else
+                    try {
+                        trySend(documentSnapshot.toObject(User::class.java)).isSuccess
+                    } catch (e: Exception) {
+                    }
+            }
+
+        awaitClose { listenerRegistration.remove() }
+    }
+
+
     suspend fun observeDestination(
         destinationId: String,
     ) = callbackFlow {
