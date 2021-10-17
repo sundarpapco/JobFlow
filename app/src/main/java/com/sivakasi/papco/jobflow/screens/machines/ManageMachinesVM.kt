@@ -1,20 +1,21 @@
 package com.sivakasi.papco.jobflow.screens.machines
 
 import android.app.Application
-import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.util.*
+import com.sivakasi.papco.jobflow.extensions.toastError
+import com.sivakasi.papco.jobflow.extensions.toastStringResource
+import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ManageMachinesVM @Inject constructor(
@@ -22,38 +23,89 @@ class ManageMachinesVM @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-
-    private val _machines = MutableLiveData<LoadingStatus>()
-    private val _deleteStatus = MutableLiveData<Event<LoadingStatus>>()
-    val machines: LiveData<LoadingStatus> = _machines
-    val deleteStatus: LiveData<Event<LoadingStatus>> = _deleteStatus
+    val uiState=MachinesScreenUIState(application)
 
     init {
         loadAllMachines()
     }
 
     private fun loadAllMachines() {
-        _machines.value = LoadingStatus.Loading(application.getString(R.string.one_moment_please))
+        uiState.machines = LoadingStatus.Loading(application.getString(R.string.one_moment_please))
         viewModelScope.launch {
             try {
                 repository.loadAllMachines()
                     .collect {
-                        _machines.value = LoadingStatus.Success(it)
+                        uiState.machines = LoadingStatus.Success(it)
                     }
             } catch (e: Exception) {
-                _machines.value = LoadingStatus.Error(e)
+                uiState.machines = LoadingStatus.Error(e)
             }
         }
     }
 
     fun deleteMachine(machineId: String) {
-        _deleteStatus.value = loadingEvent(application.getString(R.string.one_moment_please))
+
+        uiState.showWaitDialog()
         viewModelScope.launch {
             try {
                 repository.deleteMachine(machineId)
-                _deleteStatus.value = dataEvent(true)
+                uiState.hideWaitDialog()
             } catch (e: Exception) {
-                _deleteStatus.value = errorEvent(e)
+                uiState.hideWaitDialog()
+                application.toastError(e)
+            }
+        }
+    }
+
+    fun addMachine(){
+
+        val state=uiState.addMachineDialogState!!
+       state.isProcessing=true
+        viewModelScope.launch {
+            try {
+
+                val machineName = state.text.text.trim()
+
+                if (repository.machineAlreadyExist(machineName)) {
+                    state.isProcessing=false
+                   application.toastStringResource(R.string.machine_already_exist)
+                } else {
+                    repository.createMachine(machineName)
+                    uiState.hideAddMachineDialog()
+                }
+
+            } catch (e: Exception) {
+                state.isProcessing=false
+                application.toastError(e)
+            }
+        }
+    }
+
+    fun editMachine(){
+        val state=uiState.editMachineDialogState!!
+        val destination = state.data!!
+        val newMachineName = state.text.text.trim()
+
+        //If the user has not changed the machine name, then simply don't do anything
+        //Just dismiss the dialog
+        if(newMachineName==destination.name){
+            uiState.hideEditMachineDialog()
+            return
+        }
+
+        viewModelScope.launch {
+            state.isProcessing=true
+            try {
+                if (repository.machineAlreadyExist(newMachineName)) {
+                    state.isProcessing=false
+                    application.toastStringResource(R.string.machine_already_exist)
+                } else {
+                    repository.updateMachine(destination.id,newMachineName)
+                    uiState.hideEditMachineDialog()
+                }
+            } catch (e: Exception) {
+                state.isProcessing=false
+                application.toastError(e)
             }
         }
     }

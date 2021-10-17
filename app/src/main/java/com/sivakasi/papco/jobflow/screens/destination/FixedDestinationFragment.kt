@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -29,9 +31,13 @@ import com.sivakasi.papco.jobflow.util.LoadingStatus
 import com.sivakasi.papco.jobflow.util.SafeActionModeCallBack
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import java.text.SimpleDateFormat
 import java.util.*
 
+@FlowPreview
+@ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 @AndroidEntryPoint
 @ExperimentalCoroutinesApi
 class FixedDestinationFragment : Fragment(),
@@ -148,6 +154,9 @@ class FixedDestinationFragment : Fragment(),
         touchHelper.attachToRecyclerView(viewBinding.recycler)
     }
 
+    @FlowPreview
+    @ExperimentalComposeUiApi
+    @ExperimentalMaterialApi
     @Suppress("UNCHECKED_CAST")
     private fun observeViewModel() {
         viewModel.loadedJobs.observe(viewLifecycleOwner) {

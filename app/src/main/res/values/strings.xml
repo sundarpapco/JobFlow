@@ -205,6 +205,7 @@
     <string name="user_role">User Role</string>
     <string name="role_update_success">User role updated successfully!</string>
     <string name="activation_needed">Activation Needed</string>
+    <string name="machine_delete_confirmation">Are you sure want to delete this machine?</string>
 
 
     <!-- Menu -->

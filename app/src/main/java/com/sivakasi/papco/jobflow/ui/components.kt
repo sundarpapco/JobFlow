@@ -1,18 +1,14 @@
 package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -23,13 +19,12 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.RelocationRequester
 import androidx.compose.ui.layout.relocationRequester
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import com.sivakasi.papco.jobflow.admin.MenuItem
 import kotlinx.coroutines.launch
 
 @ExperimentalComposeUiApi
@@ -37,6 +32,83 @@ import kotlinx.coroutines.launch
 fun JobFlowTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    onTabPressed: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    textStyle: TextStyle = LocalTextStyle.current,
+    label: String? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    error: String? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    singleLine: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    shape: Shape = MaterialTheme.shapes.small,
+    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
+) {
+    Column {
+
+        val relocationRequester = remember { RelocationRequester() }
+        val coroutineScope = rememberCoroutineScope()
+
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier
+                .relocationRequester(relocationRequester)
+                .onFocusChanged {
+                    if (it.isFocused)
+                        coroutineScope.launch {
+                            relocationRequester.bringIntoView()
+                        }
+                }
+                .onKeyEvent {
+                    if (it.key.keyCode == Key.Tab.keyCode) {
+                        onTabPressed()
+                        true
+                    } else
+                        false
+                },
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = textStyle,
+            label = if (label != null) {
+                { Text(label) }
+            } else null,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            isError = error != null,
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            interactionSource = interactionSource,
+            shape = shape,
+            colors = colors
+        )
+
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colors.error,
+                style = MaterialTheme.typography.caption
+            )
+        }
+    }
+}
+
+@ExperimentalComposeUiApi
+@Composable
+fun SelectableTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     onTabPressed: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -128,8 +200,7 @@ fun JobFlowTopBar(
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.h6,
-                    fontWeight = FontWeight.Bold
+                    style = LocalTextStyle.current
                 )
 
                 if (subtitle != null)
@@ -145,63 +216,7 @@ fun JobFlowTopBar(
     )
 }
 
-@Composable
-fun OptionsMenu(
-    menuItems: List<MenuAction>,
-    onItemClick: (String) -> Unit
-) {
 
-    val actions = remember { menuItems.filter { it.iconId != null || it.imageVector != null } }
-    val overFlowItems =
-        remember { menuItems.filter { it.iconId == null && it.imageVector == null } }
-
-    var expanded by rememberSaveable(Unit) { mutableStateOf(false) }
-
-    actions.forEach {
-        IconButton(onClick = {
-            onItemClick(it.label)
-            expanded = false
-        }) {
-            if (it.imageVector != null)
-                Icon(
-                    imageVector = it.imageVector!!,
-                    contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
-                )
-            else
-                Icon(
-                    painterResource(id = it.iconId!!),
-                    contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
-                )
-        }
-    }
-
-    if (overFlowItems.isNotEmpty()) {
-        Box(
-            modifier = Modifier.wrapContentSize(Alignment.TopEnd)
-        ) {
-            IconButton(onClick = { expanded = true }) {
-                Icon(
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = "Overflow menu",
-                    tint = MaterialTheme.colors.onSurface
-                )
-            }
-
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-
-                overFlowItems.forEach {
-                    MenuItem(text = it.label) {
-                        expanded = false
-                        onItemClick(it.label)
-                    }
-                }
-            }
-        }
-    }
-
-}
 
 
 @ExperimentalComposeUiApi

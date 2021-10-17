@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -46,7 +47,7 @@ val LocalBottomSheetState =
     compositionLocalOf<ModalBottomSheetState> { error("Bottom sheet state must be provided") }
 val LocalRole = compositionLocalOf<String> { error("Role must be provided") }
 val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must be initialized") }
-val LocalSignOut = compositionLocalOf<()->Unit> { error("Logout function not set") }
+val LocalSignOut = compositionLocalOf<() -> Unit> { error("Logout function not set") }
 
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -57,10 +58,10 @@ fun HomeScreen(
     role: String,
     jobGroups: List<JobGroupState>,
     navController: NavController,
-    onSignOut : () -> Unit
+    onSignOut: () -> Unit
 ) {
 
-    val bottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     CompositionLocalProvider(
         LocalNavigation provides navController,
@@ -70,7 +71,7 @@ fun HomeScreen(
     ) {
         JobFlowTheme {
 
-            val user = remember(role){JobFlowAuth().currentUser}
+            val user = remember(role) { JobFlowAuth().currentUser }
 
             ModalBottomSheetLayout(
                 sheetContent = {
@@ -310,6 +311,9 @@ private fun onOptionsItemClicked(
     }
 }
 
+@FlowPreview
+@ExperimentalMaterialApi
+@ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
 private fun onJobGroupClicked(
     index: Int,
@@ -342,6 +346,9 @@ private fun onJobGroupClicked(
     }
 }
 
+@FlowPreview
+@ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 private fun navigateToMachinesFragment(
     role: String,
