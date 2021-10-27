@@ -12,8 +12,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-enum class AuthStateChange{
-    NoChange,Registered,Activated,DeActivated,RoleChanged,LoggedOut,LoggedIn
+enum class AuthStateChange {
+    NoChange, Registered, Activated, DeActivated, RoleChanged, LoggedOut, LoggedIn
 }
 
 @Singleton
@@ -56,7 +56,11 @@ class JobFlowAuth @Inject constructor() {
         }
 
 
-    suspend fun registerUser(email:String,password:String,displayName:String): HttpsCallableResult? =
+    suspend fun registerUser(
+        email: String,
+        password: String,
+        displayName: String
+    ): HttpsCallableResult? =
         suspendCancellableCoroutine { continuation ->
 
             val data = hashMapOf(
@@ -92,21 +96,29 @@ class JobFlowAuth @Inject constructor() {
                 }
         }
 
-    fun checkForAuthChange(oldRole:String, currentRole:String):AuthStateChange{
+    fun checkForAuthChange(oldRole: String, currentRole: String): AuthStateChange {
 
-        return when{
+        return when {
 
-            oldRole==currentRole -> AuthStateChange.NoChange
-            currentRole=="none" -> AuthStateChange.LoggedOut
-            oldRole=="none" && currentRole=="guest" -> AuthStateChange.Registered
-            oldRole=="guest" && currentRole!="guest" -> AuthStateChange.Activated
-            oldRole!="guest" && currentRole=="guest" -> AuthStateChange.DeActivated
-            oldRole!="guest" && currentRole!="guest" -> AuthStateChange.RoleChanged
-            oldRole=="none" && currentRole!="none" -> AuthStateChange.LoggedIn
+            oldRole == currentRole -> AuthStateChange.NoChange
+            currentRole == "none" -> AuthStateChange.LoggedOut
+            oldRole == "none" && currentRole == "guest" -> AuthStateChange.Registered
+            oldRole == "guest" && currentRole != "guest" -> AuthStateChange.Activated
+            oldRole != "guest" && currentRole == "guest" -> AuthStateChange.DeActivated
+            oldRole != "guest" && currentRole != "guest" -> AuthStateChange.RoleChanged
+            oldRole == "none" && currentRole != "none" -> AuthStateChange.LoggedIn
             else -> throw IllegalArgumentException("invalid current or new role")
 
         }
 
     }
+
+    fun addAuthStateListener(listener: FirebaseAuth.AuthStateListener) =
+        auth.addAuthStateListener(listener)
+
+
+    fun removeAuthStateListener(listener: FirebaseAuth.AuthStateListener)=
+        auth.removeAuthStateListener(listener)
+
 
 }

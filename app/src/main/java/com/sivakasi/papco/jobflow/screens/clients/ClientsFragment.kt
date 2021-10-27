@@ -6,12 +6,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
@@ -40,10 +40,6 @@ class ClientsFragment : Fragment() {
         }
     }
 
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
-
     private val viewModel: ClientsFragmentVM by lazy {
         ViewModelProvider(this).get(ClientsFragmentVM::class.java)
     }
@@ -53,13 +49,14 @@ class ClientsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
-        viewBinding.composeView.setContent {
-            JobFlowTheme {
-                ClientsScreen(viewModel, isSelectionMode())
+
+        return ComposeView(requireContext()).apply{
+            setContent {
+                JobFlowTheme {
+                    ClientsScreen(viewModel, isSelectionMode())
+                }
             }
         }
-        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -68,11 +65,6 @@ class ClientsFragment : Fragment() {
         updateTitle(if (isSelectionMode()) getString(R.string.select_client) else getString(R.string.clients))
         updateSubTitle("")
         observeViewModel()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding=null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

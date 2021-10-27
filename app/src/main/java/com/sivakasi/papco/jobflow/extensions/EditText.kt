@@ -67,9 +67,3 @@ fun Float.asString(): String {
     else
         this.toString()
 }
-
-
-fun log(msg: String) {
-    Log.d("SUNDAR", msg)
-}
-

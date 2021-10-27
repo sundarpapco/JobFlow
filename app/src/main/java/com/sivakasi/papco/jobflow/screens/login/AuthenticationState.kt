@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.util.FormValidator
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validEmail
-import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 
 enum class AuthenticationMode {
     LOGIN, SIGNUP
@@ -28,6 +27,7 @@ class AuthenticationState(private val context: Context) {
     var passwordError: String? by mutableStateOf(null)
     var confirmPassword: String by mutableStateOf("")
     var confirmPasswordError: String? by mutableStateOf(null)
+    var internetConnectionState = InternetConnectionState()
 
     private fun isEmailValid(): Boolean {
         return if (email.validEmail()) {
@@ -108,4 +108,9 @@ class AuthenticationState(private val context: Context) {
         isLoading = false
         authError = error
     }
+}
+
+class InternetConnectionState{
+    var isInternetConnected by mutableStateOf(true)
+    var isReconnecting by mutableStateOf(false)
 }

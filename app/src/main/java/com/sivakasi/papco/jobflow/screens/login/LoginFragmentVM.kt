@@ -24,7 +24,8 @@ class LoginFragmentVM @Inject constructor(
         checkUserStatus()
     }
 
-    private fun checkUserStatus() {
+    fun checkUserStatus() {
+
 
         //Hide the splash screen and show the login screen if no user is logged in
         if (auth.currentUser == null) {
@@ -32,10 +33,23 @@ class LoginFragmentVM @Inject constructor(
             return
         }
 
+        //This method will be called when the user press the TRY AGAIN button in the
+        //No Internet connection fragment. So, we should show the progress bar in that screen
+        //If that screen is showing now
+        authState.internetConnectionState.isReconnecting = true
+
         //Some user has logged in. so, check the claim and inform the fragment to navigate
         viewModelScope.launch {
-            val claim = auth.fetchUserClaim(auth.currentUser)
-            loginSuccess.value = claim
+
+            try {
+                val claim = auth.fetchUserClaim(auth.currentUser)
+                loginSuccess.value = claim
+            } catch (e: Exception) {
+                //Update the UI to the no internet screen
+                authState.internetConnectionState.isInternetConnected = false
+            }
+
+            authState.internetConnectionState.isReconnecting = false
         }
     }
 

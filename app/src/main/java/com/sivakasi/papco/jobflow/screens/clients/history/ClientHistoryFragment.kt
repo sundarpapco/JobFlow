@@ -6,13 +6,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.PrintOrder
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
@@ -38,17 +38,15 @@ class ClientHistoryFragment : Fragment() {
         }
     }
 
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
-
     private val client: Client by lazy {
         arguments?.getParcelable<Client>(KEY_CLIENT)
             ?: error("ClientHistoryFragment should be launched with a client argument")
     }
 
     private val viewModel: ClientHistoryVM by lazy {
-        ViewModelProvider(this).get(ClientHistoryVM::class.java)
+        ViewModelProvider(this).get(ClientHistoryVM::class.java).apply {
+            clientId=client.id
+        }
     }
 
     override fun onCreateView(
@@ -56,14 +54,17 @@ class ClientHistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
-        viewModel.clientId=client.id
-        viewBinding.composeView.setContent {
-            JobFlowTheme {
-                ClientHistoryScreen(viewModel,this::navigateToViewPrintOrderScreen)
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                JobFlowTheme {
+                    ClientHistoryScreen(
+                        viewModel,
+                        this@ClientHistoryFragment::navigateToViewPrintOrderScreen
+                    )
+                }
             }
         }
-        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,11 +73,6 @@ class ClientHistoryFragment : Fragment() {
         enableBackArrow()
         updateTitle(client.name)
         updateSubTitle(getString(R.string.client_history))
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding=null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -89,11 +85,14 @@ class ClientHistoryFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun navigateToViewPrintOrderScreen(searchModel:SearchModel){
-        val args= ViewPrintOrderFragment.getArguments(
+    private fun navigateToViewPrintOrderScreen(searchModel: SearchModel) {
+        val args = ViewPrintOrderFragment.getArguments(
             searchModel.destinationId,
             PrintOrder.documentId(searchModel.printOrderNumber)
         )
-        findNavController().navigate(R.id.action_clientHistoryFragment_to_viewPrintOrderFragment,args)
+        findNavController().navigate(
+            R.id.action_clientHistoryFragment_to_viewPrintOrderFragment,
+            args
+        )
     }
 }

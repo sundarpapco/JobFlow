@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.disableBackArrow
 import com.sivakasi.papco.jobflow.extensions.signOut
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
@@ -18,23 +18,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class GuestFragment : Fragment() {
 
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
-        viewBinding.composeView.setContent {
-            GuestScreen(
-                onSignOut = this::logOut
-            )
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                GuestScreen(
+                    onSignOut = this@GuestFragment::logOut
+                )
+            }
         }
-        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,11 +38,6 @@ class GuestFragment : Fragment() {
         disableBackArrow()
         updateTitle(getString(R.string.activation_needed))
         updateSubTitle("")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding = null
     }
 
     private fun logOut() = signOut()

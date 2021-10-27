@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.currentUserRole
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
@@ -38,9 +38,6 @@ class ManageMachinesFragment : Fragment() {
         }
     }
 
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
 
     private val viewModel: ManageMachinesVM by lazy {
         ViewModelProvider(this).get(ManageMachinesVM::class.java)
@@ -59,17 +56,17 @@ class ManageMachinesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater,container,false)
 
-        viewBinding.composeView.setContent {
-            ManageMachinesScreen(
-                navController = findNavController(),
-                onSignOut = this::onSignOut,
-                viewModel = viewModel
-            )
+        return ComposeView(requireContext()).apply {
+            setContent {
+                ManageMachinesScreen(
+                    navController = findNavController(),
+                    onSignOut = this@ManageMachinesFragment::onSignOut,
+                    viewModel = viewModel
+                )
+            }
         }
 
-        return viewBinding.root
     }
 
     override fun onResume() {
@@ -80,11 +77,6 @@ class ManageMachinesFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         showActionBar()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding = null
     }
 
     private fun isSelectionMode(): Boolean =

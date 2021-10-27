@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,7 +19,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -43,45 +41,78 @@ fun LoginScreen(
     authState: AuthenticationState,
     onFormSubmit: () -> Unit,
     onForgotPassword: () -> Unit,
-    onModeChange: (AuthenticationMode) -> Unit
+    onModeChange: (AuthenticationMode) -> Unit,
+    onConnectionTryAgain: () -> Unit
 ) {
     JobFlowTheme {
         Surface {
+            when {
 
-            if (authState.isSplashScreenShown) {
-                SplashScreen()
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(start = 32.dp, end = 32.dp)
-                ) {
+                //If there is No internet connection
+                !authState.internetConnectionState.isInternetConnected -> {
+                    NoInternetScreen(
+                        connectionState = authState.internetConnectionState,
+                        onConnectionTryAgain
+                    )
+                }
 
-                    Heading(mode = authState.mode)
+                //If splash screen is showing
+                authState.isSplashScreenShown -> {
+                    SplashScreen()
+                }
 
-                    Spacer(Modifier.height(50.dp))
-
-                    LoginFields(
+                //Else show the login screen
+                else -> {
+                    LoginScreen(
                         authState = authState,
+                        onFormSubmit = onFormSubmit,
                         onForgotPassword = onForgotPassword,
-                        onFormSubmit = onFormSubmit
+                        onModeChange = onModeChange
                     )
-
-                    Spacer(Modifier.height(24.dp))
-
-                    RegisterOrLogin(
-                        authState,
-                        onModeChange
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-
                 }
             }
         }
     }
 }
+
+@ExperimentalComposeUiApi
+@ExperimentalAnimationApi
+@Composable
+private fun LoginScreen(
+    authState: AuthenticationState,
+    onFormSubmit: () -> Unit,
+    onForgotPassword: () -> Unit,
+    onModeChange: (AuthenticationMode) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 32.dp, end = 32.dp)
+    ) {
+
+        Heading(mode = authState.mode)
+
+        Spacer(Modifier.height(50.dp))
+
+        LoginFields(
+            authState = authState,
+            onForgotPassword = onForgotPassword,
+            onFormSubmit = onFormSubmit
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        RegisterOrLogin(
+            authState,
+            onModeChange
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+    }
+}
+
 
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
@@ -195,7 +226,7 @@ private fun LoginFields(
                     confirmPasswordFocus.requestFocus()
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType=KeyboardType.Password,
+                keyboardType = KeyboardType.Password,
                 imeAction = if (authState.mode == AuthenticationMode.LOGIN)
                     ImeAction.Done
                 else
@@ -522,5 +553,5 @@ private fun RegisterPreview() {
 @Preview
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen(authState = AuthenticationState(LocalContext.current), {}, {}, {})
+    LoginScreen(authState = AuthenticationState(LocalContext.current), {}, {}, {}, {})
 }

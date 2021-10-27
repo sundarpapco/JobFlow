@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.currentUserRole
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
@@ -29,9 +29,6 @@ import kotlinx.coroutines.FlowPreview
 @ExperimentalCoroutinesApi
 class FragmentHome : Fragment() {
 
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
 
     private val viewModel: FragmentHomeVM by lazy {
         ViewModelProvider(this).get(FragmentHomeVM::class.java)
@@ -42,16 +39,17 @@ class FragmentHome : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
-        viewBinding.composeView.setContent {
-            HomeScreen(
-                role=currentUserRole(),
-                jobGroups = viewModel.getStates(),
-                findNavController(),
-                this::signOut
-            )
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                HomeScreen(
+                    role=currentUserRole(),
+                    jobGroups = viewModel.getStates(),
+                    findNavController(),
+                    this@FragmentHome::signOut
+                )
+            }
         }
-        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -69,10 +67,6 @@ class FragmentHome : Fragment() {
         showActionBar()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding = null
-    }
 
     private fun observeViewModel() {
 

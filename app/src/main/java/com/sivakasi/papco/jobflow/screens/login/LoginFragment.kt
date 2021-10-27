@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.databinding.ComposeScreenBinding
 import com.sivakasi.papco.jobflow.extensions.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,10 +21,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
-
-    private var _viewBinding: ComposeScreenBinding? = null
-    private val viewBinding: ComposeScreenBinding
-        get() = _viewBinding!!
 
     private val viewModel by lazy {
         ViewModelProvider(this).get(LoginFragmentVM::class.java)
@@ -36,22 +32,24 @@ class LoginFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = ComposeScreenBinding.inflate(inflater, container, false)
-        viewBinding.composeView.setContent {
-            LoginScreen(
-                authState = viewModel.authState,
-                onFormSubmit = viewModel::onFormSubmit,
-                onForgotPassword = this::navigateToForgotPasswordScreen,
-                onModeChange = viewModel::onModeChanged
-            )
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                LoginScreen(
+                    authState = viewModel.authState,
+                    onFormSubmit = viewModel::onFormSubmit,
+                    onForgotPassword = this@LoginFragment::navigateToForgotPasswordScreen,
+                    onModeChange = viewModel::onModeChanged,
+                    onConnectionTryAgain = viewModel::checkUserStatus
+                )
+            }
         }
-        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        disableBackArrow()
-        updateFragmentTitle()
+        //disableBackArrow()
+        //updateFragmentTitle()
         observeViewModel()
     }
 
@@ -70,11 +68,6 @@ class LoginFragment : Fragment() {
             saveUserRole(role)
             navigateByClaim(role)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding = null
     }
 
     private fun navigateToForgotPasswordScreen() {
@@ -99,11 +92,6 @@ class LoginFragment : Fragment() {
                 navigateToGuestScreen()
             }
         }
-    }
-
-    private fun updateFragmentTitle() {
-        updateTitle(getString(R.string.papco_jobs))
-        updateSubTitle("")
     }
 
     private fun navigateToHomeScreen() {
