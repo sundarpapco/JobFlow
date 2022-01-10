@@ -55,15 +55,6 @@ fun Fragment.disableBackArrow() {
 fun Fragment.currentUserRole(): String =
     (requireActivity() as MainActivity).getUserClaim()
 
-@ExperimentalCoroutinesApi
-fun Fragment.saveUserRole(role:String){
-    (requireActivity() as MainActivity).saveUserClaim(role)
-}
-
-@ExperimentalCoroutinesApi
-fun Fragment.signOut(){
-    (requireActivity() as MainActivity).logOutUser()
-}
 
 fun Fragment.toast(msg:String,length:Int= Toast.LENGTH_SHORT){
     Toast.makeText(requireContext(),msg,length).show()

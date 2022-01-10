@@ -1,9 +1,11 @@
 package com.sivakasi.papco.jobflow
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.util.AuthStateChange
+import com.sivakasi.papco.jobflow.util.Event
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,51 +22,105 @@ class MainActivityVM @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
+    val isInitializing = mutableStateOf(false)
     private var userMonitoringJob: Job? = null
-    private val _authChanged = MutableLiveData<AuthStateChange>()
-    val authChanged: LiveData<AuthStateChange> = _authChanged
+    private val _navigateUsingAction = MutableLiveData<Event<Int>>()
+    val navigateUsingAction: LiveData<Event<Int>> = _navigateUsingAction
 
-
-    init {
-        saveClaim(getClaim())
+    private val authListener = FirebaseAuth.AuthStateListener {
+        initializeCurrentUser()
     }
 
-    fun saveClaim(claim: String) {
+    init {
+        auth.addAuthStateListener(authListener)
+    }
 
-        savedStateHandle["claim"] = claim
+    fun initializeCurrentUser() {
+
         userMonitoringJob?.cancel()
 
-        if (claim != "none")
-            auth.currentUser?.let {
-                userMonitoringJob = startMonitoringTheUser(it.uid)
+        if (auth.currentUser == null) {
+            logOutCurrentUser()
+            return
+        }
+
+        isInitializing.value = true
+        userMonitoringJob = viewModelScope.launch {
+
+            try {
+                repository.observeUser(auth.currentUser!!.uid)
+                    .collect { user ->
+                        if (user == null) {
+                            logOutCurrentUser()
+                        } else {
+                            val oldClaim = getClaim()
+                            savedStateHandle["claim"] = auth.fetchUserClaim(auth.currentUser, true)
+                            isInitializing.value = false
+                            navigateBasedOnClaims(oldClaim, getClaim())
+                        }
+                    }
+
+            } catch (e: FirebaseNetworkException) {
+                //If there is no internet connection detected
+                isInitializing.value = false
+                _navigateUsingAction.value = Event(R.id.action_global_noInternetFragment)
             }
+
+        }
+
+    }
+
+    private fun logOutCurrentUser() {
+        savedStateHandle["claim"] = "none"
+        _navigateUsingAction.value = Event(R.id.action_global_loginFragment)
+    }
+
+    private fun navigateBasedOnClaims(oldClaim: String, newClaim: String) {
+
+        if (oldClaim == newClaim)
+            return
+
+        when (newClaim) {
+            "none" -> {
+                _navigateUsingAction.value = Event(R.id.action_global_loginFragment)
+            }
+
+            "guest" -> {
+                _navigateUsingAction.value = Event(R.id.action_global_guestFragment)
+            }
+
+            "printer" -> {
+                if (oldClaim == "guest" || oldClaim == "none")
+                    _navigateUsingAction.value = Event(R.id.action_global_manageMachinesFragment)
+                else
+                    auth.logout()
+            }
+
+            "admin" -> {
+                if (oldClaim == "guest" || oldClaim == "none")
+                    _navigateUsingAction.value = Event(R.id.action_global_fragmentHome)
+                else
+                    auth.logout()
+            }
+
+            "root" -> {
+                if (oldClaim == "guest" || oldClaim == "none")
+                    _navigateUsingAction.value = Event(R.id.action_global_fragmentHome)
+                else
+                    auth.logout()
+            }
+
+            else -> {
+                error("Invalid user claim detected")
+            }
+        }
+
     }
 
     fun getClaim(): String = savedStateHandle.get<String>("claim") ?: "none"
 
-
-    private fun startMonitoringTheUser(userId: String) =
-        viewModelScope.launch {
-            try {
-                repository.observeUser(userId)
-                    .collect { user ->
-                        if (user == null) {
-                            //User deleted. So, logout of the app immediately
-                            _authChanged.postValue(AuthStateChange.LoggedOut)
-                        } else {
-                            //Something happened to the claim. Refresh, Check and Act accordingly
-                            val oldClaim = getClaim()
-                            savedStateHandle["claim"] = auth.fetchUserClaim(auth.currentUser, true)
-                            _authChanged.value = auth.checkForAuthChange(oldClaim, getClaim())
-                            //}
-                        }
-                    }
-            } catch (e: FirebaseNetworkException) {
-
-                //Handle the case when the user cannot be monitored for the change due to
-                //No internet connectivity
-                //Not sure how to handle this. For now, we are simply omitting this exception
-                //And so the user will not be monitored for this session
-            }
-        }
+    override fun onCleared() {
+        super.onCleared()
+        auth.removeAuthStateListener(authListener)
+    }
 }

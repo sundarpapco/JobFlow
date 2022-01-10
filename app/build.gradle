@@ -5,6 +5,7 @@ plugins {
     id 'com.google.gms.google-services'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.10'
 }
 
 android {
@@ -59,7 +60,7 @@ kapt {
 
 dependencies {
 
-    def composeVersion="1.0.4"
+    def composeVersion="1.0.5"
     def paging_version = "3.0.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"
@@ -79,6 +80,7 @@ dependencies {
     implementation "androidx.compose.material:material:$composeVersion"
     implementation "androidx.compose.runtime:runtime-livedata:$composeVersion"
     implementation "androidx.compose.ui:ui-tooling:$composeVersion"
+    implementation "androidx.activity:activity-compose:$composeVersion"
     implementation "com.google.android.material:compose-theme-adapter:1.0.3"
 
     //Pagination
@@ -119,6 +121,10 @@ dependencies {
 
     //Leak canary for leak detection
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+
+    //Algolia Stuff
+    implementation "com.algolia:algoliasearch-client-kotlin:1.12.0"
+    implementation "io.ktor:ktor-client-okhttp:1.6.7"
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

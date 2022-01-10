@@ -41,75 +41,38 @@ fun LoginScreen(
     authState: AuthenticationState,
     onFormSubmit: () -> Unit,
     onForgotPassword: () -> Unit,
-    onModeChange: (AuthenticationMode) -> Unit,
-    onConnectionTryAgain: () -> Unit
+    onModeChange: (AuthenticationMode) -> Unit
 ) {
     JobFlowTheme {
         Surface {
-            when {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = 32.dp, end = 32.dp)
+            ) {
 
-                //If there is No internet connection
-                !authState.internetConnectionState.isInternetConnected -> {
-                    NoInternetScreen(
-                        connectionState = authState.internetConnectionState,
-                        onConnectionTryAgain
-                    )
-                }
+                Heading(mode = authState.mode)
 
-                //If splash screen is showing
-                authState.isSplashScreenShown -> {
-                    SplashScreen()
-                }
+                Spacer(Modifier.height(50.dp))
 
-                //Else show the login screen
-                else -> {
-                    LoginScreen(
-                        authState = authState,
-                        onFormSubmit = onFormSubmit,
-                        onForgotPassword = onForgotPassword,
-                        onModeChange = onModeChange
-                    )
-                }
+                LoginFields(
+                    authState = authState,
+                    onForgotPassword = onForgotPassword,
+                    onFormSubmit = onFormSubmit
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                RegisterOrLogin(
+                    authState,
+                    onModeChange
+                )
+
+                Spacer(Modifier.height(16.dp))
+
             }
         }
-    }
-}
-
-@ExperimentalComposeUiApi
-@ExperimentalAnimationApi
-@Composable
-private fun LoginScreen(
-    authState: AuthenticationState,
-    onFormSubmit: () -> Unit,
-    onForgotPassword: () -> Unit,
-    onModeChange: (AuthenticationMode) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 32.dp, end = 32.dp)
-    ) {
-
-        Heading(mode = authState.mode)
-
-        Spacer(Modifier.height(50.dp))
-
-        LoginFields(
-            authState = authState,
-            onForgotPassword = onForgotPassword,
-            onFormSubmit = onFormSubmit
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        RegisterOrLogin(
-            authState,
-            onModeChange
-        )
-
-        Spacer(Modifier.height(16.dp))
-
     }
 }
 
@@ -486,18 +449,6 @@ private fun Heading(mode: AuthenticationMode) {
     }
 }
 
-@Composable
-private fun SplashScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_logo_svg),
-            contentDescription = "Splash Screen"
-        )
-    }
-}
 
 @Preview
 @Composable
@@ -553,5 +504,5 @@ private fun RegisterPreview() {
 @Preview
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen(authState = AuthenticationState(LocalContext.current), {}, {}, {}, {})
+    LoginScreen(authState = AuthenticationState(LocalContext.current), {}, {}, {})
 }

@@ -8,15 +8,19 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.disableBackArrow
-import com.sivakasi.papco.jobflow.extensions.signOut
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class GuestFragment : Fragment() {
+
+    @Inject
+    lateinit var auth:JobFlowAuth
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +44,6 @@ class GuestFragment : Fragment() {
         updateSubTitle("")
     }
 
-    private fun logOut() = signOut()
+    private fun logOut() = auth.logout()
 
 }

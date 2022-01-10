@@ -1,6 +1,4 @@
-@file:Suppress("UNCHECKED_CAST")
-
-package com.sivakasi.papco.jobflow.screens.invoicehistory
+package com.sivakasi.papco.jobflow.screens.search
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,24 +11,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PrintOrder
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
+@ExperimentalMaterialApi
 @AndroidEntryPoint
-class InvoiceHistoryFragment : Fragment() {
+class AlgoliaSearchFragment:Fragment() {
 
-
-    private val viewModel: InvoiceHistoryVM by lazy {
-        ViewModelProvider(this).get(InvoiceHistoryVM::class.java)
+    private val viewModel: AlgoliaSearchVM by lazy {
+        ViewModelProvider(this).get(AlgoliaSearchVM::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,20 +43,24 @@ class InvoiceHistoryFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 JobFlowTheme {
-                    InvoiceHistoryScreen(
+                    AlgoliaSearchScreen(
                         viewModel = viewModel,
-                        onItemClicked = this@InvoiceHistoryFragment::onItemClick
+                        onItemClicked = this@AlgoliaSearchFragment::onItemClick,
+                        onBackPressed = this@AlgoliaSearchFragment::onBackPressed
                     )
                 }
             }
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        updateTitle(getString(R.string.invoice_history))
-        updateSubTitle("")
+    override fun onResume() {
+        super.onResume()
+        hideActionBar()
+    }
 
+    override fun onStop() {
+        super.onStop()
+        showActionBar()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -75,6 +75,7 @@ class InvoiceHistoryFragment : Fragment() {
 
 
     //Navigate to view Print order screen
+    @ExperimentalCoroutinesApi
     private fun onItemClick(item: SearchModel) {
         val arguments = ViewPrintOrderFragment.getArguments(
             item.destinationId,
@@ -82,9 +83,12 @@ class InvoiceHistoryFragment : Fragment() {
         )
 
         findNavController().navigate(
-            R.id.action_invoiceHistoryFragment_to_viewPrintOrderFragment,
+            R.id.action_algoliaSearchFragment_to_viewPrintOrderFragment,
             arguments
         )
     }
 
+    private fun onBackPressed(){
+        findNavController().popBackStack()
+    }
 }

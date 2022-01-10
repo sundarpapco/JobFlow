@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.login
 
 import android.app.Application
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.extensions.getMessage
@@ -17,41 +16,8 @@ class LoginFragmentVM @Inject constructor(
     private val auth: JobFlowAuth
 ) : ViewModel() {
 
-    val loginSuccess = MutableLiveData("none")
     val authState = AuthenticationState(application)
 
-    init {
-        checkUserStatus()
-    }
-
-    fun checkUserStatus() {
-
-
-        //Hide the splash screen and show the login screen if no user is logged in
-        if (auth.currentUser == null) {
-            authState.isSplashScreenShown = false
-            return
-        }
-
-        //This method will be called when the user press the TRY AGAIN button in the
-        //No Internet connection fragment. So, we should show the progress bar in that screen
-        //If that screen is showing now
-        authState.internetConnectionState.isReconnecting = true
-
-        //Some user has logged in. so, check the claim and inform the fragment to navigate
-        viewModelScope.launch {
-
-            try {
-                val claim = auth.fetchUserClaim(auth.currentUser)
-                loginSuccess.value = claim
-            } catch (e: Exception) {
-                //Update the UI to the no internet screen
-                authState.internetConnectionState.isInternetConnected = false
-            }
-
-            authState.internetConnectionState.isReconnecting = false
-        }
-    }
 
     fun onFormSubmit() {
 
@@ -66,9 +32,9 @@ class LoginFragmentVM @Inject constructor(
         authState.clearErrors()
 
         if (authState.mode == AuthenticationMode.LOGIN)
-            logInAndGetClaim(registerBeforeLogin = false)
+            logIn(registerBeforeLogin = false)
         else
-            logInAndGetClaim(registerBeforeLogin = true)
+            logIn(registerBeforeLogin = true)
     }
 
 
@@ -84,18 +50,19 @@ class LoginFragmentVM @Inject constructor(
     }
 
 
-    private fun logInAndGetClaim(registerBeforeLogin: Boolean = false) {
+    private fun logIn(registerBeforeLogin: Boolean = false) {
 
         viewModelScope.launch(Dispatchers.IO) {
 
             try {
 
-                if (registerBeforeLogin)
-                    auth.registerUser(authState.email, authState.password, authState.name)
+                /*Once successfully logged in, MainActivityVM is notified via the AuthStateSListener
+                And it will take care of navigating to the next fragment after validating the logged user
+                and claim. So, we don't need to do anything here except keep showing the progressBar*/
 
-                val loggedInUser = auth.logIn(authState.email, authState.password)
-                val loggedInUserClaim = auth.fetchUserClaim(loggedInUser.user)
-                loginSuccess.postValue(loggedInUserClaim)
+                    if (registerBeforeLogin)
+                    auth.registerUser(authState.email, authState.password, authState.name)
+                auth.logIn(authState.email, authState.password)
 
             } catch (e: Exception) {
                 authState.loginFailed(e.getMessage(application))

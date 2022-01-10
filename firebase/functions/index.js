@@ -1,6 +1,9 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { HttpsError } = require("firebase-functions/v1/https");
+const { Change } = require("firebase-functions");
+const algoilaFunctions = require("./algolia");
+
 admin.initializeApp();
 
 // // Create and Deploy Your First Cloud Functions
@@ -41,44 +44,44 @@ exports.createNewUser = functions.https.onCall(async (data, context) => {
     await admin.auth().setCustomUserClaims(userRecord.uid, { role: "guest" });
 
 
-    //Crate the document for the current user and update the role change timestamp
-    const document=admin.firestore().doc('/users/' + userRecord.uid);
-    await document.set({
-      displayName:userRecord.displayName,
-      email:userRecord.email,
-      refreshTime: new Date().getTime()
-    });
+  //Crate the document for the current user and update the role change timestamp
+  const document = admin.firestore().doc('/users/' + userRecord.uid);
+  await document.set({
+    displayName: userRecord.displayName,
+    email: userRecord.email,
+    refreshTime: new Date().getTime()
+  });
 
   return userRecord;
 
 });
 
 
-exports.updateUserClaim = functions.https.onCall(async (data,context) => {
+exports.updateUserClaim = functions.https.onCall(async (data, context) => {
 
   //First things first. The role of papcopvtltd@gmail.com is always root and cannot be changed even by another root
-  if(data.email==="papcopvtltd@gmail.com"){
-    throw new HttpsError("failed-precondition","This account role cannot be channged and will always be root")
+  if (data.email === "papcopvtltd@gmail.com") {
+    throw new HttpsError("failed-precondition", "This account role cannot be channged and will always be root")
   }
-  
+
   //The user calling this function should be a root
-  if(context.auth.token.role != "root"){
-    throw new HttpsError("permission-denied","Only root can update user claims");
-  }else{
+  if (context.auth.token.role != "root") {
+    throw new HttpsError("permission-denied", "Only root can update user claims");
+  } else {
     //A root cannot change the role of himself to de-promote him
     //This action will make sure that atleast one root user is always there in the app
-    if(context.auth.token.email===data.email){
-      throw new HttpsError("failed-precondition","You cannot change the role of yourself");
+    if (context.auth.token.email === data.email) {
+      throw new HttpsError("failed-precondition", "You cannot change the role of yourself");
     }
   }
-  
+
   //Ok. the calling user is a root. Now get and update the claim
   const userToUpdate = await admin.auth().getUserByEmail(data.email);
-  await admin.auth().setCustomUserClaims(userToUpdate.uid,{ role: data.role });
+  await admin.auth().setCustomUserClaims(userToUpdate.uid, { role: data.role });
 
   //modify the refresh time of the user in the user document so that any clients
   //watching this document will be notififed immediately about the role change to take action
-  const document=admin.firestore().doc('/users/' + userToUpdate.uid);
+  const document = admin.firestore().doc('/users/' + userToUpdate.uid);
   await document.update({
     refreshTime: new Date().getTime()
   });
@@ -87,7 +90,28 @@ exports.updateUserClaim = functions.https.onCall(async (data,context) => {
 
 exports.deleteUserDocument = functions.auth.user().onDelete((user) => {
 
-  const document=admin.firestore().doc('/users/' + user.uid);
+  const document = admin.firestore().doc('/users/' + user.uid);
   document.delete();
 
 });
+
+
+exports.indexPrintOrder = functions.firestore
+  .document('Destinations/{destinationId}/Jobs/{poId}')
+  .onWrite((change, context) => {
+
+    const destinationId = context.params.destinationId;
+
+    if (!change.before.exists && change.after.exists) {
+      //Creation
+      algoilaFunctions.handlePrintOrderCreation(change.after.data(),destinationId);
+    }
+
+   if (change.before.exists && change.after.exists) {
+      //Updation
+      algoilaFunctions.handlePrintOrderUpdation(change.before.data(),change.after.data(),destinationId);
+    }
+
+    //Deletion Operation is Ignored since printOrders once created can only be cancelled and not deleted
+
+  });

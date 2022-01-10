@@ -33,7 +33,7 @@ class Repository @Inject constructor(
     private val database = FirebaseFirestore.getInstance()
 
 
-    suspend fun observeUser(
+    fun observeUser(
         userId: String,
     ) = callbackFlow {
 

@@ -11,11 +11,6 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-
-enum class AuthStateChange {
-    NoChange, Registered, Activated, DeActivated, RoleChanged, LoggedOut, LoggedIn
-}
-
 @Singleton
 class JobFlowAuth @Inject constructor() {
 
@@ -96,22 +91,6 @@ class JobFlowAuth @Inject constructor() {
                 }
         }
 
-    fun checkForAuthChange(oldRole: String, currentRole: String): AuthStateChange {
-
-        return when {
-
-            oldRole == currentRole -> AuthStateChange.NoChange
-            currentRole == "none" -> AuthStateChange.LoggedOut
-            oldRole == "none" && currentRole == "guest" -> AuthStateChange.Registered
-            oldRole == "guest" && currentRole != "guest" -> AuthStateChange.Activated
-            oldRole != "guest" && currentRole == "guest" -> AuthStateChange.DeActivated
-            oldRole != "guest" && currentRole != "guest" -> AuthStateChange.RoleChanged
-            oldRole == "none" && currentRole != "none" -> AuthStateChange.LoggedIn
-            else -> throw IllegalArgumentException("invalid current or new role")
-
-        }
-
-    }
 
     fun addAuthStateListener(listener: FirebaseAuth.AuthStateListener) =
         auth.addAuthStateListener(listener)

@@ -15,7 +15,6 @@ enum class AuthenticationMode {
 class AuthenticationState(private val context: Context) {
 
     var mode: AuthenticationMode by mutableStateOf(AuthenticationMode.LOGIN)
-    var isSplashScreenShown by mutableStateOf(true)
     var authError: String? by mutableStateOf(null)
     var isLoading: Boolean by mutableStateOf(false)
     var name:String by mutableStateOf("")
@@ -27,7 +26,6 @@ class AuthenticationState(private val context: Context) {
     var passwordError: String? by mutableStateOf(null)
     var confirmPassword: String by mutableStateOf("")
     var confirmPasswordError: String? by mutableStateOf(null)
-    var internetConnectionState = InternetConnectionState()
 
     private fun isEmailValid(): Boolean {
         return if (email.validEmail()) {
@@ -100,17 +98,8 @@ class AuthenticationState(private val context: Context) {
         isLoading = true
     }
 
-    fun loginSuccess() {
-        isLoading = false
-    }
-
     fun loginFailed(error: String) {
         isLoading = false
         authError = error
     }
-}
-
-class InternetConnectionState{
-    var isInternetConnected by mutableStateOf(true)
-    var isReconnecting by mutableStateOf(false)
 }

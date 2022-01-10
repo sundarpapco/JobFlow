@@ -15,10 +15,11 @@ import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.extensions.currentUserRole
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
-import com.sivakasi.papco.jobflow.extensions.signOut
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import javax.inject.Inject
 
 @FlowPreview
 @ExperimentalMaterialApi
@@ -38,6 +39,8 @@ class ManageMachinesFragment : Fragment() {
         }
     }
 
+    @Inject
+    lateinit var auth:JobFlowAuth
 
     private val viewModel: ManageMachinesVM by lazy {
         ViewModelProvider(this).get(ManageMachinesVM::class.java)
@@ -82,5 +85,5 @@ class ManageMachinesFragment : Fragment() {
     private fun isSelectionMode(): Boolean =
         arguments?.getBoolean(KEY_SELECT_MODE) ?: false
 
-    private fun onSignOut() = signOut()
+    private fun onSignOut() = auth.logout()
 }

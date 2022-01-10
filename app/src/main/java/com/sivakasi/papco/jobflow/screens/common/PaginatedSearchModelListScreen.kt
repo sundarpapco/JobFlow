@@ -24,7 +24,8 @@ import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 @Composable
 fun PaginatedSearchModelListScreen(
     data: LazyPagingItems<SearchModel>,
-    onResultClicked: (SearchModel) -> Unit
+    onResultClicked: (SearchModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     when (data.loadState.refresh) {
@@ -41,7 +42,7 @@ fun PaginatedSearchModelListScreen(
         }
 
         is LoadState.NotLoading -> {
-            HistoryList(history = data, onResultClicked = onResultClicked)
+            HistoryList(history = data, onResultClicked = onResultClicked,modifier=modifier)
         }
 
         else -> {}
@@ -53,19 +54,23 @@ fun PaginatedSearchModelListScreen(
 @Composable
 private fun HistoryList(
     history: LazyPagingItems<SearchModel>,
-    onResultClicked: (SearchModel) -> Unit
+    onResultClicked: (SearchModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
     ) {
-
-
         LazyColumn(
-            modifier = Modifier.padding(16.dp),
+            modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
+            item(key = "topSpace"){
+                Spacer(Modifier.height(16.dp))
+            }
+
             items(history, key = { it.printOrderNumber }) {
                 it?.let { item ->
                     SearchListItem(item, onResultClicked)
@@ -84,6 +89,10 @@ private fun HistoryList(
                     }
                     else->{}
                 }
+            }
+
+            item(key="bottomSpace"){
+                Spacer(Modifier.height(24.dp))
             }
         }
 

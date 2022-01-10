@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/fixedDestinationFragment"
@@ -57,6 +57,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_updateRoleFragment"
             app:destination="@id/updateRoleFragment" />
+        <action
+            android:id="@+id/action_fragmentHome_to_algoliaSearchFragment"
+            app:destination="@id/algoliaSearchFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPrintOrderFragment"
@@ -124,4 +127,21 @@
     <action android:id="@+id/action_global_fragmentHome" app:destination="@id/fragmentHome" />
     <action android:id="@+id/action_global_manageMachinesFragment" app:destination="@id/manageMachinesFragment" />
     <action android:id="@+id/action_global_guestFragment" app:destination="@id/guestFragment" />
+    <fragment
+        android:id="@+id/noInternetFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.login.NoInternetFragment"
+        android:label="NoInternetFragment" />
+    <action android:id="@+id/action_global_noInternetFragment" app:destination="@id/noInternetFragment" />
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.login.SplashFragment"
+        android:label="SplashFragment" />
+    <fragment
+        android:id="@+id/algoliaSearchFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.search.AlgoliaSearchFragment"
+        android:label="AlgoliaSearchFragment" >
+        <action
+            android:id="@+id/action_algoliaSearchFragment_to_viewPrintOrderFragment"
+            app:destination="@id/viewPrintOrderFragment" />
+    </fragment>
 </navigation>

@@ -36,6 +36,11 @@
         android:title="@string/invoice_history"
         app:showAsAction="never"/>
 
+    <item android:id="@+id/mnu_algolia_search"
+        android:orderInCategory="500"
+        android:title="Advanced Search"
+        app:showAsAction="never"/>
+
     <item android:id="@+id/mnu_change_role"
         android:orderInCategory="500"
         android:title="@string/change_user_role"

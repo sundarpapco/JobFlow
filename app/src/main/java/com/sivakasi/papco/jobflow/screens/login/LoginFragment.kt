@@ -9,7 +9,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.*
@@ -39,18 +38,10 @@ class LoginFragment : Fragment() {
                     authState = viewModel.authState,
                     onFormSubmit = viewModel::onFormSubmit,
                     onForgotPassword = this@LoginFragment::navigateToForgotPasswordScreen,
-                    onModeChange = viewModel::onModeChanged,
-                    onConnectionTryAgain = viewModel::checkUserStatus
+                    onModeChange = viewModel::onModeChanged
                 )
             }
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        //disableBackArrow()
-        //updateFragmentTitle()
-        observeViewModel()
     }
 
     override fun onResume() {
@@ -63,53 +54,8 @@ class LoginFragment : Fragment() {
         showActionBar()
     }
 
-    private fun observeViewModel() {
-        viewModel.loginSuccess.observe(viewLifecycleOwner) { role ->
-            saveUserRole(role)
-            navigateByClaim(role)
-        }
-    }
 
     private fun navigateToForgotPasswordScreen() {
         findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
-    }
-
-    private fun navigateByClaim(claim: String) {
-        when (claim) {
-            "root" -> {
-                navigateToHomeScreen()
-            }
-
-            "admin" -> {
-                navigateToHomeScreen()
-            }
-
-            "printer" -> {
-                navigateToMachinesScreen()
-            }
-
-            "guest" -> {
-                navigateToGuestScreen()
-            }
-        }
-    }
-
-    private fun navigateToHomeScreen() {
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.loginFragment, true).build()
-        findNavController().navigate(R.id.action_global_fragmentHome, null, navOptions)
-    }
-
-    private fun navigateToMachinesScreen() {
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.loginFragment, true).build()
-        findNavController().navigate(
-            R.id.action_global_manageMachinesFragment,
-            null,
-            navOptions
-        )
-    }
-
-    private fun navigateToGuestScreen() {
-        val navOptions = NavOptions.Builder().setPopUpTo(R.id.loginFragment, true).build()
-        findNavController().navigate(R.id.action_global_guestFragment, null, navOptions)
     }
 }
