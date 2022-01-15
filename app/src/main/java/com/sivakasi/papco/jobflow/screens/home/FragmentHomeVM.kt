@@ -10,6 +10,7 @@ import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
@@ -40,12 +41,63 @@ class FragmentHomeVM @Inject constructor(
     }
 
     init {
-        observeNewJobs()
-        observeInProgress()
-        observeDynamicDestinations()
+        observeJobs()
     }
 
     fun getStates() = listOf(newJobsState,inProgressState,machinesState)
+
+    private fun observeJobs() {
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+            //Observe NewJobs
+            launch {
+                try {
+                    repository.observeDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
+                        .collect { destination ->
+                            renderDestinationToState(destination, newJobsState)
+                        }
+                } catch (e: Exception) {
+                    renderDestinationToState(destination = null, newJobsState)
+                }
+            }
+
+            //Observe InProgress Jobs
+            launch {
+                try {
+                    repository.observeDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
+                        .collect { destination ->
+                            renderDestinationToState(destination,inProgressState)
+                        }
+                } catch (e: Exception) {
+                    renderDestinationToState(destination=null,newJobsState)
+                }
+            }
+
+            //Observe Machines Job
+            launch {
+                try {
+                    repository.loadAllMachines()
+                        .map {
+                            if (it.isNotEmpty())
+                                it.reduce { acc, destination ->
+                                    acc.jobCount += destination.jobCount
+                                    acc.runningTime += destination.runningTime
+                                    acc
+                                }
+                            else
+                                emptyDestination(application.getString(R.string.machines))
+                        }.collect {
+                            renderDestinationToState(it,machinesState)
+                        }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    renderDestinationToState(destination = null,machinesState)
+                }
+            }
+        }
+    }
 
     private fun observeNewJobs() {
         viewModelScope.launch {

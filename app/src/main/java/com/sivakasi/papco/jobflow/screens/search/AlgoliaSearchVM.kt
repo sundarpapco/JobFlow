@@ -10,7 +10,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,7 +19,8 @@ class AlgoliaSearchVM @Inject constructor(
     val application: Application
 ) : ViewModel() {
 
-    val algoliaClient = AlgoliaClientImpl()
+    private val algoliaClient = AlgoliaClientImpl()
+    var initialLoading = true
     var query: String? by mutableStateOf(null)
     var dataSource: AlgoliaDataSource? = null
 
@@ -32,7 +34,7 @@ class AlgoliaSearchVM @Inject constructor(
     ) {
         dataSource = AlgoliaDataSource(application, algoliaClient, query)
         dataSource!!
-    }.flow.catch { it.printStackTrace() }.cachedIn(viewModelScope)
+    }.flow.cachedIn(viewModelScope).flowOn(Dispatchers.IO)
 
     fun search(query: String) {
         //begin search only when user changes the query. Pressing search without changing the

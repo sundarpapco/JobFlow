@@ -10,6 +10,7 @@ import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.extensions.toastStringResource
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -31,7 +32,7 @@ class ManageMachinesVM @Inject constructor(
 
     private fun loadAllMachines() {
         uiState.machines = LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.loadAllMachines()
                     .collect {
@@ -46,7 +47,7 @@ class ManageMachinesVM @Inject constructor(
     fun deleteMachine(machineId: String) {
 
         uiState.showWaitDialog()
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.deleteMachine(machineId)
                 uiState.hideWaitDialog()
@@ -61,7 +62,7 @@ class ManageMachinesVM @Inject constructor(
 
         val state=uiState.addMachineDialogState!!
        state.isProcessing=true
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
 
                 val machineName = state.text.text.trim()
@@ -93,7 +94,7 @@ class ManageMachinesVM @Inject constructor(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             state.isProcessing=true
             try {
                 if (repository.machineAlreadyExist(newMachineName)) {

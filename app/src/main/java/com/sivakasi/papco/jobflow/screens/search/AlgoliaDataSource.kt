@@ -7,16 +7,13 @@ import androidx.paging.PagingState
 import com.algolia.search.exception.UnreachableHostsException
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 
 class AlgoliaDataSource(
     private val context: Context,
     private val algoliaClient: AlgoliaClient,
     val query: String?
 ) : PagingSource<Int, SearchModel>() {
-
-    init {
-        Log.d("SUNDAR", "Data source created with $query")
-    }
 
     override fun getRefreshKey(state: PagingState<Int, SearchModel>): Int {
         return 0
@@ -36,10 +33,15 @@ class AlgoliaDataSource(
                 pageToLoad + 1
             else
                 null
-            LoadResult.Page(data, null, nextPage)
+
+            if (data.isNotEmpty())
+                LoadResult.Page(data, null, nextPage)
+            else
+                LoadResult.Error(ResourceNotFoundException(context.getString(R.string.no_results_found)))
+
         } catch (e: UnreachableHostsException) {
             LoadResult.Error(Throwable(context.getString(R.string.check_internet_connection)))
-        } catch (e:Exception){
+        } catch (e: Exception) {
             LoadResult.Error(e)
         }
     }

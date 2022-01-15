@@ -1,8 +1,6 @@
 package com.sivakasi.papco.jobflow.extensions
 
-import android.util.Log
 import android.widget.EditText
-import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 

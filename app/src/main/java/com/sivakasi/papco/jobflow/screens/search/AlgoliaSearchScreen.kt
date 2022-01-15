@@ -54,7 +54,7 @@ fun AlgoliaSearchScreen(
                 focusRequester = focusRequester
             )
 
-           PaginatedSearchModelListScreen(
+            PaginatedSearchModelListScreen(
                 data = data,
                 onResultClicked = onItemClicked,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
@@ -63,8 +63,11 @@ fun AlgoliaSearchScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        delay(200)
-        focusRequester.requestFocus()
+        if (viewModel.initialLoading) {
+            viewModel.initialLoading = false
+            delay(200)
+            focusRequester.requestFocus()
+        }
     }
 
 }

@@ -39,7 +39,8 @@ class AlgoliaClientImpl : AlgoliaClient {
             AlgoliaLoadResult(
                 data,
                 totalPages = response.nbPages,
-                loadedPage = response.page
+                loadedPage = response.page,
+                totalHits = response.nbHitsOrNull ?: 0
             )
 
         }
@@ -48,5 +49,6 @@ class AlgoliaClientImpl : AlgoliaClient {
 data class AlgoliaLoadResult(
     val data:List<AlgoliaRecord>,
     val totalPages:Int,
-    val loadedPage:Int
+    val loadedPage:Int,
+    val totalHits:Int
 )

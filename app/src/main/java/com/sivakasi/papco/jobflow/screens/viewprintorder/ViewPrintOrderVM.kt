@@ -11,6 +11,7 @@ import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
@@ -28,8 +29,10 @@ class ViewPrintOrderVM @Inject constructor(
     private var isAlreadyLoaded = false
     private val _loadedPrintOrder = MutableLiveData<LoadingStatus>()
     private val _generatePdfStatus = MutableLiveData<Event<LoadingStatus>>()
+    private val _destinationName = MutableLiveData<String>()
     val loadedPrintOrder: LiveData<LoadingStatus> = _loadedPrintOrder
     val generatePdfStatus: LiveData<Event<LoadingStatus>> = _generatePdfStatus
+    val destinationName: LiveData<String> = _destinationName
 
 
     fun loadPrintOrder(destinationId: String, printOrderId: String) {
@@ -39,21 +42,34 @@ class ViewPrintOrderVM @Inject constructor(
         else
             isAlreadyLoaded = true
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
 
-            repository.observePrintOrder(destinationId, printOrderId)
-                .onStart {
-                    _loadedPrintOrder.value =
-                        LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-                }
-                .collect { printOrder ->
-                    if (printOrder == null)
-                        _loadedPrintOrder.value = LoadingStatus.Error(ResourceNotFoundException(""))
-                    else
-                        _loadedPrintOrder.value = LoadingStatus.Success(printOrder)
-                }
+            launch{
+                repository.observePrintOrder(destinationId, printOrderId)
+                    .onStart {
+                        _loadedPrintOrder.postValue(
+                            LoadingStatus.Loading(application.getString(R.string.one_moment_please))
+                        )
+                    }
+                    .collect { printOrder ->
+                        if (printOrder == null)
+                            _loadedPrintOrder.postValue(LoadingStatus.Error(ResourceNotFoundException("")))
+                        else
+                            _loadedPrintOrder.postValue(LoadingStatus.Success(printOrder))
+                    }
+            }
+
+            launch{
+                repository.observeDestination(destinationId)
+                    .collect { destination ->
+                        destination?.let{
+                            _destinationName.postValue(it.name)
+                        }
+                    }
+            }
 
         }
+
     }
 
 

@@ -253,7 +253,6 @@ private fun prepareOptionsMenu(role: String, context: Context): List<MenuAction>
         add(MenuAction(null, null, context.getString(R.string.clients)))
         add(MenuAction(null, null, context.getString(R.string.client_history)))
         add(MenuAction(null, null, context.getString(R.string.invoice_history)))
-        add(MenuAction(null,null,"Advanced Search"))
         if (role == "root")
             add(MenuAction(null, null, context.getString(R.string.change_user_role)))
         add(MenuAction(null, null, context.getString(R.string.sign_out)))
@@ -277,7 +276,8 @@ private fun onOptionsItemClicked(
 ) {
     when (clickedItemLabel) {
         context.getString(R.string.search) -> {
-            navController.navigate(R.id.action_fragmentHome_to_searchFragment)
+            //navController.navigate(R.id.action_fragmentHome_to_searchFragment)
+            navController.navigate(R.id.action_fragmentHome_to_algoliaSearchFragment)
         }
 
         context.getString(R.string.Profile) -> {
@@ -299,10 +299,6 @@ private fun onOptionsItemClicked(
 
         context.getString(R.string.invoice_history) -> {
             navController.navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
-        }
-
-        "Advanced Search" ->{
-            navController.navigate(R.id.action_fragmentHome_to_algoliaSearchFragment)
         }
 
         context.getString(R.string.change_user_role) -> {

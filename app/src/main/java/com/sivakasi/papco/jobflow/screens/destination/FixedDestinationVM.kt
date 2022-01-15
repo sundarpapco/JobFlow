@@ -14,6 +14,7 @@ import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -37,11 +38,11 @@ class FixedDestinationVM @Inject constructor(
 
 
     private fun observeDestination(destinationId: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.observeDestination(destinationId)
                     .collect {
-                        _destination.value = it ?: Destination(name = destinationId)
+                        _destination.postValue(it ?: Destination(name = destinationId))
                     }
             } catch (e: Exception) {
                 //Toast the error message or send a signal to UI
@@ -60,20 +61,20 @@ class FixedDestinationVM @Inject constructor(
 
     private fun triggerJobsLoading(destinationId: String) {
         _loadedJobs.value = LoadingStatus.Loading("")
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.jobsOfDestination(destinationId)
                     .collect {
-                        _loadedJobs.value = LoadingStatus.Success(it)
+                        _loadedJobs.postValue(LoadingStatus.Success(it))
                     }
             } catch (e: Exception) {
-                _loadedJobs.value = LoadingStatus.Error(e)
+                _loadedJobs.postValue(LoadingStatus.Error(e))
             }
         }
     }
 
     fun updateJobs(destinationId: String, jobs: List<PrintOrderUIModel>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.batchUpdateJobs(destinationId, jobs)
         }
     }
@@ -137,14 +138,13 @@ class FixedDestinationVM @Inject constructor(
 
 
     private inline fun doWork(crossinline block: suspend () -> Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                _workingStatus.value =
-                    loadingEvent(application.getString(R.string.one_moment_please))
-                val result=block()
-                _workingStatus.value = dataEvent(result)
+                _workingStatus.postValue(loadingEvent(application.getString(R.string.one_moment_please)))
+                val result = block()
+                _workingStatus.postValue(dataEvent(result))
             } catch (e: Exception) {
-                _workingStatus.value = errorEvent(e)
+                _workingStatus.postValue(errorEvent(e))
             }
         }
     }

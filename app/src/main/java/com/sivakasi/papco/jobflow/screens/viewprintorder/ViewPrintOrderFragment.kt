@@ -141,12 +141,15 @@ class ViewPrintOrderFragment : Fragment() {
         viewModel.generatePdfStatus.observe(viewLifecycleOwner, EventObserver {
             handleGeneratePdfStatus(it)
         })
+
+        viewModel.destinationName.observe(viewLifecycleOwner){
+            updateSubTitle(it)
+        }
     }
 
     private fun renderPrintOrder(printOrder: PrintOrder) {
 
         updateTitle(getString(R.string.po_xx, printOrder.printOrderNumber))
-        updateSubTitle("")
         printOrderNumber = printOrder.printOrderNumber
 
         renderPoDetails(printOrder)
