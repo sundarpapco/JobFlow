@@ -15,7 +15,10 @@
         android:title="@string/print"
         app:showAsAction="ifRoom"/>
 
-
+    <item android:id="@+id/mnu_repeat_this_job"
+        android:orderInCategory="300"
+        android:title="@string/repeat_this_job"
+        app:showAsAction="never" />
 
     <item android:id="@+id/mnu_share_pdf"
         android:icon="@drawable/ic_share"

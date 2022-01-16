@@ -34,13 +34,19 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     companion object {
         private const val KEY_EDITING_PO_ID = "key:editing:po:id"
         private const val KEY_PARENT_DESTINATION_ID = "key:parent:destination"
+        private const val KEY_ARG_AUTO_REPEAT = "key:auto:load"
         private const val KEY_SEARCH_MODE = "key:search:mode"
         private const val CONFIRMATION_RID_NOT_FOUND = 1
 
-        fun getArgumentBundle(editingPONumber: Int, parentDestinationId: String): Bundle =
+        fun getArgumentBundle(
+            editingPONumber: Int,
+            parentDestinationId: String,
+            autoLoad: Boolean = false
+        ): Bundle =
             Bundle().apply {
                 putInt(KEY_EDITING_PO_ID, editingPONumber)
                 putString(KEY_PARENT_DESTINATION_ID, parentDestinationId)
+                putBoolean(KEY_ARG_AUTO_REPEAT, autoLoad)
             }
     }
 
@@ -56,6 +62,19 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         savedInstanceState?.let {
             searchByPlateNumber = it.getBoolean(KEY_SEARCH_MODE, true)
         }
+
+        /*
+        Auto repeat mode means that the user clicked "Repeat this job" in the
+        menu of the ViewPrintOrder Screen. In this case, the printOrderNumber provided
+        as argument will be used directly to create a reprint Job
+        */
+        if(isAutoRepeatMode()){
+            check(getEditingPOId() > 0){"Invalid PO number provided in auto repeat mode"}
+            //Search and load from repo using the provided PO number and not plate number
+            viewModel.loadRepeatJob(getEditingPOId(),false)
+            return
+        }
+
         if (isEditMode()) {
             viewModel.isEditMode = true
             viewModel.editingPrintOrderParentDestinationId = getParentDestinationId()
@@ -76,7 +95,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         super.onViewCreated(view, savedInstanceState)
         enableBackAsClose()
 
-        if(isEditMode())
+        if (isEditMode())
             updateTitle(getString(R.string.edit_job))
         else
             updateTitle(getString(R.string.create_job))
@@ -128,10 +147,10 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
         viewBinding.txtPlateNumber.setOnEditorActionListener { _, actionId, _ ->
 
-            if(actionId == EditorInfo.IME_ACTION_DONE){
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
                 onNextPressed()
                 true
-            }else {
+            } else {
                 false
             }
         }
@@ -139,7 +158,8 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     private fun observeViewModel() {
         viewModel.reprintLoadingStatus.observe(viewLifecycleOwner, EventObserver {
-            if (isEditMode())
+
+            if (isAutoRepeatMode() || isEditMode())
                 handleJobLoadInEditMode(it)
             else
                 handleJobLoadInNonEditMode(it)
@@ -266,7 +286,6 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         when (loadingStatus) {
             is LoadingStatus.Loading -> {
                 viewBinding.fullscreenProgressBar.root.visibility = View.VISIBLE
-                renderLoadingState(loadingStatus.msg)
             }
 
             is LoadingStatus.Success<*> -> {
@@ -319,6 +338,9 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     }
 
     private fun isEditMode(): Boolean = getEditingPOId() != -4
+
+    private fun isAutoRepeatMode(): Boolean =
+        arguments?.getBoolean(KEY_ARG_AUTO_REPEAT) ?: false
 
     private fun getParentDestinationId(): String =
         arguments?.getString(KEY_PARENT_DESTINATION_ID) ?: DatabaseContract.DOCUMENT_DEST_NEW_JOBS

@@ -114,6 +114,11 @@ class ViewPrintOrderFragment : Fragment() {
                 true
             }
 
+            R.id.mnu_repeat_this_job ->{
+                repeatThisJob()
+                true
+            }
+
             android.R.id.home -> findNavController().popBackStack()
 
             else -> super.onOptionsItemSelected(item)
@@ -377,6 +382,17 @@ class ViewPrintOrderFragment : Fragment() {
         findNavController().navigate(
             R.id.action_viewPrintOrderFragment_to_print_order_flow,
             FragmentAddPO.getArgumentBundle(printOrderNumber, getDestinationId())
+        )
+    }
+
+    private fun repeatThisJob(){
+        findNavController().navigate(
+            R.id.action_viewPrintOrderFragment_to_print_order_flow,
+            FragmentAddPO.getArgumentBundle(
+                printOrder.printOrderNumber,
+                DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                true
+            )
         )
     }
 
