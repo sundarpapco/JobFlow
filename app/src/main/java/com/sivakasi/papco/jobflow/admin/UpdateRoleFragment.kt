@@ -8,21 +8,25 @@ import android.view.ViewGroup
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
 @AndroidEntryPoint
-class UpdateRoleFragment: Fragment() {
+class UpdateRoleFragment : Fragment() {
 
-    private val viewModel by lazy {
-        ViewModelProvider(this).get(UpdateRoleVM::class.java)
-    }
+
+    private val viewModel: UpdateRoleVM by hiltNavGraphViewModels(R.id.update_role_flow)
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,9 +34,16 @@ class UpdateRoleFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        return ComposeView(requireContext()).apply{
+        return ComposeView(requireContext()).apply {
             setContent {
-                UpdateRoleScreen(updateRoleState = viewModel.state,viewModel::onUpdateRole)
+                UpdateRoleScreen(
+                    updateRoleState = viewModel.state,
+                    onSubmit = viewModel::onUpdateRole,
+                    onUserChange = {
+                        //Navigate to the select User screen
+                        findNavController().navigate(R.id.action_updateRoleFragment_to_selectUserFragment)
+                    }
+                )
             }
         }
     }
@@ -53,7 +64,7 @@ class UpdateRoleFragment: Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun updateFragmentTitle(){
+    private fun updateFragmentTitle() {
         updateTitle(getString(R.string.update_role))
         updateSubTitle("")
     }

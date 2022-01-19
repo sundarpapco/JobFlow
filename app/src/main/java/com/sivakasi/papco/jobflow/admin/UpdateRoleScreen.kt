@@ -5,43 +5,36 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.screens.login.AuthError
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 
 @ExperimentalComposeUiApi
 @Composable
 fun UpdateRoleScreen(
     updateRoleState: UpdateRoleState,
-    onSubmit: () -> Unit
+    onSubmit: () -> Unit,
+    onUserChange:()->Unit
 ) {
     JobFlowTheme {
         Surface {
@@ -84,6 +77,36 @@ fun UpdateRoleScreen(
                 //Email Field
                 JobFlowTextField(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onUserChange()
+                        },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        disabledTextColor = LocalContentColor.current,
+                        disabledBorderColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high),
+                        disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
+                        disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
+                        disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+                    ),
+                    onTabPressed = { },
+                    value = updateRoleState.selectedUser?.displayName
+                        ?: stringResource(id = R.string.tap_to_select_user),
+                    label = stringResource(id = R.string.user),
+                    onValueChange = {updateRoleState.error=null},
+                    readOnly = true,
+                    singleLine = true,
+                    enabled = false,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = "User Icon"
+                        )
+                    }
+                )
+
+                /*//Email Field
+                JobFlowTextField(
+                    modifier = Modifier
                         .fillMaxWidth(),
                     onTabPressed = { buttonFocus.requestFocus() },
                     error = updateRoleState.emailError,
@@ -104,7 +127,7 @@ fun UpdateRoleScreen(
                             imageVector = Icons.Filled.Email,
                             contentDescription = "Email to reset"
                         )
-                    })
+                    })*/
 
                 //Roles Field
                 Box(
@@ -164,6 +187,7 @@ fun UpdateRoleScreen(
 
                         updateRoleState.roles.forEachIndexed { index, s ->
                             MenuItem(text = s) {
+                                updateRoleState.error=null
                                 updateRoleState.selectedRoleIndex = index
                                 menuExpanded = !menuExpanded
                             }
@@ -196,7 +220,8 @@ fun UpdateRoleScreen(
                 updateRoleState.error?.let {
                     AuthError(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        error = it)
+                        error = it
+                    )
                 }
 
             }
@@ -229,7 +254,7 @@ fun MenuItem(text: String, onClick: () -> Unit) {
 @Composable
 private fun UpdateRoleScreenPreview() {
     UpdateRoleScreen(
-        UpdateRoleState(LocalContext.current)
+        UpdateRoleState(),{}
     ) {
 
     }

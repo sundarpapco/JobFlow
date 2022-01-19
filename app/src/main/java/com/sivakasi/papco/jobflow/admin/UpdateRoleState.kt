@@ -1,31 +1,20 @@
 package com.sivakasi.papco.jobflow.admin
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.sivakasi.papco.jobflow.R
-import com.wajahatkarim3.easyvalidation.core.view_ktx.validEmail
+import com.sivakasi.papco.jobflow.data.User
 
-class UpdateRoleState(private val context: Context) {
+class UpdateRoleState() {
 
-    var email: String by mutableStateOf("")
+    var selectedUser: User? by mutableStateOf(null)
     var isLoading: Boolean by mutableStateOf(false)
     val roles = listOf("Root", "Admin", "Printer", "Guest")
     var selectedRoleIndex: Int by mutableStateOf(0)
     var error: String? by mutableStateOf(null)
-    var emailError: String? by mutableStateOf(null)
-
-    fun isEmailValid(): Boolean {
-        return if (email.validEmail()) {
-            true
-        } else {
-            emailError = context.getString(R.string.invalid_email)
-            false
-        }
-    }
 
     fun startLoading() {
+        error=null
         isLoading = true
     }
 
@@ -35,6 +24,7 @@ class UpdateRoleState(private val context: Context) {
     }
 
     fun loadingSuccess() {
+        error=null
         isLoading = false
     }
 }

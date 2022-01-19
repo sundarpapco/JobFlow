@@ -209,6 +209,10 @@
     <string name="oops_no_internet">OOPS!\nNO INTERNET</string>
     <string name="check_internet_connection">Please check your internet connection</string>
     <string name="try_again">TRY AGAIN</string>
+    <string name="select_user">Select User</string>
+    <string name="tap_to_select_user">Tap to select user</string>
+    <string name="user">User</string>
+    <string name="xx_users">%1$d Users</string>
 
 
     <!-- Menu -->

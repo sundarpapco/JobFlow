@@ -56,7 +56,7 @@
             app:destination="@id/clientHistoryFragment" />
         <action
             android:id="@+id/action_fragmentHome_to_updateRoleFragment"
-            app:destination="@id/updateRoleFragment" />
+            app:destination="@id/update_role_flow" />
         <action
             android:id="@+id/action_fragmentHome_to_algoliaSearchFragment"
             app:destination="@id/algoliaSearchFragment" />
@@ -120,10 +120,6 @@
         android:id="@+id/guestFragment"
         android:name="com.sivakasi.papco.jobflow.screens.login.GuestFragment"
         android:label="GuestFragment" />
-    <fragment
-        android:id="@+id/updateRoleFragment"
-        android:name="com.sivakasi.papco.jobflow.admin.UpdateRoleFragment"
-        android:label="UpdateRoleFragment" />
     <action android:id="@+id/action_global_fragmentHome" app:destination="@id/fragmentHome" />
     <action android:id="@+id/action_global_manageMachinesFragment" app:destination="@id/manageMachinesFragment" />
     <action android:id="@+id/action_global_guestFragment" app:destination="@id/guestFragment" />
@@ -144,4 +140,21 @@
             android:id="@+id/action_algoliaSearchFragment_to_viewPrintOrderFragment"
             app:destination="@id/viewPrintOrderFragment" />
     </fragment>
+
+    <navigation android:id="@+id/update_role_flow"
+        app:startDestination="@id/updateRoleFragment">
+        <fragment
+            android:id="@+id/selectUserFragment"
+            android:name="com.sivakasi.papco.jobflow.admin.SelectUserFragment"
+            android:label="SelectUserFragment" />
+        <fragment
+            android:id="@+id/updateRoleFragment"
+            android:name="com.sivakasi.papco.jobflow.admin.UpdateRoleFragment"
+            android:label="UpdateRoleFragment">
+            <action
+                android:id="@+id/action_updateRoleFragment_to_selectUserFragment"
+                app:destination="@id/selectUserFragment" />
+        </fragment>
+    </navigation>
+
 </navigation>

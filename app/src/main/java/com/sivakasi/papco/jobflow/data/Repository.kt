@@ -361,6 +361,32 @@ class Repository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    fun getAllUsers() = callbackFlow {
+
+        val listenerRegistration = database.collection(DatabaseContract.COLLECTION_USERS)
+            .orderBy("displayName", Query.Direction.ASCENDING)
+            .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
+                if (firebaseFireStoreException != null)
+                    throw firebaseFireStoreException
+
+                if (querySnapshot == null)
+                    throw ResourceNotFoundException("Users cannot be loaded")
+                else {
+                    try {
+                        trySend(querySnapshot.documents).isSuccess
+                    } catch (e: Exception) {
+
+                    }
+                }
+            }
+
+        awaitClose { listenerRegistration.remove() }
+    }.map {
+        it.map { doc ->
+            doc.toObject(User::class.java)!!
+        }
+    }
+
 
     suspend fun loadAllMachines() = callbackFlow {
 
