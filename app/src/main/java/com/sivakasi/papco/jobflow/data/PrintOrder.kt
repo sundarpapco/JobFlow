@@ -54,6 +54,7 @@ class PrintOrder {
         creationTime = currentTimeInMillis()
         jobType = TYPE_REPEAT_JOB
         invoiceDetails = ""
+        previousDestinationId=""
         if (clientId == -1)
             billingName = ""
     }
