@@ -12,6 +12,7 @@ import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.Client
+import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentJobDetailsBinding
 import com.sivakasi.papco.jobflow.extensions.*
@@ -78,6 +79,16 @@ class FragmentJobDetails : Fragment() {
 
     private fun initViews() {
 
+        //If this screen is editing a print order and the editing po is already completed,
+        //then show the Invoice details which also can be edited here
+        if (viewModel.isEditMode &&
+            viewModel.editingPrintOrderParentDestinationId == DatabaseContract.DOCUMENT_DEST_COMPLETED
+        ) {
+            viewBinding.txtLayoutInvoiceDetail.visibility=View.VISIBLE
+        }else{
+            viewBinding.txtLayoutInvoiceDetail.visibility=View.GONE
+        }
+
         viewBinding.txtClientName.setOnClickListener {
             navigateToClientSelectionScreen()
         }
@@ -92,6 +103,7 @@ class FragmentJobDetails : Fragment() {
 
         viewBinding.txtClientName.clearErrorOnTextChange()
         viewBinding.txtJobName.clearErrorOnTextChange()
+        viewBinding.txtInvoiceDetail.clearErrorOnTextChange()
     }
 
     private fun observeViewModel() {
@@ -119,6 +131,11 @@ class FragmentJobDetails : Fragment() {
         viewBinding.txtJobName.setText(printOrder.jobName)
         viewBinding.txtClientName.setText(printOrder.billingName)
         viewBinding.txtPendingRemarks.setText(printOrder.pendingRemarks)
+
+        //The invoice detail field will be visible only when a root is editing an already completed PO
+        //So, check whether its visible and only then we can update the field
+        if(viewBinding.txtLayoutInvoiceDetail.visibility==View.VISIBLE)
+            viewBinding.txtInvoiceDetail.setText(printOrder.invoiceDetails)
     }
 
     private fun validateForm(): Boolean {
@@ -142,6 +159,11 @@ class FragmentJobDetails : Fragment() {
             .validate(viewBinding.txtClientName.validateForNonBlank(errorMsg))
             .validate(viewBinding.txtJobName.validateForNonBlank(errorMsg))
 
+        //The invoice detail field will be visible only when a root is editing an already completed PO
+        //So, check whether its visible and if yes, then validate it
+        if(viewBinding.txtLayoutInvoiceDetail.visibility==View.VISIBLE)
+            validator.validate(viewBinding.txtInvoiceDetail.validateForNonBlank(errorMsg))
+
         return validator.isValid()
 
     }
@@ -154,6 +176,9 @@ class FragmentJobDetails : Fragment() {
             printOrder.jobName = txtJobName.text.toString().trim()
             printOrder.billingName = txtClientName.text.toString().trim()
             printOrder.pendingRemarks = txtPendingRemarks.text.toString()
+
+            if(txtLayoutInvoiceDetail.visibility==View.VISIBLE)
+                printOrder.invoiceDetails = txtInvoiceDetail.text.toString().trim()
         }
     }
 

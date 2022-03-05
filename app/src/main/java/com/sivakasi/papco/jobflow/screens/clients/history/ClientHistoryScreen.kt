@@ -1,4 +1,4 @@
-package com.sivakasi.papco.jobflow.screens.clients.history.ui
+package com.sivakasi.papco.jobflow.screens.clients.history
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryVM
 import com.sivakasi.papco.jobflow.screens.common.PaginatedSearchModelListScreen
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -20,7 +19,8 @@ fun ClientHistoryScreen(viewModel: ClientHistoryVM,onItemClicked:(SearchModel)->
     PaginatedSearchModelListScreen(
         history,
         onResultClicked = onItemClicked,
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(16.dp),
+        viewModel.userUpdatedItem
     )
 }
 

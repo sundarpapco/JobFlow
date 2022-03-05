@@ -1,7 +1,11 @@
 package com.sivakasi.papco.jobflow.data
 
+import android.content.Context
+import com.sivakasi.papco.jobflow.asDateString
+import com.sivakasi.papco.jobflow.calendarWithTime
 import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.getCalendarInstance
+import com.sivakasi.papco.jobflow.models.SearchModel
 
 class PrintOrder {
 
@@ -108,5 +112,26 @@ class PrintOrder {
 
     fun documentId(): String =
         documentId(printOrderNumber)
+
+}
+
+fun PrintOrder.toSearchModel(context: Context,destinationId:String):SearchModel{
+
+    val result = SearchModel(context)
+    val printOrder=this
+    with(result) {
+        printOrderNumber = printOrder.printOrderNumber
+        creationTime=printOrder.creationTime
+        printOrderDate = calendarWithTime(printOrder.creationTime).asDateString()
+        billingName = printOrder.billingName
+        jobName = printOrder.jobName
+        plateNumber = printOrder.plateMakingDetail.plateNumber
+        invoiceNumber = printOrder.invoiceDetails
+        colors = printOrder.printingDetail.colours
+        this.destinationId = destinationId
+        paperDetails=printOrder.printingSizePaperDetail().toString()
+        completionTime=printOrder.completionTime
+    }
+    return result
 
 }

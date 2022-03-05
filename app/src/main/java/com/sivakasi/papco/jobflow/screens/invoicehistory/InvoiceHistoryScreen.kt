@@ -18,7 +18,8 @@ fun InvoiceHistoryScreen(viewModel: InvoiceHistoryVM, onItemClicked: (SearchMode
     PaginatedSearchModelListScreen(
         data = history,
         onResultClicked = onItemClicked,
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier.padding(horizontal = 16.dp),
+        viewModel.userUpdatedItem
     )
 }
 

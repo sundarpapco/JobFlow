@@ -17,7 +17,6 @@ import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.screens.clients.history.ui.ClientHistoryScreen
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -86,6 +85,9 @@ class ClientHistoryFragment : Fragment() {
     }
 
     private fun navigateToViewPrintOrderScreen(searchModel: SearchModel) {
+
+        viewModel.observePrintOrder(searchModel)
+
         val args = ViewPrintOrderFragment.getArguments(
             searchModel.destinationId,
             PrintOrder.documentId(searchModel.printOrderNumber)

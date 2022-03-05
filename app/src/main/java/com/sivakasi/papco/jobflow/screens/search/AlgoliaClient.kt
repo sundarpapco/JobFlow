@@ -1,7 +1,9 @@
 package com.sivakasi.papco.jobflow.screens.search
 
 import com.algolia.search.client.ClientSearch
+import com.algolia.search.dsl.customRanking
 import com.algolia.search.dsl.query
+import com.algolia.search.dsl.settings
 import com.algolia.search.helper.deserialize
 import com.algolia.search.model.APIKey
 import com.algolia.search.model.ApplicationID
@@ -12,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 interface AlgoliaClient {
-    suspend fun search(queryString: String,pageNumber:Int=0): AlgoliaLoadResult
+    suspend fun search(queryString: String, pageNumber: Int = 0): AlgoliaLoadResult
 }
 
 
@@ -25,17 +27,24 @@ class AlgoliaClientImpl : AlgoliaClient {
         IndexName("completed_jobs")
     )
 
-    override suspend fun search(queryString: String,pageNumber: Int): AlgoliaLoadResult =
+
+    override suspend fun search(queryString: String, pageNumber: Int): AlgoliaLoadResult =
         withContext(Dispatchers.IO) {
+
+            settings {
+                customRanking {
+
+                }
+            }
 
             val query = query {
                 query = queryString
                 typoTolerance = TypoTolerance.False
-                page=pageNumber
-                hitsPerPage=100
+                page = pageNumber
+                hitsPerPage = 100
             }
-            val response:ResponseSearch = index.search(query)
-            val data=response.hits.deserialize(AlgoliaRecord.serializer())
+            val response: ResponseSearch = index.search(query)
+            val data = response.hits.deserialize(AlgoliaRecord.serializer())
             AlgoliaLoadResult(
                 data,
                 totalPages = response.nbPages,
@@ -47,8 +56,8 @@ class AlgoliaClientImpl : AlgoliaClient {
 }
 
 data class AlgoliaLoadResult(
-    val data:List<AlgoliaRecord>,
-    val totalPages:Int,
-    val loadedPage:Int,
-    val totalHits:Int
+    val data: List<AlgoliaRecord>,
+    val totalPages: Int,
+    val loadedPage: Int,
+    val totalHits: Int
 )

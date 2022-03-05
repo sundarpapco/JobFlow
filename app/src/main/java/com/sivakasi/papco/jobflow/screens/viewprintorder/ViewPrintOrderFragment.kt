@@ -59,7 +59,7 @@ class ViewPrintOrderFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.loadPrintOrder(getDestinationId(), getPoId())
-        if (currentUserRole()=="printer")
+        if (currentUserRole() == "printer")
             setHasOptionsMenu(false)
         else
             setHasOptionsMenu(true)
@@ -91,7 +91,7 @@ class ViewPrintOrderFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (currentUserRole()!="printer")
+        if (currentUserRole() != "printer")
             inflater.inflate(R.menu.fragment_view_print_order, menu)
     }
 
@@ -114,7 +114,7 @@ class ViewPrintOrderFragment : Fragment() {
                 true
             }
 
-            R.id.mnu_repeat_this_job ->{
+            R.id.mnu_repeat_this_job -> {
                 repeatThisJob()
                 true
             }
@@ -127,15 +127,29 @@ class ViewPrintOrderFragment : Fragment() {
 
     private fun initViews() {
 
+        viewBinding.fab.setOnClickListener {
+            navigateToEditPrintOrderScreen()
+        }
+
         //Disable editing of this print order if this it printer version of app or this print order
         //is completed
 
-        if (currentUserRole()=="printer" || getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED)
+        val userRole = currentUserRole()
+
+        if (getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED) {
+            if (userRole != "root")
+                viewBinding.fab.hide()
+        } else {
+            if (userRole == "printer")
+                viewBinding.fab.hide()
+        }
+
+       /* if (currentUserRole() == "printer" || getDestinationId() == DatabaseContract.DOCUMENT_DEST_COMPLETED)
             viewBinding.fab.hide()
         else
             viewBinding.fab.setOnClickListener {
                 navigateToEditPrintOrderScreen()
-            }
+            }*/
     }
 
     private fun observerViewModel() {
@@ -147,7 +161,7 @@ class ViewPrintOrderFragment : Fragment() {
             handleGeneratePdfStatus(it)
         })
 
-        viewModel.destinationName.observe(viewLifecycleOwner){
+        viewModel.destinationName.observe(viewLifecycleOwner) {
             updateSubTitle(it)
         }
     }
@@ -178,13 +192,13 @@ class ViewPrintOrderFragment : Fragment() {
             else
                 getString(R.string.repeat_job)
 
-            if(printOrder.invoiceDetails.isNotBlank()){
-                poDetails.lblInvoiceNumber.visibility=View.VISIBLE
-                poDetails.txtInvoiceNumber.visibility=View.VISIBLE
-                poDetails.txtInvoiceNumber.text=printOrder.invoiceDetails
-            }else{
-                poDetails.lblInvoiceNumber.visibility=View.GONE
-                poDetails.txtInvoiceNumber.visibility=View.GONE
+            if (printOrder.invoiceDetails.isNotBlank()) {
+                poDetails.lblInvoiceNumber.visibility = View.VISIBLE
+                poDetails.txtInvoiceNumber.visibility = View.VISIBLE
+                poDetails.txtInvoiceNumber.text = printOrder.invoiceDetails
+            } else {
+                poDetails.lblInvoiceNumber.visibility = View.GONE
+                poDetails.txtInvoiceNumber.visibility = View.GONE
             }
         }
     }
@@ -385,7 +399,7 @@ class ViewPrintOrderFragment : Fragment() {
         )
     }
 
-    private fun repeatThisJob(){
+    private fun repeatThisJob() {
         findNavController().navigate(
             R.id.action_viewPrintOrderFragment_to_print_order_flow,
             FragmentAddPO.getArgumentBundle(

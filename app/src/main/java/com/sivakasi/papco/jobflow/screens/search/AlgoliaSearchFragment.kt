@@ -11,9 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PrintOrder
-import com.sivakasi.papco.jobflow.extensions.*
+import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.showActionBar
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -77,6 +78,9 @@ class AlgoliaSearchFragment:Fragment() {
     //Navigate to view Print order screen
     @ExperimentalCoroutinesApi
     private fun onItemClick(item: SearchModel) {
+
+        viewModel.observePrintOrder(item)
+
         val arguments = ViewPrintOrderFragment.getArguments(
             item.destinationId,
             PrintOrder.documentId(item.printOrderNumber)

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -24,8 +25,10 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.common.PaginatedSearchModelListScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 
+@ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
 @Composable
 fun AlgoliaSearchScreen(
@@ -35,7 +38,7 @@ fun AlgoliaSearchScreen(
 ) {
 
     val data = viewModel.pagingFlow.collectAsLazyPagingItems()
-    val focusRequester = remember { FocusRequester() }
+    var searchActivated by rememberSaveable{ mutableStateOf(false)}
 
     Surface(
         color = MaterialTheme.colors.background
@@ -48,25 +51,21 @@ fun AlgoliaSearchScreen(
             AlgoliaTopABar(
                 query = viewModel.query ?: "",
                 onQueryChange = { viewModel.query = it },
-                onQuerySubmit = viewModel::search,
+                onQuerySubmit = {
+                    searchActivated = true
+                    viewModel.search(it)
+                },
                 onQueryClear = { viewModel.query = "" },
-                onBackPressed = onBackPressed,
-                focusRequester = focusRequester
+                onBackPressed = onBackPressed
             )
 
-            PaginatedSearchModelListScreen(
-                data = data,
-                onResultClicked = onItemClicked,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-            )
-        }
-    }
-
-    LaunchedEffect(key1 = true) {
-        if (viewModel.initialLoading) {
-            viewModel.initialLoading = false
-            delay(200)
-            focusRequester.requestFocus()
+            if (searchActivated)
+                PaginatedSearchModelListScreen(
+                    data = data,
+                    onResultClicked = onItemClicked,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    realTimeUpdatedItem = viewModel.userUpdatedItem
+                )
         }
     }
 
@@ -78,11 +77,12 @@ private fun AlgoliaTopABar(
     onQueryChange: (String) -> Unit,
     onQuerySubmit: (String) -> Unit,
     onQueryClear: () -> Unit,
-    onBackPressed: () -> Unit,
-    focusRequester: FocusRequester
+    onBackPressed: () -> Unit
 ) {
 
     val focusManager = LocalFocusManager.current
+    var initialLoading by rememberSaveable { mutableStateOf(true) }
+    val focusRequester = remember { FocusRequester() }
 
     TopAppBar(
         elevation = 0.dp
@@ -119,8 +119,10 @@ private fun AlgoliaTopABar(
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    focusManager.clearFocus(true)
-                    onQuerySubmit(query)
+                    if(query.isNotBlank()) {
+                        focusManager.clearFocus(true)
+                        onQuerySubmit(query)
+                    }
                 }
             ),
             colors = TextFieldDefaults.textFieldColors(
@@ -132,6 +134,14 @@ private fun AlgoliaTopABar(
         )
     }
 
+    LaunchedEffect(key1 = true) {
+        if (initialLoading) {
+            initialLoading = false
+            delay(200)
+            focusRequester.requestFocus()
+        }
+    }
+
 
 }
 
@@ -140,7 +150,6 @@ private fun AlgoliaTopABar(
 private fun AlgoliaTopBarPreview() {
 
     var query by remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
 
     JobFlowTheme {
         AlgoliaTopABar(
@@ -148,8 +157,7 @@ private fun AlgoliaTopBarPreview() {
             onQueryChange = { query = it },
             onQuerySubmit = {},
             onQueryClear = { query = "" },
-            onBackPressed = {},
-            focusRequester = focusRequester
+            onBackPressed = {}
         )
     }
 }

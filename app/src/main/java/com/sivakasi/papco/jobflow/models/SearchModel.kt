@@ -20,6 +20,20 @@ class SearchModel(private val context: Context) {
     var creationTime:Long=0L
     var completionTime:Long=0L
 
+    fun copyValuesFrom(searchModel: SearchModel){
+        printOrderNumber=searchModel.printOrderNumber
+        printOrderDate=searchModel.printOrderDate
+        billingName=searchModel.billingName
+        jobName=searchModel.jobName
+        plateNumber=searchModel.plateNumber
+        paperDetails=searchModel.paperDetails
+        invoiceNumber=searchModel.invoiceNumber
+        colors=searchModel.colors
+        destinationId=searchModel.destinationId
+        creationTime=searchModel.creationTime
+        completionTime=searchModel.completionTime
+    }
+
     fun poNumberAndDate(): String =
         context.getString(R.string.po_number_and_date, printOrderNumber, printOrderDate)
 

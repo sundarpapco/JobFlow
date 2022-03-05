@@ -76,6 +76,9 @@ class InvoiceHistoryFragment : Fragment() {
 
     //Navigate to view Print order screen
     private fun onItemClick(item: SearchModel) {
+
+        viewModel.observePrintOrder(item)
+
         val arguments = ViewPrintOrderFragment.getArguments(
             item.destinationId,
             PrintOrder.documentId(item.printOrderNumber)
