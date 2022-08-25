@@ -287,8 +287,11 @@ class FixedDestinationFragment : Fragment(),
 
         menu?.let {
 
+            val itemInvoice = it.findItem(R.id.mnu_invoice)
             val itemMark = it.findItem(R.id.mnu_mark_as_pending)
             val itemClear = it.findItem(R.id.mnu_clear_pending)
+
+            itemInvoice.isVisible = !selection.hasMultipleCustomersSelected()
             if (selection.hasPendingItems()) {
                 itemMark.isVisible = false
                 itemClear.isVisible = true

@@ -42,6 +42,10 @@ class PrintOrder {
     var previousDestinationId: String = ""
     var completionTime: Long = 0
     var notes: String = ""
+    //Stores the list of machine names which completes this job
+    var processingHistory:List<ProcessingHistory> = emptyList()
+    //Stores the list of partial dispatch invoice details if any
+    var partialDispatches:List<PartialDispatch> = emptyList()
 
     var lamination: Lamination? = null
     var foil: String? = null
@@ -59,6 +63,8 @@ class PrintOrder {
         jobType = TYPE_REPEAT_JOB
         invoiceDetails = ""
         previousDestinationId=""
+        processingHistory= emptyList()
+        partialDispatches= emptyList()
         if (clientId == -1)
             billingName = ""
     }

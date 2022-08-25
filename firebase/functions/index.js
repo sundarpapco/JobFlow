@@ -4,6 +4,7 @@ const { HttpsError } = require("firebase-functions/v1/https");
 const { Change } = require("firebase-functions");
 const algoilaFunctions = require("./algolia");
 
+
 admin.initializeApp();
 
 // // Create and Deploy Your First Cloud Functions

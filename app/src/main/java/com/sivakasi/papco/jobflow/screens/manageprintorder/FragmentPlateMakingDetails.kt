@@ -7,9 +7,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
-import com.sivakasi.papco.jobflow.*
+import com.sivakasi.papco.jobflow.AbstractTextWatcher
+import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.databinding.FragmentPlateMakingDetailsBinding
@@ -46,7 +48,7 @@ class FragmentPlateMakingDetails : Fragment() {
         )
     }
 
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
 
     private val autoGripperTailUpdater = object : AbstractTextWatcher() {
         override fun afterTextChanged(p0: Editable?) {
@@ -135,6 +137,11 @@ class FragmentPlateMakingDetails : Fragment() {
     }
 
     private fun observeViewModel() {
+
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
+            if(it)
+                exitOutOfCreationFlow()
+        }
 
         viewModel.loadedJob.observe(viewLifecycleOwner) {printOrder->
                 jobType = printOrder.jobType
@@ -471,6 +478,10 @@ class FragmentPlateMakingDetails : Fragment() {
             txtScreen.setText("")
         }
 
+    }
+
+    private fun exitOutOfCreationFlow() {
+        findNavController().popBackStack(R.id.fragmentJobDetails, true)
     }
 
 

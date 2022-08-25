@@ -30,8 +30,35 @@ class Repository @Inject constructor(
     private val application: Application
 ) {
 
-    private val database = FirebaseFirestore.getInstance()
+    private val database = FirebaseFirestore.getInstance().apply {
+        firestoreSettings = FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(false)
+            .build()
+    }
 
+    fun observeTestDocument() = callbackFlow {
+
+        val listenerRegistration = database.collection("TestCollection")
+            .document("TestDocument")
+            .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
+
+                if (firebaseFirestoreException != null)
+                    throw firebaseFirestoreException
+
+                if (documentSnapshot == null || !documentSnapshot.exists()) {
+                    try {
+                        trySend(null).isSuccess
+                    } catch (e: Exception) {
+                    }
+                } else
+                    try {
+                        trySend(documentSnapshot.toObject(User::class.java)).isSuccess
+                    } catch (e: Exception) {
+                    }
+            }
+
+        awaitClose { listenerRegistration.remove() }
+    }
 
     fun observeUser(
         userId: String,
@@ -78,7 +105,9 @@ class Repository @Inject constructor(
                     }
                 } else
                     try {
-                        trySend(documentSnapshot.toObject(Destination::class.java)).isSuccess
+                        val destination = documentSnapshot.toObject(Destination::class.java)
+                        destination?.id=documentSnapshot.id
+                        trySend(destination).isSuccess
                     } catch (e: Exception) {
                     }
             }
@@ -263,7 +292,7 @@ class Repository @Inject constructor(
     suspend fun clientHistory(
         clientId: Int,
         loadParams: LoadParams<DocumentSnapshot>
-    ): LoadResult<DocumentSnapshot,SearchModel> =
+    ): LoadResult<DocumentSnapshot, SearchModel> =
         suspendCancellableCoroutine { continuation ->
 
             var query = database.collectionGroup(DatabaseContract.COLLECTION_JOBS)

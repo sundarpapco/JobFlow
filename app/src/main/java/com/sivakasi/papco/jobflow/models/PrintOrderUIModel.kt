@@ -16,7 +16,8 @@ data class PrintOrderUIModel(
     var runningTime: Duration=Duration(),
     var colors: String = "",
     var hasSpotColors:Boolean=false,
-    var pendingReason:String=""
+    var pendingReason:String="",
+    var clientId:Int=-1
 ) {
     companion object {
 
@@ -24,6 +25,7 @@ data class PrintOrderUIModel(
             return PrintOrderUIModel().apply {
                 printOrderNumber = printOrder.printOrderNumber
                 billingName = printOrder.billingName
+                clientId = printOrder.clientId
                 jobName = printOrder.jobName
                 emergency = printOrder.emergency
                 isReprint = printOrder.jobType == PrintOrder.TYPE_REPEAT_JOB

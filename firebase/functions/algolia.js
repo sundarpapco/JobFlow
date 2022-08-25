@@ -29,6 +29,11 @@ exports.handlePrintOrderUpdation = (before,after,destination) =>{
 
 function creationRecord(data, destination) {
 
+    var partDispatches=[];
+
+    if(data.hasOwnProperty('partialDispatches'))
+        partDispatches = preparePartialDispatches(data.partialDispatches);
+    
     return {
 
         objectID: `po${data.printOrderNumber}`,
@@ -41,7 +46,8 @@ function creationRecord(data, destination) {
         invoiceDetails: data.invoiceDetails,
         colours: data.printingDetail.colours,
         printingInstructions: data.printingDetail.printingInstructions,
-        destinationId: destination
+        destinationId: destination,
+        partialDispatches: partDispatches
 
     };
 }
@@ -49,13 +55,30 @@ function creationRecord(data, destination) {
 
 function movementRecord(data,destination){
 
+    var partDispatches=[];
+
+    if(data.hasOwnProperty('partialDispatches'))
+        partDispatches = preparePartialDispatches(data.partialDispatches);
+    
     return {
 
         objectID: `po${data.printOrderNumber}`,
         destinationId: destination,
-        invoiceDetails: data.invoiceDetails
+        invoiceDetails: data.invoiceDetails,
+        partialDispatches: partDispatches
 
     };
+}
+
+function preparePartialDispatches(dispatches){
+
+    var partialDispatches = [];
+    
+        dispatches.forEach(dispatch =>{
+        partialDispatches.push(dispatch.invoiceNumber);
+    });
+    return partialDispatches;
+
 }
 
 

@@ -6,8 +6,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
@@ -30,7 +30,7 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
     private val viewBinding: FragmentPrintingDetailBinding
         get() = _viewBinding!!
 
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
 
     private var duration: Duration = Duration()
     private var hasSpotColours: Boolean = false
@@ -91,15 +91,22 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         viewBinding.btnNext.setOnClickListener {
             if (validateForm()) {
                 saveStateToViewModel()
-                findNavController().navigate(R.id.action_fragmentPrintingDetail_to_fragmentPostPressDetails)
+                findNavController().navigate(R.id.action_fragmentPrintingDetail_to_composeFragmentPostPressDetails)
             }
         }
     }
 
     private fun observeViewModel() {
+
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
+            if(it)
+                exitOutOfCreationFlow()
+        }
+
         viewModel.loadedJob.observe(viewLifecycleOwner) {
             loadValues(it)
         }
+
     }
 
     private fun loadValues(printOrder: PrintOrder) {
@@ -163,6 +170,10 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
             false
         } else
             true
+    }
+
+    private fun exitOutOfCreationFlow() {
+        findNavController().popBackStack(R.id.fragmentJobDetails, true)
     }
 
 

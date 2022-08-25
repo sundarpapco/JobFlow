@@ -9,6 +9,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -37,7 +38,9 @@ class TextInputDialogState<T>(
 fun TextInputDialog(
     dialogState: TextInputDialogState<*>,
     onPositiveClick: (String) -> Unit = {},
-    onNegativeClick: () -> Unit = {}
+    onNegativeClick: () -> Unit = {},
+    dismissOnClickOutside: Boolean = false,
+    allowBlank: Boolean = false
 ) {
 
     Dialog(
@@ -50,15 +53,17 @@ fun TextInputDialog(
         },
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = false
+            dismissOnClickOutside = dismissOnClickOutside
         )
     ) {
         TextInputDialogContent(
             dialogState = dialogState,
             onPositiveClick = onPositiveClick,
-            onNegativeClick = onNegativeClick
+            onNegativeClick = onNegativeClick,
+            allowBlank = allowBlank
         )
     }
+
 }
 
 
@@ -67,11 +72,14 @@ fun TextInputDialog(
 private fun TextInputDialogContent(
     dialogState: TextInputDialogState<*>,
     onPositiveClick: (String) -> Unit,
-    onNegativeClick: () -> Unit
+    onNegativeClick: () -> Unit,
+    allowBlank: Boolean = false
+
 ) {
 
     val textFieldFocus = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -127,9 +135,16 @@ private fun TextInputDialogContent(
 
                 Button(
                     onClick = {
+                        focusManager.clearFocus(true)
                         onPositiveClick(dialogState.text.text)
                     },
-                    enabled = !dialogState.isProcessing && dialogState.text.text.isNotBlank()
+                    enabled = if (!dialogState.isProcessing) {
+                        if (allowBlank)
+                            true
+                        else
+                            dialogState.text.text.isNotBlank()
+                    } else
+                        false
                 ) {
                     Text(dialogState.positiveButtonText)
                 }
@@ -141,8 +156,7 @@ private fun TextInputDialogContent(
 
     DisposableEffect(Unit) {
         textFieldFocus.requestFocus()
-
-        onDispose {}
+        onDispose { }
     }
 }
 
@@ -172,10 +186,7 @@ fun WaitDialog(msg: String = "") {
 
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = if (msg.isBlank())
-                        stringResource(id = R.string.one_moment_please)
-                    else
-                        msg
+                    text = msg.ifBlank { stringResource(id = R.string.one_moment_please) }
                 )
             }
         }
@@ -267,10 +278,9 @@ private fun TextInputDialogPreview() {
 
         TextInputDialogContent(
             dialogState = dialogState,
-            onPositiveClick = {}
-        ) {
-
-        }
+            onPositiveClick = {},
+            onNegativeClick = {}
+        )
     }
 
 }

@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.common.ConfirmationDialog
@@ -54,7 +54,7 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     private val viewBinding: FragmentAddPoBinding
         get() = _viewBinding!!
 
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow) { defaultViewModelProviderFactory }
+    private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
     private var searchByPlateNumber: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,8 +1,10 @@
 package com.sivakasi.papco.jobflow.data
 
-class PlateMakingDetail {
+
+class PlateMakingDetail{
 
     companion object {
+
         const val PLATE_NUMBER_NOT_YET_ALLOCATED = -1
         const val PLATE_NUMBER_OUTSIDE_PLATE = -2
     }

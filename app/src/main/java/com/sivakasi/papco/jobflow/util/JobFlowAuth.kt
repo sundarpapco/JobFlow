@@ -69,6 +69,7 @@ class JobFlowAuth @Inject constructor() {
                 .addOnSuccessListener {
                     continuation.resume(it)
                 }.addOnFailureListener {
+                    it.printStackTrace()
                     continuation.resumeWithException(it)
                 }
 

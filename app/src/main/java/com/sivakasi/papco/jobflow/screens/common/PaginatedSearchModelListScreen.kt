@@ -95,7 +95,7 @@ private fun HistoryList(
                 This means this is due to caching and we should wait for the actual data to render the list
                  */
                 LoadingScreen()
-                return@Surface
+
             }
         } else {
             //The user has not scrolled this list, meaning we should display the list if it has valid items

@@ -6,8 +6,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
@@ -39,7 +39,7 @@ class FragmentPaperDetails : Fragment(),
         ConcatAdapter(paperDetailAdapter, AddPaperDetailAdapter(this))
     }
 
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
     private var paperDetailCount =
         0 //Variable to hold number of paper details added to check for validation
 
@@ -94,6 +94,11 @@ class FragmentPaperDetails : Fragment(),
 
     private fun observeViewModel() {
 
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
+            if(it)
+                exitOutOfCreationFlow()
+        }
+
         viewModel.loadedJob.observe(viewLifecycleOwner) {
                 paperDetailCount = it.paperDetails?.let { list ->
                     paperDetailAdapter.submitList(list)
@@ -139,5 +144,9 @@ class FragmentPaperDetails : Fragment(),
             toast(getString(R.string.error_at_least_one_paper_detail_required))
             false
         }
+    }
+
+    private fun exitOutOfCreationFlow() {
+        findNavController().popBackStack(R.id.fragmentJobDetails, true)
     }
 }

@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.google.firebase.FirebaseNetworkException
@@ -32,7 +33,20 @@ class MainActivityVM @Inject constructor(
     }
 
     init {
+        observeTestDocument()
         auth.addAuthStateListener(authListener)
+    }
+
+    private fun observeTestDocument(){
+        viewModelScope.launch {
+            repository.observeTestDocument()
+                .collect {
+                    if(it==null)
+                        Log.d("SUNDAR","The test document is null")
+                    else
+                        Log.d("SUNDAR","Got a valid Test Document")
+                }
+        }
     }
 
     fun initializeCurrentUser() {

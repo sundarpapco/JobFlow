@@ -1,10 +1,13 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.*
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.*
+import com.sivakasi.papco.jobflow.screens.manageprintorder.postpress.PostPressScreenState
 import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,25 +18,37 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ManagePrintOrderVM @Inject constructor(
-    private val repository: Repository
+    private val repository: Repository,
+    private val application: Application,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+
+    val recoveringFromProcessDeath = MutableLiveData(false)
+
+    init {
+        val processDeathKey = "process_death_key"
+        recoveringFromProcessDeath.value = savedStateHandle.get(processDeathKey) ?: false
+        savedStateHandle.set(processDeathKey, true)
+    }
+
+    val postPressScreenState = PostPressScreenState(application)
+
     private val _loadedJob = MutableLiveData<PrintOrder>()
-    private val _reprintLoadingStatus= MutableLiveData<Event<LoadingStatus>>()
-    private val _saveStatus = MutableLiveData<Event<LoadingStatus>>()
+    private val _reprintLoadingStatus = MutableLiveData<Event<LoadingStatus>>()
 
     val loadedJob: LiveData<PrintOrder> = _loadedJob
-    val reprintLoadingStatus:LiveData<Event<LoadingStatus>> = _reprintLoadingStatus
-    val saveStatus: LiveData<Event<LoadingStatus>> = _saveStatus
+    val reprintLoadingStatus: LiveData<Event<LoadingStatus>> = _reprintLoadingStatus
 
+    var saveUpdateStatus: LoadingStatus? by mutableStateOf(null)
     private lateinit var printOrder: PrintOrder
 
     var isEditMode: Boolean = false
     var editingPrintOrderParentDestinationId: String = DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
-    fun saveLoadedJob(printOrder:PrintOrder){
-        this.printOrder=printOrder
-        _loadedJob.value=printOrder
+    fun saveLoadedJob(printOrder: PrintOrder) {
+        this.printOrder = printOrder
+        _loadedJob.value = printOrder
     }
 
     fun loadRepeatJob(plateNumber: Int, searchByPlateNumber: Boolean) {
@@ -60,7 +75,8 @@ class ManagePrintOrderVM @Inject constructor(
 
         viewModelScope.launch {
 
-            _reprintLoadingStatus.value = loadingEvent("One moment please")
+            _reprintLoadingStatus.value =
+                loadingEvent(application.getString(R.string.one_moment_please))
             try {
                 //Load Job from repository here like
                 val searchResult = if (searchByPlateNumber) {
@@ -73,7 +89,8 @@ class ManagePrintOrderVM @Inject constructor(
                 else {
                     printOrder = searchResult
                     printOrder.prepareForReprint()
-                    _reprintLoadingStatus.value= dataEvent(printOrder)
+                    postPressScreenState.loadPrintOrder(printOrder)
+                    _reprintLoadingStatus.value = dataEvent(printOrder)
                 }
             } catch (e: Exception) {
                 _reprintLoadingStatus.value = errorEvent(e)
@@ -84,7 +101,8 @@ class ManagePrintOrderVM @Inject constructor(
     fun loadPrintOrderToEdit(poNumber: Int) {
         viewModelScope.launch {
 
-            _reprintLoadingStatus.value = loadingEvent("One moment please")
+            _reprintLoadingStatus.value =
+                loadingEvent(application.getString(R.string.one_moment_please))
             try {
                 //Load Job from repository here like
                 val searchResult = repository.fetchPrintOrder(poNumber)
@@ -92,11 +110,12 @@ class ManagePrintOrderVM @Inject constructor(
                     _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
                 else {
                     printOrder = searchResult
-                    _reprintLoadingStatus.value= dataEvent(printOrder)
+                    postPressScreenState.loadPrintOrder(printOrder)
+                    _reprintLoadingStatus.value = dataEvent(printOrder)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                _reprintLoadingStatus.value= errorEvent(e)
+                _reprintLoadingStatus.value = errorEvent(e)
             }
         }
     }
@@ -114,7 +133,7 @@ class ManagePrintOrderVM @Inject constructor(
             list with all existing content, then add the new entry to it and then send that new list
             to the RecyclerView Adapter */
 
-            val newList = ArrayList(printOrder.paperDetails)
+            val newList = ArrayList(printOrder.paperDetails!!)
             newList.add(paperDetail)
             printOrder.paperDetails = newList
         }
@@ -127,7 +146,7 @@ class ManagePrintOrderVM @Inject constructor(
         if (printOrder.paperDetails == null || printOrder.paperDetails!!.size < index + 1) {
             return
         } else {
-            val newList = ArrayList(printOrder.paperDetails)
+            val newList = ArrayList(printOrder.paperDetails!!)
             newList.removeAt(index)
             printOrder.paperDetails = newList
         }
@@ -140,7 +159,7 @@ class ManagePrintOrderVM @Inject constructor(
         if (printOrder.paperDetails == null) {
             return
         } else {
-            val newList = ArrayList(printOrder.paperDetails)
+            val newList = ArrayList(printOrder.paperDetails!!)
             newList[index] = paperDetail
             printOrder.paperDetails = newList
         }
@@ -157,11 +176,13 @@ class ManagePrintOrderVM @Inject constructor(
 
         viewModelScope.launch {
             try {
-                _saveStatus.value = loadingEvent("One moment please")
+                saveUpdateStatus =
+                    LoadingStatus.Loading(application.getString(R.string.one_moment_please))
+                postPressScreenState.applyToPrintOrder(printOrder)
                 repository.createPrintOrder(printOrder)
-                _saveStatus.value = dataEvent(true)
+                saveUpdateStatus = LoadingStatus.Success(Unit)
             } catch (e: Exception) {
-                _saveStatus.value = errorEvent(e)
+                saveUpdateStatus = LoadingStatus.Error(e)
             }
         }
 
@@ -169,17 +190,17 @@ class ManagePrintOrderVM @Inject constructor(
 
     fun updatePrintOrder() {
 
+
         viewModelScope.launch {
             try {
-                _saveStatus.value = loadingEvent("One moment please")
+                saveUpdateStatus =
+                    LoadingStatus.Loading(application.getString(R.string.one_moment_please))
+                postPressScreenState.applyToPrintOrder(printOrder)
                 repository.updatePrintOrder(editingPrintOrderParentDestinationId, printOrder)
-                _saveStatus.value = dataEvent(true)
+                saveUpdateStatus = LoadingStatus.Success(Unit)
             } catch (e: Exception) {
-                _saveStatus.value = errorEvent(e)
+                saveUpdateStatus = LoadingStatus.Error(e)
             }
         }
-
     }
-
-
 }

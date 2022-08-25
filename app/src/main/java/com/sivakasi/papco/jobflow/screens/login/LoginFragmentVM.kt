@@ -60,8 +60,9 @@ class LoginFragmentVM @Inject constructor(
                 And it will take care of navigating to the next fragment after validating the logged user
                 and claim. So, we don't need to do anything here except keep showing the progressBar*/
 
-                    if (registerBeforeLogin)
+                if (registerBeforeLogin)
                     auth.registerUser(authState.email, authState.password, authState.name)
+
                 auth.logIn(authState.email, authState.password)
 
             } catch (e: Exception) {

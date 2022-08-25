@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import com.sivakasi.papco.jobflow.common.JobListSelection
 import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.data.ProcessingHistory
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.util.*
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
@@ -42,6 +45,9 @@ class FixedDestinationVM @Inject constructor(
             try {
                 repository.observeDestination(destinationId)
                     .collect {
+                        it?.let{dest->
+                            Log.d("SUNDAR","Machine ID is ${dest.id}")
+                        }
                         _destination.postValue(it ?: Destination(name = destinationId))
                     }
             } catch (e: Exception) {
@@ -80,7 +86,18 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun cancelSelectedJobs(sourceId: String) {
-        allotSelectedJobs(sourceId, DatabaseContract.DOCUMENT_DEST_CANCELLED)
+        val jobs = jobSelections.asList()
+        val time = currentTimeInMillis()
+        doWork {
+            repository.moveJobs(sourceId, DatabaseContract.DOCUMENT_DEST_CANCELLED, jobs){
+                it.completionTime = time
+                it.processingHistory += ProcessingHistory(
+                    DatabaseContract.DOCUMENT_DEST_CANCELLED,
+                    DatabaseContract.DOCUMENT_DEST_CANCELLED,
+                    time
+                )
+            }
+        }
     }
 
     fun allotSelectedJobs(sourceId: String, destinationId: String) {
@@ -99,19 +116,43 @@ class FixedDestinationVM @Inject constructor(
             ) {
                 it.invoiceDetails = invoiceDetail.trim()
                 it.completionTime = time
+                it.processingHistory += ProcessingHistory(
+                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                    time
+                )
             }
         }
     }
 
     fun markSelectedJobsAsComplete(sourceId: String, completionTime: Long) {
         val jobs = jobSelections.asList()
+        if(jobs.isEmpty())
+            return
         doWork {
+            /*
+            Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
+            the same customer before actually invoicing
+            */
+            val customerId=jobs.first().clientId
+            jobs.forEach {
+                if(it.clientId != customerId)
+                    throw IllegalStateException(application.getString(R.string.error_invoicing_multiple_clients))
+            }
+
             repository.moveJobs(
                 sourceId,
                 DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
                 jobs
             ) {
                 it.completionTime = completionTime
+                destination.value?.let{machine->
+                    it.processingHistory += ProcessingHistory(
+                        machine.id,
+                        machine.name,
+                        completionTime
+                    )
+                }
             }
         }
     }

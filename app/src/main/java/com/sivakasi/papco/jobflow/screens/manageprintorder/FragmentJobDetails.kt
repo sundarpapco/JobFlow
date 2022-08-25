@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.Client
@@ -33,7 +33,7 @@ class FragmentJobDetails : Fragment() {
         get() = _viewBinding!!
 
     private var printOrder = PrintOrder()
-    private val viewModel: ManagePrintOrderVM by navGraphViewModels(R.id.print_order_flow)
+    private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -107,6 +107,12 @@ class FragmentJobDetails : Fragment() {
     }
 
     private fun observeViewModel() {
+
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
+            if(it)
+                exitOutOfCreationFlow()
+        }
+
         viewModel.loadedJob.observe(viewLifecycleOwner) {
             printOrder = it
             renderJobDetails()
@@ -187,6 +193,10 @@ class FragmentJobDetails : Fragment() {
             R.id.action_fragmentJobDetails_to_clientSelectionFragment,
             ClientsFragment.getArguments(true)
         )
+    }
+
+    private fun exitOutOfCreationFlow() {
+        findNavController().popBackStack(R.id.fragmentJobDetails, true)
     }
 
     private fun navigateToNextScreen() =

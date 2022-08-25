@@ -53,6 +53,18 @@ class MovePrintOrdersTransaction(
 
 
         var listPosition = currentTimeInMillis()
+
+        /*
+        The size of the movingJobs collection List is not always the actual number of moving jobs.
+        In some extreme conditions, like retrying this transaction for many times due to connectivity issues,
+        it is possible that the jobs in the collection might not exist due to various reasons. The following
+        loop checks that condition and ignores those Jobs and proceed ahead with the remaining jobs.
+        So, movingJobs.size != actualMovingJobsCount
+        The following variable will keep track of it
+         */
+        var actualMovingJobsCount=0
+
+
         //Fetch and ready all the jobs which are moving
         for (job in movingJobs) {
 
@@ -67,6 +79,8 @@ class MovePrintOrdersTransaction(
             //ahead with other jobs
             if (!tempDocumentSnapshot.exists())
                 continue
+            else
+                actualMovingJobsCount++
 
             //Make ready
             tempPrintOrder = tempDocumentSnapshot.toObject(PrintOrder::class.java)!!
@@ -91,7 +105,7 @@ class MovePrintOrdersTransaction(
 
         //Make ready of source and destination documents
         source.lastJobCompletion = currentTimeInMillis()
-        source.jobCount -= movingPrintOrders.size
+        source.jobCount -= actualMovingJobsCount
         source.runningTime -= totalMovingJobsDuration
 
         destination.jobCount += movingPrintOrders.size

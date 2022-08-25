@@ -6,14 +6,12 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.util.Duration
 import java.util.*
-import kotlin.collections.HashMap
 
 class JobListSelection(
     private val application: Application
 ) : LiveData<Int>() {
 
     private var selectionDuration = Duration()
-
     private val selection = HashMap<Int, PrintOrderUIModel>()
     private var pendingJobSelectionCount = 0
 
@@ -62,6 +60,25 @@ class JobListSelection(
 
     fun hasPendingItems(): Boolean =
         pendingJobSelectionCount > 0
+
+
+    //Will be used to disable the Invoice option in the menu when more than one customer is selected
+    fun hasMultipleCustomersSelected():Boolean{
+
+        if(selection.size==0)
+            return false
+
+        var customerId = -2
+        for(entry in selection){
+            if(customerId==-2)
+                customerId=entry.value.clientId
+            else{
+                if(customerId!=entry.value.clientId)
+                    return true
+            }
+        }
+        return false
+    }
 
 
     fun title(): String = application.getString(R.string.xx_jobs,selection.size)

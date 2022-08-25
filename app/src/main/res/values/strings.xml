@@ -213,6 +213,7 @@
     <string name="tap_to_select_user">Tap to select user</string>
     <string name="user">User</string>
     <string name="xx_users">%1$d Users</string>
+    <string name="error_invoicing_multiple_clients">Only jobs from the same customer can be invoiced together</string>
 
 
     <!-- Menu -->

@@ -22,8 +22,7 @@ class JobsAdapter(
     private val context: Context,
     private val selections: JobListSelection,
     private val callback: JobsAdapterListener
-) :
-    ListAdapter<PrintOrderUIModel, JobListViewHolder>(PrintOrderUIModelDiff()),
+) : ListAdapter<PrintOrderUIModel, JobListViewHolder>(PrintOrderUIModelDiff()),
     ItemTouchHelperCallBack.DragCallBack {
 
     var itemTouchHelper: ItemTouchHelper? = null
