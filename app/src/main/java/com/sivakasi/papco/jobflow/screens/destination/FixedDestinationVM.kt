@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
@@ -45,9 +43,6 @@ class FixedDestinationVM @Inject constructor(
             try {
                 repository.observeDestination(destinationId)
                     .collect {
-                        it?.let{dest->
-                            Log.d("SUNDAR","Machine ID is ${dest.id}")
-                        }
                         _destination.postValue(it ?: Destination(name = destinationId))
                     }
             } catch (e: Exception) {
