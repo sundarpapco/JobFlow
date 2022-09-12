@@ -7,11 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.JobListSelection
-import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.ProcessingHistory
 import com.sivakasi.papco.jobflow.data.Repository
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -101,8 +101,19 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun invoiceSelectedJob(sourceId: String, invoiceDetail: String) {
-        val jobs = jobSelections.asList()
+       val jobs = jobSelections.asList()
         doWork {
+
+            /*
+            Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
+            the same customer before actually invoicing
+            */
+            val customerId=jobs.first().clientId
+            jobs.forEach {
+                if(it.clientId != customerId)
+                    throw IllegalStateException(application.getString(R.string.error_invoicing_multiple_clients))
+            }
+
             val time = currentTimeInMillis()
             repository.moveJobs(
                 sourceId,
@@ -120,21 +131,22 @@ class FixedDestinationVM @Inject constructor(
         }
     }
 
+    fun partDispatchSelectedJob(sourceId: String,invoiceDetail: String){
+        val jobs = jobSelections.asList()
+        doWork {
+            repository.partDispatchJobs(
+                sourceId,
+                jobs,
+                invoiceDetail
+            )
+        }
+    }
+
     fun markSelectedJobsAsComplete(sourceId: String, completionTime: Long) {
         val jobs = jobSelections.asList()
         if(jobs.isEmpty())
             return
         doWork {
-            /*
-            Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
-            the same customer before actually invoicing
-            */
-            val customerId=jobs.first().clientId
-            jobs.forEach {
-                if(it.clientId != customerId)
-                    throw IllegalStateException(application.getString(R.string.error_invoicing_multiple_clients))
-            }
-
             repository.moveJobs(
                 sourceId,
                 DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,

@@ -151,7 +151,7 @@
     <string name="search">Search</string>
     <string name="invoice">Invoice</string>
     <string name="search_by">Search By </string>
-    <string name="po_number_and_date">PO No:%1$d - %2$s</string>
+    <string name="po_number_and_date">PO: %1$d - %2$s</string>
     <string name="rid_xx">RID: %1$d</string>
     <string name="active">ACTIVE</string>
     <string name="completed">COMPLETED</string>
@@ -214,6 +214,18 @@
     <string name="user">User</string>
     <string name="xx_users">%1$d Users</string>
     <string name="error_invoicing_multiple_clients">Only jobs from the same customer can be invoiced together</string>
+    <string name="AM">AM</string>
+    <string name="PM">PM</string>
+    <string name="po_created">PO Created</string>
+    <string name="processing_history">Processing History</string>
+    <string name="previous_processing_history">Previous History</string>
+    <string name="cannot_get_due_to_no_internet">Cannot get the Print Order. Kindly check your internet connection</string>
+    <string name="paper_size">%1$d X %2$d mm</string>
+    <string name="size_in_mm">%1$d mm</string>
+    <string name="part_dispatch">Part Dispatch</string>
+    <string name="part_dispatch_success">Part dispatch saved successfully!</string>
+    <string name="rupee_symbol">\u20B9</string>
+    <string name="partial_dispatches">Partial Dispatches</string>
 
 
     <!-- Menu -->

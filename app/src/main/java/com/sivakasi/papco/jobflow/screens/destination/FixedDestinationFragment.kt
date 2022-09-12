@@ -14,17 +14,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.common.*
-import com.sivakasi.papco.jobflow.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.databinding.DestinationFixedBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.toast
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
-import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
+import com.sivakasi.papco.jobflow.screens.viewprintorder.ComposeViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.EventObserver
 import com.sivakasi.papco.jobflow.util.LoadingStatus
@@ -349,12 +345,19 @@ class FixedDestinationFragment : Fragment(),
 
 
     override fun onDialogResult(dialogResult: Any, code: Int) {
+
+        hideKeyboard(requireContext(),viewBinding.root)
+        val result = dialogResult as DialogTextInput.TextInputDialogResult
+
         if (code == DIALOG_CODE_INVOICE_DETAIL) {
-            viewModel.invoiceSelectedJob(getDestinationId(), dialogResult as String)
+            if (result.isChecked)
+                viewModel.partDispatchSelectedJob(getDestinationId(), result.text)
+            else
+                viewModel.invoiceSelectedJob(getDestinationId(), result.text)
         }
 
         if (code == DIALOG_CODE_PENDING_REMARKS) {
-            viewModel.markAsPending(getDestinationId(), dialogResult as String)
+            viewModel.markAsPending(getDestinationId(), result.text)
         }
 
     }
@@ -392,7 +395,9 @@ class FixedDestinationFragment : Fragment(),
     private fun showInvoiceDetailsInputDialog() {
         DialogTextInput.getInstance(
             title = getString(R.string.invoice_detail),
-            code = DIALOG_CODE_INVOICE_DETAIL
+            code = DIALOG_CODE_INVOICE_DETAIL,
+            checkBoxText = getString(R.string.part_dispatch),
+            acceptBlank = false
         )
             .show(
                 childFragmentManager,
@@ -468,12 +473,20 @@ class FixedDestinationFragment : Fragment(),
 
     private fun navigateToViewPrintOrderScreen(printOrderId: String) {
         findNavController().navigate(
+            R.id.action_fixedDestinationFragment_to_composeViewPrintOrderFragment,
+            ComposeViewPrintOrderFragment.getArguments(
+                getDestinationId(),
+                printOrderId
+            )
+        )
+
+        /*findNavController().navigate(
             R.id.action_fixedDestinationFragment_to_viewPrintOrderFragment,
             ViewPrintOrderFragment.getArguments(
                 getDestinationId(),
                 printOrderId
             )
-        )
+        )*/
     }
 
     private fun getDestinationId(): String =

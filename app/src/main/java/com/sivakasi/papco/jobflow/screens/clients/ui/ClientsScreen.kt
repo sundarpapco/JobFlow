@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
@@ -247,5 +248,22 @@ private fun PreviewLoadingScreen() {
     JobFlowTheme {
         LoadingScreen()
     }
+}
+
+@Preview
+@Composable
+private fun PreviewClientsList(){
+    
+    val clients = remember{
+        listOf(
+            ClientUIModel(1, AnnotatedString("Sundaravel")),
+            ClientUIModel(2, AnnotatedString("Madhana"))
+        )
+    }
+    
+    JobFlowTheme {
+        ClientsList(clientsList = clients, onItemClicked = {})
+    }
+    
 }
 

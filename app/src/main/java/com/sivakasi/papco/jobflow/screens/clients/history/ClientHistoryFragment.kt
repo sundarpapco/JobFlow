@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -17,10 +18,11 @@ import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment
+import com.sivakasi.papco.jobflow.screens.viewprintorder.ComposeViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
 @ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
@@ -48,6 +50,8 @@ class ClientHistoryFragment : Fragment() {
         }
     }
 
+    @ExperimentalComposeUiApi
+    @FlowPreview
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -84,16 +88,18 @@ class ClientHistoryFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    @ExperimentalComposeUiApi
+    @FlowPreview
     private fun navigateToViewPrintOrderScreen(searchModel: SearchModel) {
 
         viewModel.observePrintOrder(searchModel)
 
-        val args = ViewPrintOrderFragment.getArguments(
+        val args = ComposeViewPrintOrderFragment.getArguments(
             searchModel.destinationId,
             PrintOrder.documentId(searchModel.printOrderNumber)
         )
         findNavController().navigate(
-            R.id.action_clientHistoryFragment_to_viewPrintOrderFragment,
+            R.id.action_clientHistoryFragment_to_composeViewPrintOrderFragment,
             args
         )
     }

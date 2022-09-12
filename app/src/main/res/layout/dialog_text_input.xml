@@ -36,6 +36,15 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/part_dispatch"
+        app:layout_constraintTop_toTopOf="@id/btn_save"
+        app:layout_constraintBottom_toBottomOf="@id/btn_save"
+        app:layout_constraintStart_toStartOf="@id/txt_layout_remarks" />
+
     <Button
         android:id="@+id/btn_save"
         android:layout_width="wrap_content"

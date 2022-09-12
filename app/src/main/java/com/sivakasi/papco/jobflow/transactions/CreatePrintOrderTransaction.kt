@@ -2,7 +2,7 @@ package com.sivakasi.papco.jobflow.transactions
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
-import com.sivakasi.papco.jobflow.currentTimeInMillis
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.extensions.destinationReference
 import com.sivakasi.papco.jobflow.extensions.poReference

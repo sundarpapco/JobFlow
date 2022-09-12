@@ -112,6 +112,31 @@ class Repository @Inject constructor(
 
     }
 
+    suspend fun getLastCompletedPrintOrderWithPlateNumber(plateNumber: Int):PrintOrder?{
+
+        return suspendCancellableCoroutine { continuation->
+            database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+                .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
+                .collection(DatabaseContract.COLLECTION_JOBS)
+                .whereEqualTo(PrintOrder.FIELD_PLATE_NUMBER,plateNumber)
+                .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER,Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener{
+                    if (it.documents.isEmpty())
+                        continuation.resume(null)
+                    else {
+                        val result = it.documents[0].toPrintOrder()
+                       continuation.resume(result)
+                    }
+                }
+                .addOnFailureListener{
+                    continuation.resumeWithException(it)
+                }
+        }
+
+    }
+
 
     suspend fun getLatestPrintOrderWithPlateNumber(plateNumber: Int): PrintOrder? {
 
@@ -475,6 +500,15 @@ class Repository @Inject constructor(
                     continuation.resumeWithException(it)
                 }
         }
+
+
+    suspend fun partDispatchJobs(
+        sourceId: String,
+        jobs: List<PrintOrderUIModel>,
+        invoiceDetail:String
+    ):Boolean =
+        runTransaction(PartDispatchTransaction(sourceId,jobs,invoiceDetail))
+
 
     suspend fun moveJobs(
         sourceId: String,

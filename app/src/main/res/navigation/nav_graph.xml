@@ -17,8 +17,8 @@
             android:id="@+id/action_fixedDestinationFragment_to_manageMachinesFragment"
             app:destination="@id/manageMachinesFragment" />
         <action
-            android:id="@+id/action_fixedDestinationFragment_to_viewPrintOrderFragment"
-            app:destination="@id/viewPrintOrderFragment" />
+            android:id="@+id/action_fixedDestinationFragment_to_composeViewPrintOrderFragment"
+            app:destination="@id/composeViewPrintOrderFragment" />
     </fragment>
     <include app:graph="@navigation/print_order_flow" />
     <fragment
@@ -43,9 +43,6 @@
             android:id="@+id/action_fragmentHome_to_manageMachinesFragment2"
             app:destination="@id/manageMachinesFragment" />
         <action
-            android:id="@+id/action_fragmentHome_to_searchFragment"
-            app:destination="@id/searchFragment" />
-        <action
             android:id="@+id/action_fragmentHome_to_invoiceHistoryFragment"
             app:destination="@id/invoiceHistoryFragment" />
         <action
@@ -62,35 +59,16 @@
             app:destination="@id/algoliaSearchFragment" />
     </fragment>
     <fragment
-        android:id="@+id/viewPrintOrderFragment"
-        android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.ViewPrintOrderFragment"
-        android:label="ViewPrintOrderFragment" >
-        <action
-            android:id="@+id/action_viewPrintOrderFragment_to_print_order_flow"
-            app:destination="@id/print_order_flow" />
-        <action
-            android:id="@+id/action_viewPrintOrderFragment_to_notesFragment"
-            app:destination="@id/notesFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/notesFragment"
         android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.NotesFragment"
         android:label="NotesFragment" />
-    <fragment
-        android:id="@+id/searchFragment"
-        android:name="com.sivakasi.papco.jobflow.screens.search.SearchFragment"
-        android:label="SearchFragment" >
-        <action
-            android:id="@+id/action_searchFragment_to_viewPrintOrderFragment"
-            app:destination="@id/viewPrintOrderFragment" />
-    </fragment>
     <fragment
         android:id="@+id/invoiceHistoryFragment"
         android:name="com.sivakasi.papco.jobflow.screens.invoicehistory.InvoiceHistoryFragment"
         android:label="InvoiceHistoryFragment" >
         <action
-            android:id="@+id/action_invoiceHistoryFragment_to_viewPrintOrderFragment"
-            app:destination="@id/viewPrintOrderFragment" />
+            android:id="@+id/action_invoiceHistoryFragment_to_composeViewPrintOrderFragment"
+            app:destination="@id/composeViewPrintOrderFragment" />
     </fragment>
     <fragment
         android:id="@+id/clientsFragment"
@@ -101,8 +79,8 @@
         android:name="com.sivakasi.papco.jobflow.screens.clients.history.ClientHistoryFragment"
         android:label="ClientHistoryFragment" >
         <action
-            android:id="@+id/action_clientHistoryFragment_to_viewPrintOrderFragment"
-            app:destination="@id/viewPrintOrderFragment" />
+            android:id="@+id/action_clientHistoryFragment_to_composeViewPrintOrderFragment"
+            app:destination="@id/composeViewPrintOrderFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -137,8 +115,8 @@
         android:name="com.sivakasi.papco.jobflow.screens.search.AlgoliaSearchFragment"
         android:label="AlgoliaSearchFragment" >
         <action
-            android:id="@+id/action_algoliaSearchFragment_to_viewPrintOrderFragment"
-            app:destination="@id/viewPrintOrderFragment" />
+            android:id="@+id/action_algoliaSearchFragment_to_composeViewPrintOrderFragment"
+            app:destination="@id/composeViewPrintOrderFragment" />
     </fragment>
 
     <navigation android:id="@+id/update_role_flow"
@@ -156,5 +134,23 @@
                 app:destination="@id/selectUserFragment" />
         </fragment>
     </navigation>
+    <fragment
+        android:id="@+id/previousHistoryFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.processinghistory.PreviousHistoryFragment"
+        android:label="PreviousHistoryFragment" />
+    <fragment
+        android:id="@+id/composeViewPrintOrderFragment"
+        android:name="com.sivakasi.papco.jobflow.screens.viewprintorder.ComposeViewPrintOrderFragment"
+        android:label="ComposeViewPrintOrderFragment" >
+        <action
+            android:id="@+id/action_composeViewPrintOrderFragment_to_notesFragment"
+            app:destination="@id/notesFragment" />
+        <action
+            android:id="@+id/action_composeViewPrintOrderFragment_to_previousHistoryFragment"
+            app:destination="@id/previousHistoryFragment" />
+        <action
+            android:id="@+id/action_composeViewPrintOrderFragment_to_print_order_flow"
+            app:destination="@id/print_order_flow" />
+    </fragment>
 
 </navigation>

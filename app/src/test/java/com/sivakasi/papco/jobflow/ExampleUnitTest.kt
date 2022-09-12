@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow
 
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.util.Duration
 import org.junit.Test
 import java.util.*
@@ -25,7 +26,7 @@ class ExampleUnitTest {
             set(Calendar.MILLISECOND,0)
         }
 
-        val checkingTime=getCalendarInstance().apply {
+        val checkingTime= getCalendarInstance().apply {
             set(Calendar.YEAR,2021)
             set(Calendar.MONTH,Calendar.JANUARY)
             set(Calendar.DAY_OF_MONTH,3)

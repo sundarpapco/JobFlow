@@ -4,8 +4,8 @@ import android.app.Application
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
 import android.os.ParcelFileDescriptor
-import com.sivakasi.papco.jobflow.asDateString
-import com.sivakasi.papco.jobflow.calendarWithTime
+import com.sivakasi.papco.jobflow.extensions.asDateString
+import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder

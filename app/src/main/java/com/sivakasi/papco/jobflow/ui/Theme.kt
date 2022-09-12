@@ -28,10 +28,32 @@ private val arialFamily = FontFamily(
     Font(R.font.arial)
 )
 
+private val segoeui = FontFamily(
+    Font(R.font.segoeui)
+)
+
+private val appBarTitle=TextStyle(
+    fontFamily = arialFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 18.sp
+)
+
 private val h6 = TextStyle(
     fontFamily = arialFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 16.sp
+)
+
+private val detailText = TextStyle(
+    fontFamily = segoeui,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp
+)
+
+private val subDetailText = TextStyle(
+    fontFamily = segoeui,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp
 )
 
 
@@ -78,7 +100,12 @@ fun JobFlowTheme(
     val colors = if (darkTheme) darkColors else lightColors
     MaterialTheme(
         colors = colors,
-        typography = MaterialTheme.typography.copy(h6 = h6),
+        typography = MaterialTheme.typography.copy(
+            h5= appBarTitle,
+            h6 = h6,
+            body1 = detailText,
+            body2 = subDetailText
+        ),
     ) {
         CompositionLocalProvider(LocalRippleTheme provides jobFlowRippleTheme, content = content)
     }

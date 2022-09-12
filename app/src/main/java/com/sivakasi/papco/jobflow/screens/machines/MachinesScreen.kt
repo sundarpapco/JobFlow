@@ -17,8 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Destination
@@ -46,6 +49,12 @@ val LocalSignOut = compositionLocalOf<() -> Unit> { error("Sign out function not
 @ExperimentalMaterialApi
 val LocalState = compositionLocalOf<MachinesScreenUIState> { error("Machine state not set") }
 
+
+private val machineNameText: TextStyle = TextStyle(
+fontWeight = FontWeight.Normal,
+fontSize = 24.sp,
+letterSpacing = 0.sp
+)
 
 @FlowPreview
 @ExperimentalComposeUiApi
@@ -357,7 +366,7 @@ fun MachineListItem(
             ) {
                 Text(
                     text = destination.name,
-                    style = MaterialTheme.typography.h5
+                    style = machineNameText
                 )
 
                 Text(

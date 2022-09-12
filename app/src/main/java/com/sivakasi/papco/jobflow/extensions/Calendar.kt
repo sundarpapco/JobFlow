@@ -1,4 +1,4 @@
-package com.sivakasi.papco.jobflow
+package com.sivakasi.papco.jobflow.extensions
 
 import java.util.*
 
@@ -15,6 +15,23 @@ fun Calendar.asDateString(): String {
         get(Calendar.DAY_OF_MONTH),
         get(Calendar.MONTH)+1,
         get(Calendar.YEAR))
+    //return "${get(Calendar.DAY_OF_MONTH)}/${get(Calendar.MONTH) + 1}/${get(Calendar.YEAR)}"
+}
+
+fun Calendar.asReadableTimeStamp(): String {
+
+    val morningOrAfternoon=if(get(Calendar.AM_PM)==Calendar.AM)
+        "AM"
+    else
+        "PM"
+
+    return String.format("%02d/%02d/%04d, %02d:%02d",
+        get(Calendar.DAY_OF_MONTH),
+        get(Calendar.MONTH)+1,
+        get(Calendar.YEAR),
+        get(Calendar.HOUR),
+        get(Calendar.MINUTE)
+    ) + " " + morningOrAfternoon
     //return "${get(Calendar.DAY_OF_MONTH)}/${get(Calendar.MONTH) + 1}/${get(Calendar.YEAR)}"
 }
 

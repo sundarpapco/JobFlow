@@ -21,6 +21,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.RelocationRequester
 import androidx.compose.ui.layout.relocationRequester
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -278,7 +279,8 @@ fun JobFlowTopBar(
             Column {
                 Text(
                     text = title,
-                    style = LocalTextStyle.current
+                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colors.onSurface,
                 )
 
                 if (subtitle != null)

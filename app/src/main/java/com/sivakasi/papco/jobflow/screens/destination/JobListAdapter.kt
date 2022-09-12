@@ -110,6 +110,16 @@ class JobListViewHolder(
             viewBinding.lblPoNumber.text = poNumberAndAge
             viewBinding.iconStar.visibility = if (emergency)
                 View.VISIBLE else View.GONE
+
+            if(partialDispatchCount > 0){
+                viewBinding.iconPartDispatch.visibility = View.VISIBLE
+                viewBinding.partDispatchCount.visibility = View.VISIBLE
+                viewBinding.partDispatchCount.text = partialDispatchCount.toString().trim()
+            }else{
+                viewBinding.iconPartDispatch.visibility = View.GONE
+                viewBinding.partDispatchCount.visibility = View.GONE
+            }
+
             viewBinding.lblReprint.visibility = if (isReprint)
                 View.VISIBLE else View.GONE
             viewBinding.lblClientName.text = billingName

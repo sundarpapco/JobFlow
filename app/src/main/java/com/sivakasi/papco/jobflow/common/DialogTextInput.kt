@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.sivakasi.papco.jobflow.databinding.DialogTextInputBinding
 
@@ -15,12 +16,14 @@ class DialogTextInput : ResultDialogFragment() {
         private const val KEY_DEFAULT_TEXT = "key:defaultText"
         private const val KEY_ACCEPT_BLANK = "key:accept:blank"
         private const val KEY_CODE = "key:code"
+        private const val KEY_CHECKBOX_TEXT = "key:checkBoxText"
 
         fun getInstance(
             title: String,
             defaultText: String = "",
             code: Int = -1,
-            acceptBlank: Boolean = true
+            acceptBlank: Boolean = true,
+            checkBoxText: String? = null
         ): DialogTextInput {
 
             val args = Bundle()
@@ -28,6 +31,7 @@ class DialogTextInput : ResultDialogFragment() {
             args.putString(KEY_DEFAULT_TEXT, defaultText)
             args.putInt(KEY_CODE, code)
             args.putBoolean(KEY_ACCEPT_BLANK, acceptBlank)
+            args.putString(KEY_CHECKBOX_TEXT, checkBoxText)
             return DialogTextInput().apply {
                 arguments = args
             }
@@ -60,8 +64,19 @@ class DialogTextInput : ResultDialogFragment() {
     }
 
     private fun initViews() {
+
         viewBinding.btnSave.setOnClickListener {
-            if (dispatchResult(viewBinding.txtRemarks.text.toString(), getCode()))
+
+            val isChecked = checkBoxText()?.let{
+                viewBinding.checkbox.isChecked
+            } ?: false
+
+            if (dispatchResult(
+                    TextInputDialogResult(
+                        viewBinding.txtRemarks.text.toString(),
+                        isChecked
+                    ), getCode())
+            )
                 dismiss()
         }
 
@@ -70,8 +85,14 @@ class DialogTextInput : ResultDialogFragment() {
                 viewBinding.btnSave.isEnabled = it!!.isNotBlank()
         }
 
-        if(!isBlankAccepted() && getDefaultText().isBlank())
-            viewBinding.btnSave.isEnabled=false
+        if (!isBlankAccepted() && getDefaultText().isBlank())
+            viewBinding.btnSave.isEnabled = false
+
+        checkBoxText()?.let {
+            viewBinding.checkbox.isVisible = true
+        } ?: run {
+            viewBinding.checkbox.isVisible = false
+        }
     }
 
     private fun loadFromArgumentIfNecessary() {
@@ -96,4 +117,12 @@ class DialogTextInput : ResultDialogFragment() {
 
     private fun isBlankAccepted(): Boolean =
         arguments?.getBoolean(KEY_ACCEPT_BLANK) ?: true
+
+    private fun checkBoxText(): String? =
+        arguments?.getString(KEY_CHECKBOX_TEXT)
+
+    data class TextInputDialogResult(
+        val text: String,
+        val isChecked: Boolean
+    )
 }

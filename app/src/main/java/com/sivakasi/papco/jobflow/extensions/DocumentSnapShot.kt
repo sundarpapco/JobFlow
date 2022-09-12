@@ -2,8 +2,6 @@ package com.sivakasi.papco.jobflow.extensions
 
 import android.content.Context
 import com.google.firebase.firestore.DocumentSnapshot
-import com.sivakasi.papco.jobflow.asDateString
-import com.sivakasi.papco.jobflow.calendarWithTime
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.models.SearchModel

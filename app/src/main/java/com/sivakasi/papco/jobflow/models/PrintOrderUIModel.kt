@@ -17,7 +17,8 @@ data class PrintOrderUIModel(
     var colors: String = "",
     var hasSpotColors:Boolean=false,
     var pendingReason:String="",
-    var clientId:Int=-1
+    var clientId:Int=-1,
+    var partialDispatchCount:Int=0
 ) {
     companion object {
 
@@ -36,6 +37,7 @@ data class PrintOrderUIModel(
                 colors = printOrder.printingDetail.colours
                 pendingReason=printOrder.pendingRemarks
                 hasSpotColors=printOrder.printingDetail.hasSpotColours
+                partialDispatchCount = printOrder.partialDispatches.size
             }
         }
     }

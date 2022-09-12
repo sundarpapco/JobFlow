@@ -1,7 +1,7 @@
 package com.sivakasi.papco.jobflow.transactions
 
 import com.google.firebase.firestore.*
-import com.sivakasi.papco.jobflow.currentTimeInMillis
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder

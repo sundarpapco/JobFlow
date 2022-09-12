@@ -21,9 +21,9 @@ fun OptionsMenu(
     onItemClick: (String) -> Unit
 ) {
 
-    val actions = remember { menuItems.filter { it.iconId != null || it.imageVector != null } }
+    val actions = remember(menuItems) { menuItems.filter { it.iconId != null || it.imageVector != null } }
     val overFlowItems =
-        remember { menuItems.filter { it.iconId == null && it.imageVector == null } }
+        remember(menuItems) { menuItems.filter { it.iconId == null && it.imageVector == null } }
 
     var expanded by rememberSaveable(Unit) { mutableStateOf(false) }
 

@@ -1,9 +1,8 @@
 package com.sivakasi.papco.jobflow.screens.search
 
 import android.content.Context
-import com.sivakasi.papco.jobflow.asDateString
-import com.sivakasi.papco.jobflow.calendarWithTime
-import com.sivakasi.papco.jobflow.data.DatabaseContract
+import com.sivakasi.papco.jobflow.extensions.asDateString
+import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.models.SearchModel
 import kotlinx.serialization.Serializable
 
@@ -18,7 +17,8 @@ data class AlgoliaRecord(
     val invoiceDetails:String,
     val colours:String,
     val printingInstructions:String,
-    val destinationId:String
+    val destinationId:String,
+    val partialDispatches:List<String> = emptyList()
 )
 
 fun AlgoliaRecord.toSearchModel(context:Context):SearchModel{
@@ -33,6 +33,7 @@ fun AlgoliaRecord.toSearchModel(context:Context):SearchModel{
     result.colors=colours
     result.creationTime=creationTime
     result.destinationId=destinationId
+    result.dispatchCount=partialDispatches.size
 
     return result
 }

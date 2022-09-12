@@ -19,6 +19,7 @@ class SearchModel(private val context: Context) {
     var destinationId: String = ""
     var creationTime:Long=0L
     var completionTime:Long=0L
+    var dispatchCount:Int=0
 
     fun copyValuesFrom(searchModel: SearchModel){
         printOrderNumber=searchModel.printOrderNumber
@@ -32,6 +33,7 @@ class SearchModel(private val context: Context) {
         destinationId=searchModel.destinationId
         creationTime=searchModel.creationTime
         completionTime=searchModel.completionTime
+        dispatchCount=searchModel.dispatchCount
     }
 
     fun poNumberAndDate(): String =

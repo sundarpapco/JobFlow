@@ -1,9 +1,11 @@
 package com.sivakasi.papco.jobflow.extensions
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.sivakasi.papco.jobflow.R
 import java.io.File
@@ -35,4 +37,15 @@ fun Context.toastError(e:Exception){
 fun Context.toastStringResource(id:Int){
     val msg= getString(id)
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+}
+
+fun Context.getActivity(): AppCompatActivity? {
+    var currentContext = this
+    while (currentContext is ContextWrapper) {
+        if (currentContext is AppCompatActivity) {
+            return currentContext
+        }
+        currentContext = currentContext.baseContext
+    }
+    return null
 }

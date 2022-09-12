@@ -20,6 +20,7 @@ class PlateMakingDetail{
     var machine: String = ""
     var screen: String = ""
     var backsideMachine: String = ""
+
     val trimmingSize: String
         get() = "$trimmingHeight X $trimmingWidth mm"
 

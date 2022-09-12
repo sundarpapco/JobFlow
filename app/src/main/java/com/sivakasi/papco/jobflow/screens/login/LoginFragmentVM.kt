@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.login
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.extensions.getMessage
@@ -63,7 +64,9 @@ class LoginFragmentVM @Inject constructor(
                 if (registerBeforeLogin)
                     auth.registerUser(authState.email, authState.password, authState.name)
 
+                Log.d("SUNDAR","Logging In")
                 auth.logIn(authState.email, authState.password)
+                Log.d("SUNDAR","Logged In Successfully")
 
             } catch (e: Exception) {
                 authState.loginFailed(e.getMessage(application))

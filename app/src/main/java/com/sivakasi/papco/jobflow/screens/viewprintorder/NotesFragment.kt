@@ -183,7 +183,7 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         builder.setMessage(getString(R.string.po_not_found_desc))
         builder.setTitle(getString(R.string.po_not_found))
         builder.setPositiveButton(getString(R.string.exit)){_,_->
-            findNavController().popBackStack(R.id.viewPrintOrderFragment,true)
+            findNavController().popBackStack(R.id.composeViewPrintOrderFragment,true)
         }
         builder.setCancelable(false)
         builder.create().show()

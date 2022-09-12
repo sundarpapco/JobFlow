@@ -1,10 +1,11 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.content.Context
-import com.sivakasi.papco.jobflow.asDateString
-import com.sivakasi.papco.jobflow.calendarWithTime
-import com.sivakasi.papco.jobflow.currentTimeInMillis
-import com.sivakasi.papco.jobflow.getCalendarInstance
+import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.extensions.asDateString
+import com.sivakasi.papco.jobflow.extensions.calendarWithTime
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
+import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
 
 class PrintOrder {
@@ -42,10 +43,12 @@ class PrintOrder {
     var previousDestinationId: String = ""
     var completionTime: Long = 0
     var notes: String = ""
+
     //Stores the list of machine names which completes this job
-    var processingHistory:List<ProcessingHistory> = emptyList()
+    var processingHistory: List<ProcessingHistory> = emptyList()
+
     //Stores the list of partial dispatch invoice details if any
-    var partialDispatches:List<PartialDispatch> = emptyList()
+    var partialDispatches: List<PartialDispatch> = emptyList()
 
     var lamination: Lamination? = null
     var foil: String? = null
@@ -62,9 +65,10 @@ class PrintOrder {
         creationTime = currentTimeInMillis()
         jobType = TYPE_REPEAT_JOB
         invoiceDetails = ""
-        previousDestinationId=""
-        processingHistory= emptyList()
-        partialDispatches= emptyList()
+        completionTime = 0L
+        previousDestinationId = ""
+        processingHistory = emptyList()
+        partialDispatches = emptyList()
         if (clientId == -1)
             billingName = ""
     }
@@ -121,13 +125,13 @@ class PrintOrder {
 
 }
 
-fun PrintOrder.toSearchModel(context: Context,destinationId:String):SearchModel{
+fun PrintOrder.toSearchModel(context: Context, destinationId: String): SearchModel {
 
     val result = SearchModel(context)
-    val printOrder=this
+    val printOrder = this
     with(result) {
         printOrderNumber = printOrder.printOrderNumber
-        creationTime=printOrder.creationTime
+        creationTime = printOrder.creationTime
         printOrderDate = calendarWithTime(printOrder.creationTime).asDateString()
         billingName = printOrder.billingName
         jobName = printOrder.jobName
@@ -135,9 +139,44 @@ fun PrintOrder.toSearchModel(context: Context,destinationId:String):SearchModel{
         invoiceNumber = printOrder.invoiceDetails
         colors = printOrder.printingDetail.colours
         this.destinationId = destinationId
-        paperDetails=printOrder.printingSizePaperDetail().toString()
-        completionTime=printOrder.completionTime
+        paperDetails = printOrder.printingSizePaperDetail().toString()
+        completionTime = printOrder.completionTime
+        dispatchCount = printOrder.partialDispatches.size
     }
     return result
+}
 
+fun PrintOrder.completeProcessingHistory(context: Context): List<ProcessingHistory> {
+
+    val result = mutableListOf<ProcessingHistory>()
+
+    val creation = ProcessingHistory(
+        destinationId = context.getString(R.string.po_created),
+        destinationName = context.getString(R.string.po_created),
+        completionTime = creationTime
+    )
+
+    result.add(creation)
+    processingHistory.forEach {
+        result.add(
+            ProcessingHistory(
+                destinationId = it.destinationId,
+                destinationName = it.destinationName,
+                completionTime = it.completionTime
+            )
+        )
+    }
+
+    if (result.last().destinationId != DatabaseContract.DOCUMENT_DEST_COMPLETED &&
+        invoiceDetails.isNotBlank()
+    )
+        result.add(
+            ProcessingHistory(
+                destinationId = DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                destinationName = DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                completionTime = completionTime
+            )
+        )
+
+    return result
 }
