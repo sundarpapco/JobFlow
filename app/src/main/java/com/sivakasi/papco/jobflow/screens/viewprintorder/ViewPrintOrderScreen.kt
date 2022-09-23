@@ -1,8 +1,10 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.content.Context
+import android.content.res.Configuration
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -38,6 +40,7 @@ import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
 import com.sivakasi.papco.jobflow.screens.processinghistory.PreviousHistoryFragment
 import com.sivakasi.papco.jobflow.screens.processinghistory.ProcessingHistoryList
 import com.sivakasi.papco.jobflow.ui.*
+import com.sivakasi.papco.jobflow.util.Event
 import kotlinx.coroutines.*
 
 val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must be initialized") }
@@ -159,6 +162,7 @@ private fun ViewPrintOrderBottomSheet() {
 
 }
 
+@ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
 @Composable
 fun PrintOrderScreenContent(
@@ -166,6 +170,8 @@ fun PrintOrderScreenContent(
 ) {
 
     val navController = LocalNavigation.current
+    val context = LocalContext.current
+    val viewModel = LocalViewModel.current
 
     if (screenState.isLoading) {
         LoadingScreen()
@@ -185,6 +191,24 @@ fun PrintOrderScreenContent(
         WaitDialog()
     }
 
+    if (screenState.isRevokeConfirmationShowing) {
+        RevokeConfirmationDialog(onCancel = { screenState.hideRevokeConfirmationDialog() }) {
+            screenState.printOrder?.let{
+                screenState.hideRevokeConfirmationDialog()
+                viewModel.revokePrintOrder(it)
+            }
+        }
+    }
+
+    screenState.toastError?.let {
+        if (!it.isAlreadyHandled())
+            Toast.makeText(
+                context,
+                it.handleEvent(),
+                Toast.LENGTH_LONG
+            ).show()
+    }
+
     if (screenState.poMoved) {
         JobFlowAlertDialog(
             title = stringResource(id = R.string.po_not_found),
@@ -194,6 +218,18 @@ fun PrintOrderScreenContent(
         )
     }
 
+}
+
+@Composable
+private fun RevokeConfirmationDialog(onCancel: () -> Unit, onConfirm: () -> Unit) {
+
+    JobFlowAlertDialog(
+        message = stringResource(id = R.string.revoke_confirmation),
+        positiveButtonText = stringResource(id = R.string.revoke).toUpperCase(Locale.current),
+        negativeButtonText = stringResource(id = R.string.cancel).toUpperCase(Locale.current),
+        onPositiveClick = { onConfirm() },
+        onNegativeClick = { onCancel() }
+    )
 }
 
 
@@ -803,7 +839,7 @@ private fun PreviewPartialDispatchList() {
     }
 }
 
-@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewDispatchListItem() {
     val dispatch = remember {
@@ -913,8 +949,7 @@ private fun onOptionsItemSelected(
         activityContext.getString(R.string.notes) -> {
             navigateToNotesScreen(
                 navController,
-                screenState.destinationId!!,
-                screenState.printOrder!!.documentId(),
+                screenState.printOrder!!.printOrderNumber,
                 screenState.printOrder!!.notes
             )
         }
@@ -951,6 +986,10 @@ private fun onOptionsItemSelected(
             }
         }
 
+        activityContext.getString(R.string.revoke_po) -> {
+            screenState.showRevokeConfirmationDialog()
+        }
+
     }
 }
 
@@ -964,7 +1003,7 @@ private fun print(
             .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
             .build()
         val printManager = activityContext.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        val jobName = "PrintOrder"
+        val jobName = "PrintOrder ${it.printOrderNumber}"
         val printAdapter = PrintOrderAdapter(it, printOrderReport)
         printManager.print(jobName, printAdapter, printAttributes)
     }
@@ -988,8 +1027,10 @@ private fun sharePdfFile(
             screenState.isWaiting = false
             activityContext.shareReport(fileName)
         } catch (e: Exception) {
-            screenState.toastError =
+            screenState.toastError = Event(
                 e.message ?: activityContext.getString(R.string.error_unknown_error)
+            )
+
         }
 
     }
@@ -1015,13 +1056,12 @@ private fun navigateToEditPrintOrderScreen(
 @ExperimentalCoroutinesApi
 private fun navigateToNotesScreen(
     navController: NavController,
-    destinationId: String,
-    poId: String = "",
+    poNumber: Int,
     notes: String
 ) {
     navController.navigate(
         R.id.action_composeViewPrintOrderFragment_to_notesFragment,
-        NotesFragment.getArguments(destinationId, poId, notes)
+        NotesFragment.getArguments(poNumber, notes)
     )
 }
 
@@ -1191,6 +1231,7 @@ private fun PreviewPrintOrder() {
 
 }*/
 
+/*
 fun fakePrintOrder(): PrintOrder {
 
     return PrintOrder().apply {
@@ -1246,4 +1287,4 @@ fun fakePrintOrder(): PrintOrder {
         packing = ""
     }
 
-}
+}*/

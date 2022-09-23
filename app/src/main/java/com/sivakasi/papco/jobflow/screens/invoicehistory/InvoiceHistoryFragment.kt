@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
@@ -85,10 +84,7 @@ class InvoiceHistoryFragment : Fragment() {
 
         viewModel.observePrintOrder(item)
 
-        val arguments = ComposeViewPrintOrderFragment.getArguments(
-            item.destinationId,
-            PrintOrder.documentId(item.printOrderNumber)
-        )
+        val arguments = ComposeViewPrintOrderFragment.getArguments(item.printOrderNumber)
 
         findNavController().navigate(
             R.id.action_invoiceHistoryFragment_to_composeViewPrintOrderFragment,

@@ -17,6 +17,7 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.util.*
@@ -46,12 +47,12 @@ class Repository @Inject constructor(
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
                         trySend(null).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                     }
                 } else
                     try {
                         trySend(documentSnapshot.toObject(User::class.java)).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                     }
             }
 
@@ -73,21 +74,75 @@ class Repository @Inject constructor(
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
                         trySend(null).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                     }
                 } else
                     try {
                         val destination = documentSnapshot.toObject(Destination::class.java)
-                        destination?.id=documentSnapshot.id
+                        destination?.id = documentSnapshot.id
                         trySend(destination).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                     }
             }
 
         awaitClose { listenerRegistration.remove() }
     }
 
-    fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
+    /*
+    Function to search for a PO with PO number and observe it.
+    This function will search for the PO in all the destinations and once found, it will
+    observe that particular PO with the destination ID obtained from search.
+    This function can auto detect the movement of the print order when it detects that the observing
+    PO has moved from one destination to another, then it will automatically search for the PO
+    again and it will start monitoring the same PO in the new destination
+     */
+    fun searchAndObservePrintOrder(poNumber: Int) = callbackFlow {
+
+        while (true) {
+
+            val printOrder = searchByNumber(poNumber)
+            if (printOrder == null) {
+                trySend(null)
+                break
+            }
+
+            observePrintOrder(printOrder.destinationId, printOrder.poId())
+                .map {
+                    val destination = getDestinationById(printOrder.destinationId)
+                    if (it != null && destination != null)
+                        PrintOrderWithDestination(it, destination)
+                    else
+                        null
+                }
+                .collect {
+                    if (it != null)
+                        trySend(it)
+                }
+        }
+        close()
+        awaitClose {}
+
+    }
+
+    private suspend fun getDestinationById(destinationId: String): Destination? =
+        suspendCancellableCoroutine { continuation ->
+            database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+                .document(destinationId)
+                .get()
+                .addOnSuccessListener {
+                    if (it != null && it.exists()) {
+                        val result = it.toObject(Destination::class.java)
+                        continuation.resume(result)
+                    } else
+                        continuation.resume(null)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+
+
+    private fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
 
         val listenerRegistration = database.poReference(destinationId, poId)
             .addSnapshotListener { documentSnapshot, firebaseFireStoreException ->
@@ -98,12 +153,13 @@ class Repository @Inject constructor(
                 if (documentSnapshot == null || !documentSnapshot.exists())
                     try {
                         trySend(null).isSuccess
-                    } catch (e: Exception) {
+                        close()
+                    } catch (_: Exception) {
                     }
                 else
                     try {
                         trySend(documentSnapshot.toPrintOrder()).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
 
                     }
             }
@@ -112,25 +168,25 @@ class Repository @Inject constructor(
 
     }
 
-    suspend fun getLastCompletedPrintOrderWithPlateNumber(plateNumber: Int):PrintOrder?{
+    suspend fun getLastCompletedPrintOrderWithPlateNumber(plateNumber: Int): PrintOrder? {
 
-        return suspendCancellableCoroutine { continuation->
+        return suspendCancellableCoroutine { continuation ->
             database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
                 .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
                 .collection(DatabaseContract.COLLECTION_JOBS)
-                .whereEqualTo(PrintOrder.FIELD_PLATE_NUMBER,plateNumber)
-                .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER,Query.Direction.DESCENDING)
+                .whereEqualTo(PrintOrder.FIELD_PLATE_NUMBER, plateNumber)
+                .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER, Query.Direction.DESCENDING)
                 .limit(1)
                 .get()
-                .addOnSuccessListener{
+                .addOnSuccessListener {
                     if (it.documents.isEmpty())
                         continuation.resume(null)
                     else {
                         val result = it.documents[0].toPrintOrder()
-                       continuation.resume(result)
+                        continuation.resume(result)
                     }
                 }
-                .addOnFailureListener{
+                .addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
         }
@@ -374,7 +430,7 @@ class Repository @Inject constructor(
                 else {
                     try {
                         trySend(querySnapshot.documents).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
 
                     }
                 }
@@ -400,7 +456,7 @@ class Repository @Inject constructor(
                 else {
                     try {
                         trySend(querySnapshot.documents).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
 
                     }
                 }
@@ -429,7 +485,7 @@ class Repository @Inject constructor(
                 else
                     try {
                         trySend(querySnapshot.documents).isSuccess
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
 
                     }
 
@@ -505,9 +561,9 @@ class Repository @Inject constructor(
     suspend fun partDispatchJobs(
         sourceId: String,
         jobs: List<PrintOrderUIModel>,
-        invoiceDetail:String
-    ):Boolean =
-        runTransaction(PartDispatchTransaction(sourceId,jobs,invoiceDetail))
+        invoiceDetail: String
+    ): Boolean =
+        runTransaction(PartDispatchTransaction(sourceId, jobs, invoiceDetail))
 
 
     suspend fun moveJobs(

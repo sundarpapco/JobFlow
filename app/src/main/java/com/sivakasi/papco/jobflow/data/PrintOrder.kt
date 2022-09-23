@@ -73,6 +73,35 @@ class PrintOrder {
             billingName = ""
     }
 
+    fun prepareForInvoicing(invoiceNumber: String) {
+        invoiceDetails = invoiceNumber.trim()
+        completionTime = currentTimeInMillis()
+        this.processingHistory += ProcessingHistory(
+            DatabaseContract.DOCUMENT_DEST_COMPLETED,
+            DatabaseContract.DOCUMENT_DEST_COMPLETED,
+            completionTime
+        )
+    }
+
+    fun prepareForRevoking() {
+        invoiceDetails = ""
+        completionTime = 0L
+        if (processingHistory.isNotEmpty())
+            processingHistory = processingHistory.filter {
+                it.destinationId != DatabaseContract.DOCUMENT_DEST_COMPLETED
+            }
+    }
+
+
+    fun addProcessingHistory(destination:Destination){
+        val time= currentTimeInMillis()
+        this.processingHistory += ProcessingHistory(
+            destination.id,
+            destination.name,
+            time
+        )
+    }
+
 
     fun ageString(): String {
         //86,400,000 is the number of milliseconds per day

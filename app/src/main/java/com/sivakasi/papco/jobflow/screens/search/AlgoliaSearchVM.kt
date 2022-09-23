@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.data.toSearchModel
 import com.sivakasi.papco.jobflow.models.SearchModel
@@ -65,15 +64,16 @@ class AlgoliaSearchVM @Inject constructor(
         // Cancel any previously observing job
         printOrderObservingJob?.cancel()
         printOrderObservingJob = viewModelScope.launch(Dispatchers.IO) {
-            repository.observePrintOrder(
-                item.destinationId,
-                PrintOrder.documentId(item.printOrderNumber)
-            )
-                .collect {
-                    userUpdatedItem = it?.let{po->
-                        Event(po.toSearchModel(application,item.destinationId))
+
+            try {
+                repository.searchAndObservePrintOrder(item.printOrderNumber)
+                    .collect {
+                        userUpdatedItem = it?.let { po ->
+                            Event(po.printOrder.toSearchModel(application, po.destination.id))
+                        }
                     }
-                }
+            } catch (_: Exception) {
+            }
         }
     }
 

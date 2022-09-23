@@ -1,16 +1,16 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.extensions.shareReport
+import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
-import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
+import com.sivakasi.papco.jobflow.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +33,7 @@ class ComposeViewModelFragmentVM @Inject constructor(
     val screenState = ViewPrintOrderScreenState()
 
 
-    fun loadPrintOrder(destinationId: String, printOrderId: String, userRole: String) {
+    fun loadPrintOrder(printOrderNumber: Int, userRole: String) {
 
         if (isAlreadyLoaded)
             return
@@ -42,42 +42,50 @@ class ComposeViewModelFragmentVM @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
 
-            launch {
-                try {
-                    repository.observePrintOrder(destinationId, printOrderId)
-                        .collect { printOrder ->
-                            if (printOrder == null) {
-                                loadedPrintOrder = null
-                                screenState.printOrderMoved()
-                            } else {
-                                loadedPrintOrder = printOrder
-                                screenState.loadPrintOrder(
-                                    application, printOrder, destinationId, userRole
-                                )
-                            }
+            try {
+                repository.searchAndObservePrintOrder(printOrderNumber)
+                    .collect { printOrderWithDestination ->
+                        if (printOrderWithDestination == null) {
+                            loadedPrintOrder = null
+                            screenState.printOrderMoved()
+                        } else {
+                            loadedPrintOrder = printOrderWithDestination.printOrder
+                            screenState.loadPrintOrder(
+                                application,
+                                printOrderWithDestination,
+                                userRole
+                            )
+                            screenState.destinationName =
+                                printOrderWithDestination.destination.name
                         }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    screenState.loadError(application, e)
-                }
-
-            }
-
-            launch {
-                try {
-                    repository.observeDestination(destinationId)
-                        .collect { destination ->
-                            destination?.let {
-                                screenState.destinationName = it.name
-                            } ?: screenState.printOrderMoved()
-                        }
-                } catch (e: Exception) {
-                    screenState.loadError(application, e)
-                }
+                    }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                screenState.loadError(application, e)
             }
 
         }
+    }
 
+    fun revokePrintOrder(printOrder: PrintOrder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                screenState.showWaitDialog()
+                repository.moveJobs(
+                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
+                    DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
+                    listOf(PrintOrderUIModel.fromPrintOrder(printOrder))
+                ) {
+                    it.prepareForRevoking()
+                }
+                screenState.hideWaitDialog()
+            } catch (e: Exception) {
+                screenState.hideWaitDialog()
+                screenState.toastError = Event(
+                    e.message ?: application.getString(R.string.error_unknown_error)
+                )
+            }
+        }
     }
 
 

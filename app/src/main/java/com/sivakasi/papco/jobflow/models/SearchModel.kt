@@ -36,6 +36,8 @@ class SearchModel(private val context: Context) {
         dispatchCount=searchModel.dispatchCount
     }
 
+    fun poId():String = PrintOrder.documentId(printOrderNumber)
+
     fun poNumberAndDate(): String =
         context.getString(R.string.po_number_and_date, printOrderNumber, printOrderDate)
 

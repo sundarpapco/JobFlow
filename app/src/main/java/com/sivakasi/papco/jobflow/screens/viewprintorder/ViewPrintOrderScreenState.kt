@@ -10,7 +10,9 @@ import androidx.compose.runtime.setValue
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.PrintOrderWithDestination
 import com.sivakasi.papco.jobflow.ui.MenuAction
+import com.sivakasi.papco.jobflow.util.Event
 
 @ExperimentalMaterialApi
 class ViewPrintOrderScreenState {
@@ -21,9 +23,10 @@ class ViewPrintOrderScreenState {
     var isLoading: Boolean by mutableStateOf(true)
     var error: String? by mutableStateOf(null)
     var isWaiting: Boolean by mutableStateOf(false)
+    var isRevokeConfirmationShowing:Boolean by mutableStateOf(false)
     var printOrderRenderInfo: PrintOrderRenderInfo? by mutableStateOf(null)
     var destinationName: String? by mutableStateOf(null)
-    var toastError: String? by mutableStateOf(null)
+    var toastError: Event<String>? by mutableStateOf(null)
     var fabShowing: Boolean by mutableStateOf(false)
     var menuItems: List<MenuAction>? by mutableStateOf(null)
     var modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -32,17 +35,18 @@ class ViewPrintOrderScreenState {
 
     fun loadPrintOrder(
         context: Context,
-        printOrder: PrintOrder,
-        destinationId: String,
+        printOrderWithDestination: PrintOrderWithDestination,
         userRole: String
     ) {
 
 
-        this.printOrder = printOrder
-        this.destinationId = destinationId
-        printOrderRenderInfo = PrintOrderRenderInfo.from(context, printOrder)
+        this.printOrder = printOrderWithDestination.printOrder
+        this.destinationId = printOrderWithDestination.destination.id
+        this.destinationName = printOrderWithDestination.destination.name
+        printOrderRenderInfo =
+            PrintOrderRenderInfo.from(context, printOrderWithDestination.printOrder)
         fabShowing = userRole != "printer"
-        menuItems = prepareMenuItems(context, printOrder, destinationId, userRole)
+        menuItems = prepareMenuItems(context, printOrderWithDestination, userRole)
         error = null
         isWaiting = false
         toastError = null
@@ -67,12 +71,30 @@ class ViewPrintOrderScreenState {
         poMoved = true
     }
 
+    fun showWaitDialog(){
+        isWaiting=true
+    }
+
+    fun hideWaitDialog(){
+        isWaiting=false
+    }
+
+    fun showRevokeConfirmationDialog(){
+        isRevokeConfirmationShowing = true
+    }
+
+    fun hideRevokeConfirmationDialog(){
+        isRevokeConfirmationShowing = false
+    }
+
     private fun prepareMenuItems(
         context: Context,
-        printOrder: PrintOrder,
-        destinationId: String,
+        poWithDest: PrintOrderWithDestination,
         userRole: String
     ): List<MenuAction>? {
+
+        val printOrder = poWithDest.printOrder
+        val destinationId = poWithDest.destination.id
 
         //Printers cannot see the menu at all
         if (userRole == "printer")
@@ -112,6 +134,9 @@ class ViewPrintOrderScreenState {
                 )
             )
         }
+
+        if (destinationId == DatabaseContract.DOCUMENT_DEST_COMPLETED && userRole == "root")
+            menu.add(MenuAction(null, null, context.getString(R.string.revoke_po)))
 
         return menu
 

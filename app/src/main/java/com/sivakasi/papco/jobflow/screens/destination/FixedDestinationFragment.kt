@@ -215,7 +215,7 @@ class FixedDestinationFragment : Fragment(),
 
     override fun onItemClick(item: PrintOrderUIModel, position: Int) {
         if (actionMode == null)
-            navigateToViewPrintOrderScreen(item.documentId())
+            navigateToViewPrintOrderScreen(item.printOrderNumber)
         //navigateToEditPrintOrderScreen(item.printOrderNumber)
         else {
             viewModel.jobSelections.toggle(item)
@@ -455,10 +455,7 @@ class FixedDestinationFragment : Fragment(),
         when (confirmationId) {
             CONFIRMATION_CANCEL_JOBS -> viewModel.cancelSelectedJobs(getDestinationId())
             CONFIRMATION_REVERT_JOBS -> viewModel.backtrackSelectedJobs(getDestinationId())
-            CONFIRMATION_COMPLETE_JOBS -> viewModel.markSelectedJobsAsComplete(
-                getDestinationId(),
-                currentTimeInMillis()
-            )
+            CONFIRMATION_COMPLETE_JOBS -> viewModel.markSelectedJobsAsComplete(getDestinationId())
         }
     }
 
@@ -471,13 +468,10 @@ class FixedDestinationFragment : Fragment(),
     }
 
 
-    private fun navigateToViewPrintOrderScreen(printOrderId: String) {
+    private fun navigateToViewPrintOrderScreen(printOrderNumber: Int) {
         findNavController().navigate(
             R.id.action_fixedDestinationFragment_to_composeViewPrintOrderFragment,
-            ComposeViewPrintOrderFragment.getArguments(
-                getDestinationId(),
-                printOrderId
-            )
+            ComposeViewPrintOrderFragment.getArguments(printOrderNumber)
         )
 
         /*findNavController().navigate(

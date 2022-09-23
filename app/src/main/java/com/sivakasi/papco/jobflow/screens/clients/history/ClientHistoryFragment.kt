@@ -94,10 +94,7 @@ class ClientHistoryFragment : Fragment() {
 
         viewModel.observePrintOrder(searchModel)
 
-        val args = ComposeViewPrintOrderFragment.getArguments(
-            searchModel.destinationId,
-            PrintOrder.documentId(searchModel.printOrderNumber)
-        )
+        val args = ComposeViewPrintOrderFragment.getArguments(searchModel.printOrderNumber)
         findNavController().navigate(
             R.id.action_clientHistoryFragment_to_composeViewPrintOrderFragment,
             args

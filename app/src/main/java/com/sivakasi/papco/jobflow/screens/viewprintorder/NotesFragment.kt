@@ -25,16 +25,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener {
 
     companion object {
-        private const val KEY_PO_ID = "key:po:id"
-        private const val KEY_DESTINATION_ID = "key:destination:id"
+        private const val KEY_PO_NUMBER = "key:po:number"
         private const val KEY_INITIAL_NOTES = "key:initial:notes"
         private const val KEY_PRESERVE_TEXT_CHANGED = "key:preserve:text:changed"
         private const val CONFIRM_ID_EXIT = 1
 
-        fun getArguments(destinationId: String, poId: String, initialNotes: String): Bundle =
+        fun getArguments(poNumber:Int, initialNotes: String): Bundle =
             Bundle().apply {
-                putString(KEY_PO_ID, poId)
-                putString(KEY_DESTINATION_ID, destinationId)
+                putInt(KEY_PO_NUMBER, poNumber)
                 putString(KEY_INITIAL_NOTES, initialNotes)
             }
     }
@@ -52,7 +50,7 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         textChanged = savedInstanceState?.getBoolean(KEY_PRESERVE_TEXT_CHANGED) ?: false
-        viewModel.observePrintOrderForRemoval(getDestinationId(),getPoId())
+        viewModel.observePrintOrderForRemoval(getPoNumber())
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -69,7 +67,7 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
             R.id.mnu_save -> {
                 if(textChanged) {
                     val newNotes = viewBinding.txtNotes.text.toString().trim()
-                    viewModel.saveNotes(getDestinationId(), getPoId(), newNotes)
+                    viewModel.saveNotes(newNotes)
                 }else
                     findNavController().popBackStack()
                 
@@ -97,7 +95,7 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         enableBackArrow()
-        updateTitle(getString(R.string.notes_title,getPoId()))
+        updateTitle(getString(R.string.notes_title,getPoNumber().toString()))
         updateSubTitle("")
         initViews()
         observeViewModel()
@@ -206,12 +204,8 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         }
     }
 
-    private fun getPoId(): String =
-        arguments?.getString(KEY_PO_ID) ?: error("PO id argument not set in notes fragment")
-
-    private fun getDestinationId(): String =
-        arguments?.getString(KEY_DESTINATION_ID)
-            ?: error("Destination argument not set in notes fragment")
+    private fun getPoNumber(): Int =
+        arguments?.getInt(KEY_PO_NUMBER) ?: error("PO Number argument not set in notes fragment")
 
     private fun getInitialNotes(): String =
         arguments?.getString(KEY_INITIAL_NOTES)

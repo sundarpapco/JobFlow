@@ -84,7 +84,7 @@ class FixedDestinationVM @Inject constructor(
         val jobs = jobSelections.asList()
         val time = currentTimeInMillis()
         doWork {
-            repository.moveJobs(sourceId, DatabaseContract.DOCUMENT_DEST_CANCELLED, jobs){
+            repository.moveJobs(sourceId, DatabaseContract.DOCUMENT_DEST_CANCELLED, jobs) {
                 it.completionTime = time
                 it.processingHistory += ProcessingHistory(
                     DatabaseContract.DOCUMENT_DEST_CANCELLED,
@@ -101,37 +101,30 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun invoiceSelectedJob(sourceId: String, invoiceDetail: String) {
-       val jobs = jobSelections.asList()
+        val jobs = jobSelections.asList()
         doWork {
 
             /*
             Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
             the same customer before actually invoicing
             */
-            val customerId=jobs.first().clientId
+            val customerId = jobs.first().clientId
             jobs.forEach {
-                if(it.clientId != customerId)
+                if (it.clientId != customerId)
                     throw IllegalStateException(application.getString(R.string.error_invoicing_multiple_clients))
             }
 
-            val time = currentTimeInMillis()
             repository.moveJobs(
                 sourceId,
                 DatabaseContract.DOCUMENT_DEST_COMPLETED,
                 jobs
             ) {
-                it.invoiceDetails = invoiceDetail.trim()
-                it.completionTime = time
-                it.processingHistory += ProcessingHistory(
-                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
-                    DatabaseContract.DOCUMENT_DEST_COMPLETED,
-                    time
-                )
+                it.prepareForInvoicing(invoiceDetail)
             }
         }
     }
 
-    fun partDispatchSelectedJob(sourceId: String,invoiceDetail: String){
+    fun partDispatchSelectedJob(sourceId: String, invoiceDetail: String) {
         val jobs = jobSelections.asList()
         doWork {
             repository.partDispatchJobs(
@@ -142,24 +135,21 @@ class FixedDestinationVM @Inject constructor(
         }
     }
 
-    fun markSelectedJobsAsComplete(sourceId: String, completionTime: Long) {
+    fun markSelectedJobsAsComplete(sourceId: String) {
         val jobs = jobSelections.asList()
-        if(jobs.isEmpty())
+        if (jobs.isEmpty())
             return
+
+        val processingDestination =
+            destination.value ?: error("No valid destination found while completing")
+
         doWork {
             repository.moveJobs(
                 sourceId,
                 DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
                 jobs
             ) {
-                it.completionTime = completionTime
-                destination.value?.let{machine->
-                    it.processingHistory += ProcessingHistory(
-                        machine.id,
-                        machine.name,
-                        completionTime
-                    )
-                }
+                it.addProcessingHistory(processingDestination)
             }
         }
     }

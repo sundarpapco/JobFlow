@@ -99,7 +99,7 @@ class FragmentHomeVM @Inject constructor(
         }
     }
 
-    private fun observeNewJobs() {
+    /*private fun observeNewJobs() {
         viewModelScope.launch {
             try {
                 repository.observeDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
@@ -148,7 +148,7 @@ class FragmentHomeVM @Inject constructor(
             }
         }
 
-    }
+    }*/
 
     private fun renderDestinationToState(destination: Destination?, state: JobGroupState) {
 

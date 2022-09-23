@@ -4,14 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.currentUserRole
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
@@ -29,13 +27,11 @@ import javax.inject.Inject
 class ComposeViewPrintOrderFragment : Fragment() {
 
     companion object {
-        private const val KEY_DESTINATION_ID = "key:destination:id"
-        private const val KEY_PO_ID = "key:printOrder:id"
+        private const val KEY_PO_NUMBER = "key:printOrder:number"
 
-        fun getArguments(destinationId: String, poId: String) =
+        fun getArguments(poNumber: Int) =
             Bundle().apply {
-                putString(KEY_DESTINATION_ID, destinationId)
-                putString(KEY_PO_ID, poId)
+                putInt(KEY_PO_NUMBER, poNumber)
             }
     }
 
@@ -47,7 +43,7 @@ class ComposeViewPrintOrderFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.loadPrintOrder(getDestinationId(), getPoId(),currentUserRole())
+        viewModel.loadPrintOrder(getPoNumber(),currentUserRole())
     }
 
     override fun onResume() {
@@ -89,24 +85,6 @@ class ComposeViewPrintOrderFragment : Fragment() {
         }
     }*/
 
-
-    private fun showPrintOrderRemovedDialog() {
-
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setMessage(getString(R.string.po_not_found_desc))
-        builder.setTitle(getString(R.string.po_not_found))
-        builder.setPositiveButton(getString(R.string.exit)) { _, _ ->
-            findNavController().popBackStack()
-        }
-        builder.setCancelable(false)
-        builder.create().show()
-    }
-
-
-
-    private fun getDestinationId(): String =
-        arguments?.getString(KEY_DESTINATION_ID) ?: error("Destination Id argument not found")
-
-    private fun getPoId(): String =
-        arguments?.getString(KEY_PO_ID) ?: error("PO Id argument not found")
+    private fun getPoNumber(): Int =
+        arguments?.getInt(KEY_PO_NUMBER) ?: error("PO Number argument not found")
 }
