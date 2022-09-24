@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -33,6 +34,7 @@ class TextInputDialogState<T>(
 
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun TextInputDialog(
@@ -66,7 +68,7 @@ fun TextInputDialog(
 
 }
 
-
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 private fun TextInputDialogContent(
@@ -261,6 +263,7 @@ private fun AlertDialogPreview() {
 }
 
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Preview(
     name = "TextDialogContent"

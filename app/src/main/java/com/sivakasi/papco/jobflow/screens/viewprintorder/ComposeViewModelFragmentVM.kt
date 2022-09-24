@@ -14,7 +14,6 @@ import com.sivakasi.papco.jobflow.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,7 +42,7 @@ class ComposeViewModelFragmentVM @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
 
             try {
-                repository.searchAndObservePrintOrder(printOrderNumber)
+                repository.observePrintOrder(printOrderNumber)
                     .collect { printOrderWithDestination ->
                         if (printOrderWithDestination == null) {
                             loadedPrintOrder = null

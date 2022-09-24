@@ -1,11 +1,8 @@
 package com.sivakasi.papco.jobflow.admin
 
 import android.content.res.Configuration
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -29,6 +26,7 @@ import com.sivakasi.papco.jobflow.screens.login.AuthError
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun UpdateRoleScreen(
@@ -249,6 +247,7 @@ fun MenuItem(text: String, onClick: () -> Unit) {
     }
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Preview
 @Composable

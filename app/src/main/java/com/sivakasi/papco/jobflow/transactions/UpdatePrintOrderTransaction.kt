@@ -7,6 +7,7 @@ import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.destinationReference
 import com.sivakasi.papco.jobflow.extensions.poReference
+import com.sivakasi.papco.jobflow.extensions.toDestination
 
 class UpdatePrintOrderTransaction(
     private val printOrder: PrintOrder,
@@ -55,8 +56,7 @@ class UpdatePrintOrderTransaction(
         val documentReference = database.destinationReference(destinationId)
         val documentSnapshot = transaction.get(documentReference)
         require(documentSnapshot.exists()) { "Parent destination not founf" }
-        return documentSnapshot.toObject(Destination::class.java)!!
-            .apply { id = documentSnapshot.id }
+        return documentSnapshot.toDestination()
 
     }
 

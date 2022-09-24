@@ -34,6 +34,7 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Composable
@@ -76,7 +77,7 @@ fun LoginScreen(
     }
 }
 
-
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Composable
@@ -499,6 +500,7 @@ private fun RegisterPreview() {
     }
 }*/
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Preview

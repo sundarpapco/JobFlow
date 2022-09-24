@@ -6,6 +6,7 @@ import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.extensions.destinationReference
 import com.sivakasi.papco.jobflow.extensions.poReference
+import com.sivakasi.papco.jobflow.extensions.toDestination
 
 class CreatePrintOrderTransaction(private val printOrder: PrintOrder) :
     Transaction.Function<Boolean> {
@@ -47,7 +48,7 @@ class CreatePrintOrderTransaction(private val printOrder: PrintOrder) :
             plateNumber = plateNumberDocument.toObject(Counter::class.java)!!
 
         if (destinationDocument.exists())
-            destination = destinationDocument.toObject(Destination::class.java)!!
+            destination = destinationDocument.toDestination()
 
 
         //Make changes in all read documents

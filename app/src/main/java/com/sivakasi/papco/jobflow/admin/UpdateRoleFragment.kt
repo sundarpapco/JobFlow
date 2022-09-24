@@ -5,13 +5,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
@@ -19,6 +18,7 @@ import com.sivakasi.papco.jobflow.extensions.updateTitle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalFoundationApi
 @ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
 @AndroidEntryPoint

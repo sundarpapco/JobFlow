@@ -9,6 +9,7 @@ import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.destinationReference
+import com.sivakasi.papco.jobflow.extensions.toDestination
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import java.util.*
 
@@ -76,9 +77,7 @@ class BackTrackPrintOrderTransaction(
 
         val snapshot = transaction.get(reference)
         require(snapshot.exists()) { "Source not found" }
-        return snapshot.toObject(Destination::class.java)!!.apply {
-            id = sourceDocumentId
-        }
+        return snapshot.toDestination()
 
     }
 
@@ -96,9 +95,7 @@ class BackTrackPrintOrderTransaction(
                 timeBased = true
             }
         else
-            destinationDocumentSnapshot.toObject(Destination::class.java)!!.apply {
-                id = destinationDocumentSnapshot.id
-            }
+            destinationDocumentSnapshot.toDestination()
     }
 
     private fun readAllJobs(transaction: Transaction): List<PrintOrder> {

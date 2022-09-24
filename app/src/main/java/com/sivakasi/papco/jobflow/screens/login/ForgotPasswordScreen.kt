@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.login
 
 import android.content.res.Configuration
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,6 +33,7 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Composable
@@ -131,6 +133,7 @@ fun ForgotPasswordScreen(
     }
 }
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Preview

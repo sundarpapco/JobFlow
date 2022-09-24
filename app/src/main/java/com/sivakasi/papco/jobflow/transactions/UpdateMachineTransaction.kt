@@ -6,9 +6,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Transaction
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.extensions.toDestination
 
 class UpdateMachineTransaction(
-    private val machineId: String,
+    machineId: String,
     private val machineName: String) :
     Transaction.Function<Boolean> {
 
@@ -18,7 +19,7 @@ class UpdateMachineTransaction(
     private lateinit var documentSnapshot: DocumentSnapshot
     private lateinit var machine:Destination
 
-    override fun apply(transaction: Transaction): Boolean? {
+    override fun apply(transaction: Transaction): Boolean {
 
         //Check whether the original document exist
         documentSnapshot = transaction.get(documentRef)
@@ -30,7 +31,7 @@ class UpdateMachineTransaction(
 
 
         //Update the machine document
-        machine=documentSnapshot.toObject(Destination::class.java)!!
+        machine=documentSnapshot.toDestination()
         machine.id=documentSnapshot.id
         machine.name=machineName
 

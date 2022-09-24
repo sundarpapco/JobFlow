@@ -1,8 +1,11 @@
 package com.sivakasi.papco.jobflow.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -18,10 +21,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.RelocationRequester
-import androidx.compose.ui.layout.relocationRequester
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun JobFlowTextField(
@@ -55,14 +56,14 @@ fun JobFlowTextField(
 ) {
     Column {
 
-        val relocationRequester = remember { RelocationRequester() }
+        val relocationRequester = remember { BringIntoViewRequester() }
         val coroutineScope = rememberCoroutineScope()
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = modifier
-                .relocationRequester(relocationRequester)
+                .bringIntoViewRequester(relocationRequester)
                 .onFocusChanged {
                     if (it.isFocused)
                         coroutineScope.launch {
@@ -106,6 +107,7 @@ fun JobFlowTextField(
     }
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun JobFlowTextField(
@@ -132,14 +134,14 @@ fun JobFlowTextField(
 ) {
     Column {
 
-        val relocationRequester = remember { RelocationRequester() }
+        val relocationRequester = remember { BringIntoViewRequester() }
         val coroutineScope = rememberCoroutineScope()
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = modifier
-                .relocationRequester(relocationRequester)
+                .bringIntoViewRequester(relocationRequester)
                 .onFocusChanged {
                     if (it.isFocused)
                         coroutineScope.launch {
@@ -183,6 +185,7 @@ fun JobFlowTextField(
     }
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun SelectableTextField(
@@ -209,14 +212,14 @@ fun SelectableTextField(
 ) {
     Column {
 
-        val relocationRequester = remember { RelocationRequester() }
+        val relocationRequester = remember { BringIntoViewRequester() }
         val coroutineScope = rememberCoroutineScope()
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = modifier
-                .relocationRequester(relocationRequester)
+                .bringIntoViewRequester(relocationRequester)
                 .onFocusChanged {
                     if (it.isFocused)
                         coroutineScope.launch {
@@ -339,6 +342,7 @@ fun RadioButtonPreview(){
 }
 
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Preview
 @Composable

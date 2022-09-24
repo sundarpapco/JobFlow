@@ -20,6 +20,17 @@ allprojects {
         google()
         jcenter()
     }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            freeCompilerArgs = [
+                    '-Xjvm-default=enable',
+                    "-Xuse-experimental=androidx.compose.foundation.ExperimentalFoundationApi",
+                    "-Xuse-experimental=androidx.compose.ui.ExperimentalComposeUiApi"
+            ] //enable or compatibility
+            jvmTarget = "1.8"
+        }
+    }
 }
 
 task clean(type: Delete) {

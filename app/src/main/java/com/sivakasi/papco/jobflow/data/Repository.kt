@@ -5,7 +5,7 @@ import androidx.core.text.isDigitsOnly
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
 import com.google.firebase.firestore.*
-import com.sivakasi.papco.jobflow.extensions.poReference
+import com.sivakasi.papco.jobflow.extensions.toDestination
 import com.sivakasi.papco.jobflow.extensions.toPrintOrder
 import com.sivakasi.papco.jobflow.extensions.toPrintOrderUIModel
 import com.sivakasi.papco.jobflow.extensions.toSearchModel
@@ -17,7 +17,6 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.util.*
@@ -78,8 +77,7 @@ class Repository @Inject constructor(
                     }
                 } else
                     try {
-                        val destination = documentSnapshot.toObject(Destination::class.java)
-                        destination?.id = documentSnapshot.id
+                        val destination = documentSnapshot.toDestination()
                         trySend(destination).isSuccess
                     } catch (_: Exception) {
                     }
@@ -88,41 +86,39 @@ class Repository @Inject constructor(
         awaitClose { listenerRegistration.remove() }
     }
 
-    /*
-    Function to search for a PO with PO number and observe it.
-    This function will search for the PO in all the destinations and once found, it will
-    observe that particular PO with the destination ID obtained from search.
-    This function can auto detect the movement of the print order when it detects that the observing
-    PO has moved from one destination to another, then it will automatically search for the PO
-    again and it will start monitoring the same PO in the new destination
-     */
-    fun searchAndObservePrintOrder(poNumber: Int) = callbackFlow {
 
-        while (true) {
+    fun observePrintOrder(poNumber: Int) = callbackFlow {
 
-            val printOrder = searchByNumber(poNumber)
-            if (printOrder == null) {
-                trySend(null)
-                break
+        val registration = database.collectionGroup(DatabaseContract.COLLECTION_JOBS)
+            .whereEqualTo(PrintOrder.FIELD_PRINT_ORDER_NUMBER, poNumber)
+            .limit(1)
+            .addSnapshotListener { value, error ->
+                if (error != null)
+                    throw error
+
+                if (value == null || value.isEmpty)
+                    trySend(null)
+                else
+                    trySend(value.documents[0])
+
             }
-
-            observePrintOrder(printOrder.destinationId, printOrder.poId())
-                .map {
-                    val destination = getDestinationById(printOrder.destinationId)
-                    if (it != null && destination != null)
-                        PrintOrderWithDestination(it, destination)
-                    else
-                        null
-                }
-                .collect {
-                    if (it != null)
-                        trySend(it)
-                }
+        awaitClose {
+            registration.remove()
         }
-        close()
-        awaitClose {}
-
+    }.map {
+        it?.let{snapshot->
+            val destination = getDestinationById(
+                snapshot.reference.parent.parent?.id ?: error("Invalid Job path")
+            )
+            destination?.let { dest ->
+                PrintOrderWithDestination(
+                    it.toPrintOrder(),
+                    dest
+                )
+            }
+        }
     }
+
 
     private suspend fun getDestinationById(destinationId: String): Destination? =
         suspendCancellableCoroutine { continuation ->
@@ -131,7 +127,7 @@ class Repository @Inject constructor(
                 .get()
                 .addOnSuccessListener {
                     if (it != null && it.exists()) {
-                        val result = it.toObject(Destination::class.java)
+                        val result = it.toDestination()
                         continuation.resume(result)
                     } else
                         continuation.resume(null)
@@ -140,33 +136,6 @@ class Repository @Inject constructor(
                     continuation.resumeWithException(it)
                 }
         }
-
-
-    private fun observePrintOrder(destinationId: String, poId: String) = callbackFlow {
-
-        val listenerRegistration = database.poReference(destinationId, poId)
-            .addSnapshotListener { documentSnapshot, firebaseFireStoreException ->
-
-                if (firebaseFireStoreException != null)
-                    throw firebaseFireStoreException
-
-                if (documentSnapshot == null || !documentSnapshot.exists())
-                    try {
-                        trySend(null).isSuccess
-                        close()
-                    } catch (_: Exception) {
-                    }
-                else
-                    try {
-                        trySend(documentSnapshot.toPrintOrder()).isSuccess
-                    } catch (_: Exception) {
-
-                    }
-            }
-
-        awaitClose { listenerRegistration.remove() }
-
-    }
 
     suspend fun getLastCompletedPrintOrderWithPlateNumber(plateNumber: Int): PrintOrder? {
 
@@ -443,6 +412,8 @@ class Repository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+
+
     fun getAllUsers() = callbackFlow {
 
         val listenerRegistration = database.collection(DatabaseContract.COLLECTION_USERS)
@@ -494,9 +465,7 @@ class Repository @Inject constructor(
 
     }.map {
         it.map { document ->
-            document.toObject(Destination::class.java)!!.apply {
-                id = document.id
-            }
+            document.toDestination()
         }
     }.flowOn(Dispatchers.IO)
 

@@ -11,7 +11,6 @@ import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,7 +38,7 @@ class NotesFragmentVM @Inject constructor(
         viewModelScope.launch {
 
             try {
-                repository.searchAndObservePrintOrder(poNumber)
+                repository.observePrintOrder(poNumber)
                     .collect { po ->
                         if (po != null)
                             loadedPo = po

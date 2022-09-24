@@ -2,10 +2,10 @@ package com.sivakasi.papco.jobflow.transactions
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Transaction
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.extensions.toDestination
 
 class DeleteMachineTransaction(machineId: String) : Transaction.Function<Boolean> {
 
@@ -15,7 +15,7 @@ class DeleteMachineTransaction(machineId: String) : Transaction.Function<Boolean
     private lateinit var documentSnapshot: DocumentSnapshot
     private lateinit var machine: Destination
 
-    override fun apply(transaction: Transaction): Boolean? {
+    override fun apply(transaction: Transaction): Boolean {
 
         //Check whether the machine exists
         documentSnapshot = transaction.get(documentRef)
@@ -23,7 +23,7 @@ class DeleteMachineTransaction(machineId: String) : Transaction.Function<Boolean
             error("Machine not found")
 
         //If reaches here, then the machine exits. Check whether it doesn't have any jobs in it
-        machine = documentSnapshot.toObject(Destination::class.java)!!
+        machine = documentSnapshot.toDestination()
         if (machine.jobCount > 0)
             error("Cannot delete machine with jobs in it")
 

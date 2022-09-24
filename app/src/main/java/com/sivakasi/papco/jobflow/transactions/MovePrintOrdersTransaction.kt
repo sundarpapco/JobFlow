@@ -5,6 +5,7 @@ import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.extensions.toDestination
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import java.util.*
 
@@ -44,12 +45,12 @@ class MovePrintOrdersTransaction(
         val sourceDocumentSnapshot = transaction.get(sourceDocumentRef)
         val destinationDocumentSnapshot = transaction.get(destinationDocumentRef)
         source = if (sourceDocumentSnapshot.exists())
-            sourceDocumentSnapshot.toObject(Destination::class.java)!!
+            sourceDocumentSnapshot.toDestination()
         else
             error("Source document not found")
 
         if (destinationDocumentSnapshot.exists())
-            destination = destinationDocumentSnapshot.toObject(Destination::class.java)!!
+            destination = destinationDocumentSnapshot.toDestination()
 
 
         var listPosition = currentTimeInMillis()

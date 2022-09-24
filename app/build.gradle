@@ -9,12 +9,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.sivakasi.papco.jobflow"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 9
         versionName "1.1"
 
@@ -60,7 +60,7 @@ kapt {
 
 dependencies {
 
-    def composeVersion="1.0.5"
+    def composeVersion="1.2.1"
     def paging_version = "3.0.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"

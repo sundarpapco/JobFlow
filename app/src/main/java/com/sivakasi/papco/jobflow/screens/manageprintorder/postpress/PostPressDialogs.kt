@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.postpress
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -51,6 +52,7 @@ class BindingDialogState {
     fun toBinding(): Binding = Binding(binding, remarks.text)
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun LaminationDialog(
@@ -79,7 +81,7 @@ fun LaminationDialog(
 
 }
 
-
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun LaminationDialogContent(
@@ -209,7 +211,7 @@ fun LaminationDialogContent(
 
 }
 
-
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun BindingDialog(
@@ -236,7 +238,7 @@ fun BindingDialog(
     }
 }
 
-
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun BindingDialogContent(
@@ -415,6 +417,7 @@ fun DialogButtons(
 
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Preview
 @Composable
@@ -432,6 +435,7 @@ fun LaminationDialogPreview() {
 
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Preview
 @Composable
