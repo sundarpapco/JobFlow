@@ -196,6 +196,7 @@ fun PreviousHistoryScreen(
             ErrorScreen(error = screenState.exception)
         }
 
+        else -> {}
     }
 }
 

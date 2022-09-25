@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -102,17 +101,8 @@ class FragmentAddPO : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         updateSubTitle("")
 
         initViews()
+        registerBackArrowMenu()
         observeViewModel()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

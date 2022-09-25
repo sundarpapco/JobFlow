@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -55,16 +54,7 @@ class FragmentJobDetails : Fragment() {
         else
             updateTitle(getString(R.string.create_job))
         updateSubTitle("")
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack(R.id.fragmentJobDetails, true)
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
+        registerBackArrowMenu()
     }
 
     override fun onPause() {

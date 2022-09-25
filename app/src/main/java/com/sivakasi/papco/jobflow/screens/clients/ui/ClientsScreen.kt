@@ -1,5 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.clients.ui
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +37,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@ExperimentalFoundationApi
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi

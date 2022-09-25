@@ -1,8 +1,8 @@
 package com.sivakasi.papco.jobflow.screens.clients.history
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,8 +13,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
-import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
@@ -39,14 +39,19 @@ class ClientHistoryFragment : Fragment() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private val client: Client by lazy {
-        arguments?.getParcelable<Client>(KEY_CLIENT)
-            ?: error("ClientHistoryFragment should be launched with a client argument")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arguments?.getParcelable(KEY_CLIENT, Client::class.java)
+                ?: error("ClientHistoryFragment should be launched with a client argument")
+        else
+            arguments?.getParcelable(KEY_CLIENT)
+                ?: error("ClientHistoryFragment should be launched with a client argument")
     }
 
     private val viewModel: ClientHistoryVM by lazy {
-        ViewModelProvider(this).get(ClientHistoryVM::class.java).apply {
-            clientId=client.id
+        ViewModelProvider(this)[ClientHistoryVM::class.java].apply {
+            clientId = client.id
         }
     }
 
@@ -76,16 +81,7 @@ class ClientHistoryFragment : Fragment() {
         enableBackArrow()
         updateTitle(client.name)
         updateSubTitle(getString(R.string.client_history))
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
+        registerBackArrowMenu()
     }
 
     @ExperimentalComposeUiApi

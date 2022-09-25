@@ -4,7 +4,6 @@ package com.sivakasi.papco.jobflow.screens.invoicehistory
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
@@ -15,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
@@ -63,19 +63,8 @@ class InvoiceHistoryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         updateTitle(getString(R.string.invoice_history))
         updateSubTitle("")
-
+        registerBackArrowMenu()
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
 
     //Navigate to view Print order screen
     @ExperimentalComposeUiApi

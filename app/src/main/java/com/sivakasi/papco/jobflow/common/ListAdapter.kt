@@ -28,6 +28,7 @@ abstract class ListAdapter<T, VH : RecyclerView.ViewHolder>(
     fun submitList(newData: List<T>) = runDiffUtilAndUpdateList(newData)
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun runDiffUtilAndUpdateList(newData: List<T>) {
 
         diffUtilJob?.cancel() //cancel any previously running job

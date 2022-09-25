@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.admin
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,6 +12,7 @@ import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,16 +52,7 @@ class UpdateRoleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         enableBackArrow()
         updateFragmentTitle()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
+        registerBackArrowMenu()
     }
 
     private fun updateFragmentTitle() {

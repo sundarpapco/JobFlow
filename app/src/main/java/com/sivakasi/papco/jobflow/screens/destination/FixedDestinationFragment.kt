@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -75,7 +76,7 @@ class FixedDestinationFragment : Fragment(),
 
 
     private val viewModel: FixedDestinationVM by lazy {
-        ViewModelProvider(this).get(FixedDestinationVM::class.java)
+        ViewModelProvider(this)[FixedDestinationVM::class.java]
     }
 
 
@@ -104,18 +105,10 @@ class FixedDestinationFragment : Fragment(),
         //Unlock the selection first in case it may be locked
         selection.locked = false
         initViews()
+        registerBackArrowMenu()
         observeViewModel()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -245,6 +238,7 @@ class FixedDestinationFragment : Fragment(),
 
     // ----------------------------
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun onSelectionChange(selectionCount: Int) {
 
         if (selectionCount > 0) {

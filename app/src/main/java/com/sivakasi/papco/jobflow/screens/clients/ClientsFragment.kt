@@ -2,9 +2,9 @@ package com.sivakasi.papco.jobflow.screens.clients
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
+import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
 import com.sivakasi.papco.jobflow.extensions.updateSubTitle
 import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.screens.clients.ui.ClientsScreen
@@ -22,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
+@ExperimentalFoundationApi
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
@@ -41,7 +43,7 @@ class ClientsFragment : Fragment() {
     }
 
     private val viewModel: ClientsFragmentVM by lazy {
-        ViewModelProvider(this).get(ClientsFragmentVM::class.java)
+        ViewModelProvider(this)[ClientsFragmentVM::class.java]
     }
 
     override fun onCreateView(
@@ -64,17 +66,8 @@ class ClientsFragment : Fragment() {
         enableBackArrow()
         updateTitle(if (isSelectionMode()) getString(R.string.select_client) else getString(R.string.clients))
         updateSubTitle("")
+        registerBackArrowMenu()
         observeViewModel()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     @Suppress("UNCHECKED_CAST")

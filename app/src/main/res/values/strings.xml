@@ -3,15 +3,8 @@
     <string name="file_sharing_authority">com.sivakasi.papco.jobflow.file_provider</string>
 
 
-    <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 
     <string name="new_print_order">New print order</string>
     <string name="new_job">New job</string>
@@ -42,9 +35,6 @@
     <string name="plate_number">Plate number: %1$d</string>
     <string name="blank_if_same_as_front_machine">Blank if same as front machine</string>
     <string name="error_invalid_trim_size">Should be %1$d to %2$d</string>
-    <string name="error_invalid_positive_number">Should be greater than zero</string>
-    <string name="error_invalid_machine_name">Invalid machine name</string>
-    <string name="error_invalid_screen">Invalid Screen</string>
     <string name="error_unknown_error">Unknown error occurred during processing</string>
     <string name="error_not_optional_field">This field is not optional</string>
     <string name="backside">Backside</string>
@@ -96,18 +86,12 @@
         Do you want to proceed with creating the job with the given plate number anyway?</string>
     <string name="proceed">PROCEED</string>
     <string name="invalid_plate_number">Should be greater than zero</string>
-    <string name="not_applicable">Not applicable</string>
     <string name="required_field">*Required</string>
     <string name="urgent">Urgent</string>
     <string name="pending_remarks">Pending remarks</string>
     <string name="blank_if_not_pending">Blank if not pending</string>
     <string name="reprint">REPRINT</string>
-    <string name="success_print_order_creation">Print order created successfully!</string>
-    <string name="success_print_order_updating">Print order updated successfully!</string>
     <string name="one_moment_please">One moment please</string>
-    <string name="today">Today</string>
-    <string name="yesterday">Yesterday</string>
-    <string name="xx_days_ago">%1$d days ago</string>
     <string name="duration_in_xx_jobs">%1$s in %2$d Jobs</string>
     <string name="add_machine">Add Machine</string>
     <string name="edit_machine">Edit Machine</string>
@@ -136,27 +120,21 @@
     <string name="invalid_rid_entered">Invalid Plate Number</string>
     <string name="last_completed_on">Last completed on: %1$s</string>
     <string name="simple_format_last_completion">"dd/MM/yyyy, hh:mm a"</string>
-    <string name="loading">Loading…</string>
     <string name="notes_saved_successfully">Notes saved successfully</string>
     <string name="unsaved_changes_title">Unsaved Changes</string>
     <string name="unsaved_changes_confirmation">Do you really want to exit without saving?</string>
     <string name="exit">Exit</string>
     <string name="po_not_found">PO not found</string>
     <string name="po_not_found_desc">This print order was moved or removed by some other person using this app and this screen will now close</string>
-    <string name="close">Close</string>
     <string name="clear">Clear</string>
     <string name="mark_as_pending">Mark as pending</string>
     <string name="clear_pending">Clear pending</string>
-    <string name="search_hint">PO No, Plate No or Bill No</string>
     <string name="search">Search</string>
     <string name="invoice">Invoice</string>
-    <string name="search_by">Search By </string>
     <string name="po_number_and_date">PO: %1$d - %2$s</string>
     <string name="rid_xx">RID: %1$d</string>
     <string name="active">ACTIVE</string>
-    <string name="completed">COMPLETED</string>
     <string name="cancelled">CANCELLED</string>
-    <string name="xx_results">%1$d Result(s)</string>
     <string name="no_results_found">No results found!</string>
     <string name="invoice_history">Invoice History</string>
     <string name="sign_out">Sign Out</string>
@@ -173,8 +151,6 @@
     <string name="sign_out_caps">SIGN OUT</string>
     <string name="invalid_email">Invalid Email</string>
     <string name="invalid_password">Password must be at least 8 characters long</string>
-    <string name="user_not_found">No user found with this Email</string>
-    <string name="wrong_password">Wrong password. Try again</string>
     <string name="forgot_password_question">Forgot Password?</string>
     <string name="dont_have_an_account_ques">Don\'t have an account?</string>
     <string name="already_have_an_account">Already have an account?</string>
@@ -188,7 +164,6 @@
     <string name="email_to_reset">Email to reset</string>
     <string name="password_reset_mail_sent">Password reset mail sent successfully</string>
     <string name="name">Name</string>
-    <string name="refresh_caps">REFRESH</string>
     <string name="guest_greeting">Welcome</string>
     <string name="activation_description">This account now needs to be activated before you can
         use this app. Kindly contact the administrator of this app with your registered email
@@ -214,8 +189,6 @@
     <string name="user">User</string>
     <string name="xx_users">%1$d Users</string>
     <string name="error_invoicing_multiple_clients">Only jobs from the same customer can be invoiced together</string>
-    <string name="AM">AM</string>
-    <string name="PM">PM</string>
     <string name="po_created">PO Created</string>
     <string name="processing_history">Processing History</string>
     <string name="previous_processing_history">Previous History</string>
@@ -223,7 +196,6 @@
     <string name="paper_size">%1$d X %2$d mm</string>
     <string name="size_in_mm">%1$d mm</string>
     <string name="part_dispatch">Part Dispatch</string>
-    <string name="part_dispatch_success">Part dispatch saved successfully!</string>
     <string name="rupee_symbol">\u20B9</string>
     <string name="partial_dispatches">Partial Dispatches</string>
     <string name="revoke_confirmation">Are you sure want to revoke this Job?</string>
@@ -249,7 +221,6 @@
 
     <!-- Accessibility -->
     <string name="add_new_print_order">Add new print order</string>
-    <string name="add_new_machine">Add new machine destination</string>
 
     <!-- Fragment titles -->
     <string name="papco_jobs">Papco Jobs</string>

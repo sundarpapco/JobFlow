@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -13,10 +12,7 @@ import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPrintingDetailBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
-import com.sivakasi.papco.jobflow.extensions.validateForNonBlank
+import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,16 +51,7 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         else
             updateTitle(getString(R.string.create_job))
         updateSubTitle("")
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack(R.id.fragmentJobDetails, true)
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
+        registerBackArrowMenu()
     }
 
     override fun onStop() {

@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.search
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
@@ -28,7 +27,7 @@ import kotlinx.coroutines.FlowPreview
 class AlgoliaSearchFragment:Fragment() {
 
     private val viewModel: AlgoliaSearchVM by lazy {
-        ViewModelProvider(this).get(AlgoliaSearchVM::class.java)
+        ViewModelProvider(this)[AlgoliaSearchVM::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,16 +64,6 @@ class AlgoliaSearchFragment:Fragment() {
     override fun onStop() {
         super.onStop()
         showActionBar()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if (item.itemId == android.R.id.home) {
-            findNavController().popBackStack()
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
 

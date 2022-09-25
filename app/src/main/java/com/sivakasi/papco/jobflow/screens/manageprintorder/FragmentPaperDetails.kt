@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -13,10 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPaperDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.toast
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -63,16 +59,7 @@ class FragmentPaperDetails : Fragment(),
         else
             updateTitle(getString(R.string.create_job))
         updateSubTitle("")
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        if(item.itemId==android.R.id.home){
-            findNavController().popBackStack(R.id.fragmentJobDetails, true)
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
+        registerBackArrowMenu()
     }
 
     override fun onDestroyView() {

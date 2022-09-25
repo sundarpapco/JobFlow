@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -43,41 +44,17 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         get() = _viewBinding!!
 
     private val viewModel: NotesFragmentVM by lazy {
-        ViewModelProvider(this).get(NotesFragmentVM::class.java)
+        ViewModelProvider(this)[NotesFragmentVM::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
         textChanged = savedInstanceState?.getBoolean(KEY_PRESERVE_TEXT_CHANGED) ?: false
         viewModel.observePrintOrderForRemoval(getPoNumber())
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.fragment_notes, menu)
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        return when (item.itemId) {
-            android.R.id.home -> {
-                checkAndExitFragment()
-                true
-            }
-            R.id.mnu_save -> {
-                if(textChanged) {
-                    val newNotes = viewBinding.txtNotes.text.toString().trim()
-                    viewModel.saveNotes(newNotes)
-                }else
-                    findNavController().popBackStack()
-                
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
-
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -98,10 +75,40 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
         updateTitle(getString(R.string.notes_title,getPoNumber().toString()))
         updateSubTitle("")
         initViews()
+        prepareMenu()
         observeViewModel()
         registerBackPressedListener{
             checkAndExitFragment()
         }
+    }
+
+    private fun prepareMenu() {
+        val menuProvider = object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.fragment_notes, menu)
+
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    android.R.id.home -> {
+                        checkAndExitFragment()
+                        true
+                    }
+                    R.id.mnu_save -> {
+                        if (textChanged) {
+                            val newNotes = viewBinding.txtNotes.text.toString().trim()
+                            viewModel.saveNotes(newNotes)
+                        } else
+                            findNavController().popBackStack()
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
+        requireActivity().addMenuProvider(menuProvider,viewLifecycleOwner)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

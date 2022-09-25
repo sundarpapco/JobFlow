@@ -1,7 +1,9 @@
 package com.sivakasi.papco.jobflow.screens.machines
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -56,6 +58,7 @@ fontSize = 24.sp,
 letterSpacing = 0.sp
 )
 
+@ExperimentalFoundationApi
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
@@ -99,6 +102,7 @@ fun ManageMachinesScreen(
 
 }
 
+@ExperimentalFoundationApi
 @ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
@@ -154,6 +158,7 @@ private fun ShowDialogs(
 }
 
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi

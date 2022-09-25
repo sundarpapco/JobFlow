@@ -70,6 +70,8 @@ class ComposeViewPrintOrderFragment : Fragment() {
                     activityContext = requireContext()
                 )
             }
+
+
         }
     }
 

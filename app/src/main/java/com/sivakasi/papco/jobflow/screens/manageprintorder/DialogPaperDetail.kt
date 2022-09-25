@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +8,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
-import com.sivakasi.papco.jobflow.*
+import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.databinding.DialogPaperDetailBinding
 import com.sivakasi.papco.jobflow.extensions.*
@@ -230,9 +232,16 @@ class DialogPaperDetail : DialogFragment() {
     private fun getEditIndex(): Int =
         arguments?.getInt(KEY_EDIT_INDEX) ?: -1
 
-    private fun getPaperDetailFromParcel(): PaperDetail =
-        arguments?.getParcelable(KEY_PAPER_DETAIL)
-            ?: throw IllegalStateException("Cannot find the paper details in the parcel")
+    @Suppress("DEPRECATION")
+    private fun getPaperDetailFromParcel(): PaperDetail {
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arguments?.getParcelable(KEY_PAPER_DETAIL, PaperDetail::class.java)
+                ?: throw IllegalStateException("Cannot find the paper details in the parcel")
+        else
+            arguments?.getParcelable(KEY_PAPER_DETAIL)
+                ?: throw IllegalStateException("Cannot find the paper details in the parcel")
+    }
 
     interface DialogPaperDetailListener {
         fun onSubmitPaperDetail(editIndex: Int, paperDetail: PaperDetail)

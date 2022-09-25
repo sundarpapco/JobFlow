@@ -1,10 +1,15 @@
 package com.sivakasi.papco.jobflow.extensions
 
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.MainActivity
 import com.sivakasi.papco.jobflow.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,19 +41,36 @@ fun Fragment.showActionBar(){
 }
 
 fun Fragment.enableBackArrow() {
-    setHasOptionsMenu(true)
     getActionBar()?.setDisplayHomeAsUpEnabled(true)
     getActionBar()?.setHomeAsUpIndicator(R.drawable.ic_arrow_back)
 }
 
 fun Fragment.enableBackAsClose() {
-    setHasOptionsMenu(true)
     getActionBar()?.setDisplayHomeAsUpEnabled(true)
     getActionBar()?.setHomeAsUpIndicator(R.drawable.ic_close)
 }
 
 fun Fragment.disableBackArrow() {
     getActionBar()?.setDisplayHomeAsUpEnabled(false)
+}
+
+fun Fragment.registerBackArrowMenu(){
+    val menuProvider = object: MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            if (menuItem.itemId == android.R.id.home) {
+                findNavController().popBackStack()
+                return true
+            }
+
+            return false
+        }
+    }
+
+    requireActivity().addMenuProvider(menuProvider,viewLifecycleOwner)
 }
 
 @ExperimentalCoroutinesApi
