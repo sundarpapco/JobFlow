@@ -7,6 +7,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +21,7 @@ import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.clients.ui.InformationScreen
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.util.Event
+import androidx.compose.runtime.getValue
 
 /*
 Lazy Column list which will display the list from the paging 3 API
@@ -87,7 +90,13 @@ private fun HistoryList(
         color = MaterialTheme.colors.background
     ) {
 
-        if (listState.firstVisibleItemIndex >= 0 || listState.firstVisibleItemScrollOffset != 0) {
+        val userAlreadyScrolled by remember{
+            derivedStateOf {
+                listState.firstVisibleItemIndex >=0 || listState.firstVisibleItemScrollOffset != 0
+            }
+        }
+
+        if (userAlreadyScrolled) {
             //User has already used and scrolled this list
             if (history.itemCount == 0) {
                 /*User has already scrolled the list meaning the item count should be greater than
@@ -95,7 +104,6 @@ private fun HistoryList(
                 This means this is due to caching and we should wait for the actual data to render the list
                  */
                 LoadingScreen()
-
             }
         } else {
             //The user has not scrolled this list, meaning we should display the list if it has valid items

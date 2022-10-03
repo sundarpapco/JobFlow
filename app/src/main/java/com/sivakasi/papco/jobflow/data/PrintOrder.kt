@@ -7,6 +7,7 @@ import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
+import java.util.*
 
 class PrintOrder {
 
@@ -154,7 +155,11 @@ class PrintOrder {
 
 }
 
-fun PrintOrder.toSearchModel(context: Context, destinationId: String): SearchModel {
+fun PrintOrder.toSearchModel(
+    context: Context,
+    destinationId: String,
+    searchQuery:String=""
+): SearchModel {
 
     val result = SearchModel(context)
     val printOrder = this
@@ -171,6 +176,14 @@ fun PrintOrder.toSearchModel(context: Context, destinationId: String): SearchMod
         paperDetails = printOrder.printingSizePaperDetail().toString()
         completionTime = printOrder.completionTime
         dispatchCount = printOrder.partialDispatches.size
+    }
+
+    if (partialDispatches.isNotEmpty() && searchQuery.isNotEmpty()) {
+        val query = searchQuery.lowercase(Locale.getDefault())
+        partialDispatches.forEach {
+            if (query.contains(it.invoiceNumber.lowercase(Locale.getDefault())))
+                result.invoiceNumber = it.invoiceNumber
+        }
     }
     return result
 }

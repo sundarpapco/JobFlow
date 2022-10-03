@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.search
 
 import android.content.Context
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.algolia.search.exception.UnreachableHostsException
@@ -28,7 +27,7 @@ class AlgoliaDataSource(
 
         return try {
             val loadResult = algoliaClient.search(query, pageToLoad)
-            val data = loadResult.data.map { it.toSearchModel(context) }
+            val data = loadResult.data.map { it.toSearchModel(context,query) }
             val nextPage = if (loadResult.loadedPage < loadResult.totalPages - 1)
                 pageToLoad + 1
             else

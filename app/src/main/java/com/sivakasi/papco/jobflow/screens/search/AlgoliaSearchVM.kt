@@ -68,7 +68,11 @@ class AlgoliaSearchVM @Inject constructor(
                 repository.observePrintOrder(item.printOrderNumber)
                     .collect {
                         userUpdatedItem = it?.let { po ->
-                            Event(po.printOrder.toSearchModel(application, po.destination.id))
+                            Event(po.printOrder.toSearchModel(
+                                application,
+                                po.destination.id,
+                                query ?: ""
+                            ))
                         }
                     }
             } catch (_: Exception) {

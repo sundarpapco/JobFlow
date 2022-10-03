@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.firebase.firestore.DocumentSnapshot
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.toSearchModel
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.models.SearchModel
 
@@ -20,21 +21,11 @@ fun DocumentSnapshot.toDestination():Destination {
     }
 }
 
-fun DocumentSnapshot.toSearchModel(context: Context): SearchModel {
-    val result = SearchModel(context)
+fun DocumentSnapshot.toSearchModel(context: Context,searchQuery:String=""): SearchModel {
     val printOrder = toObject(PrintOrder::class.java)!!
-    with(result) {
-        printOrderNumber = printOrder.printOrderNumber
-        creationTime=printOrder.creationTime
-        printOrderDate = calendarWithTime(printOrder.creationTime).asDateString()
-        billingName = printOrder.billingName
-        jobName = printOrder.jobName
-        plateNumber = printOrder.plateMakingDetail.plateNumber
-        invoiceNumber = printOrder.invoiceDetails
-        colors = printOrder.printingDetail.colours
-        destinationId = reference.parent.parent?.id ?: error("Invalid Job path")
-        paperDetails=printOrder.printingSizePaperDetail().toString()
-        completionTime=printOrder.completionTime
-    }
-    return result
+    return printOrder.toSearchModel(
+        context,
+        reference.parent.parent?.id ?: error("Invalid Job path"),
+        searchQuery
+    )
 }
