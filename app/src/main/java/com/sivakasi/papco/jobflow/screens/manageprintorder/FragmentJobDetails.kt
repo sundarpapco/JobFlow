@@ -54,7 +54,9 @@ class FragmentJobDetails : Fragment() {
         else
             updateTitle(getString(R.string.create_job))
         updateSubTitle("")
-        registerBackArrowMenu()
+        registerBackArrowMenu{
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+        }
     }
 
     override fun onPause() {

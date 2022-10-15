@@ -89,7 +89,9 @@ class FragmentPlateMakingDetails : Fragment() {
             updateTitle(getString(R.string.create_job))
 
         updateSubTitle("")
-        registerBackArrowMenu()
+        registerBackArrowMenu{
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+        }
     }
 
 

@@ -54,7 +54,11 @@ fun Fragment.disableBackArrow() {
     getActionBar()?.setDisplayHomeAsUpEnabled(false)
 }
 
-fun Fragment.registerBackArrowMenu(){
+fun Fragment.registerBackArrowMenu(
+    onBack:()->Unit ={
+        findNavController().popBackStack()
+    }
+){
     val menuProvider = object: MenuProvider {
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
@@ -62,7 +66,7 @@ fun Fragment.registerBackArrowMenu(){
 
         override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
             if (menuItem.itemId == android.R.id.home) {
-                findNavController().popBackStack()
+                onBack()
                 return true
             }
 

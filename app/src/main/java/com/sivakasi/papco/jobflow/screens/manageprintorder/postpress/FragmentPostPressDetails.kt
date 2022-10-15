@@ -57,7 +57,9 @@ class FragmentPostPressDetails : Fragment() {
             updateTitle(getString(R.string.create_job))
 
         updateSubTitle("")
-        registerBackArrowMenu()
+        registerBackArrowMenu{
+            exitOutOfCreationFlow()
+        }
         observeViewModel()
     }
 

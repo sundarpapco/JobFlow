@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
+import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.databinding.FragmentPrintingDetailBinding
@@ -16,7 +18,9 @@ import com.sivakasi.papco.jobflow.extensions.*
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.FormValidator
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -27,6 +31,9 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         get() = _viewBinding!!
 
     private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
+
+    //This Paper detail will be used to display the sheet count in the Running Time dialog
+    private var printingPaperDetail:PaperDetail?=null
 
     private var duration: Duration = Duration()
     private var hasSpotColours: Boolean = false
@@ -51,7 +58,9 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         else
             updateTitle(getString(R.string.create_job))
         updateSubTitle("")
-        registerBackArrowMenu()
+        registerBackArrowMenu{
+            findNavController().popBackStack(R.id.fragmentJobDetails, true)
+        }
     }
 
     override fun onStop() {
@@ -105,6 +114,10 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
             printingDetails.hasSpotColours
         )
 
+        lifecycleScope.launch(Dispatchers.IO){
+            printingPaperDetail = printOrder.printingSizePaperDetail()
+        }
+
     }
 
     private fun loadRunningTime(runningTime: Duration, hasSpotColours: Boolean) {
@@ -118,7 +131,11 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
 
 
     private fun showRunningTimeDialog() {
-        DialogRunningTime.getInstance(duration, hasSpotColours).show(
+        DialogRunningTime.getInstance(
+            duration,
+            hasSpotColours,
+            printingPaperDetail?.sheets ?: 0
+        ).show(
             childFragmentManager,
             DialogRunningTime.TAG
         )

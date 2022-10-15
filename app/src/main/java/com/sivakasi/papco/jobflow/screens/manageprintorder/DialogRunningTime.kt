@@ -9,6 +9,7 @@ import androidx.fragment.app.DialogFragment
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.clearErrorOnTextChange
 import com.sivakasi.papco.jobflow.databinding.DialogRunningTimeBinding
+import com.sivakasi.papco.jobflow.extensions.asCommaSeparatedNumber
 import com.sivakasi.papco.jobflow.extensions.number
 import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.util.Duration
@@ -25,9 +26,14 @@ class DialogRunningTime : DialogFragment() {
         private const val KEY_MINUTES = "running:time:minutes"
         private const val KEY_FIRST_RUN = "first:run"
         private const val KEY_HAS_SPOT_COLOURS="has:spot:colours"
+        private const val KEY_SHEETS_COUNT="sheets:count"
 
 
-        fun getInstance(duration: Duration? = null,hasSpotColours: Boolean=false): DialogRunningTime {
+        fun getInstance(
+            duration: Duration? = null,
+            hasSpotColours: Boolean=false,
+            sheetsCount:Int=0
+        ): DialogRunningTime {
 
             val args = Bundle()
 
@@ -35,6 +41,7 @@ class DialogRunningTime : DialogFragment() {
                 args.putBoolean(KEY_HAS_SPOT_COLOURS,hasSpotColours)
                 args.putInt(KEY_HOURS, duration.hours)
                 args.putInt(KEY_MINUTES, duration.minutes)
+                args.putInt(KEY_SHEETS_COUNT,sheetsCount)
             }
             return DialogRunningTime().also {
                 it.arguments = args
@@ -99,6 +106,7 @@ class DialogRunningTime : DialogFragment() {
             txtHours.clearErrorOnTextChange()
             txtMinutes.clearErrorOnTextChange()
             txtExpression.clearErrorOnTextChange()
+            txtSheetCount.text=getSheetsCount().asCommaSeparatedNumber()
         }
 
         viewBinding.btnSave.setOnClickListener {
@@ -258,6 +266,9 @@ class DialogRunningTime : DialogFragment() {
         }
 
     }
+
+    private fun getSheetsCount():Int=
+        arguments?.getInt(KEY_SHEETS_COUNT,0) ?: 0
 
     private fun hasSpotColours():Boolean=
         arguments?.getBoolean(KEY_HAS_SPOT_COLOURS,false) ?: false
