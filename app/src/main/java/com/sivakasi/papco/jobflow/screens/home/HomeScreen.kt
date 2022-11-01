@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.home
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -91,6 +92,7 @@ fun HomeScreen(
     }
 }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi

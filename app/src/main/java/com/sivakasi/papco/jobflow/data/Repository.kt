@@ -11,6 +11,9 @@ import com.sivakasi.papco.jobflow.extensions.toPrintOrderUIModel
 import com.sivakasi.papco.jobflow.extensions.toSearchModel
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.preview.JobPreview
+import com.sivakasi.papco.jobflow.preview.PreviewRecord
+import com.sivakasi.papco.jobflow.preview.toJobPreview
 import com.sivakasi.papco.jobflow.transactions.*
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import dagger.hilt.android.scopes.ViewModelScoped
@@ -31,6 +34,43 @@ class Repository @Inject constructor(
 ) {
 
     private val database = FirebaseFirestore.getInstance()
+
+    suspend fun deletePreview(preview: JobPreview) =
+        suspendCancellableCoroutine { continuation ->
+            database.collection(DatabaseContract.COLLECTION_PREVIEWS)
+                .document(preview.documentId())
+                .delete()
+                .addOnSuccessListener {
+                    continuation.resume(true)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+
+        }
+
+    suspend fun observePreviews(previewId: String) =
+        callbackFlow<List<JobPreview>> {
+
+            val listenerRegistration = database.collection(DatabaseContract.COLLECTION_PREVIEWS)
+                .whereEqualTo(JobPreview.FIELD_PREVIEW_ID, previewId)
+                .addSnapshotListener { value, error ->
+                    if (error != null)
+                        throw error
+
+                    if (value == null || value.isEmpty) {
+                        trySend(emptyList()).isSuccess
+                    } else {
+                        val result = value.documents.map {
+                            it.toObject(PreviewRecord::class.java)!!.toJobPreview(application)
+                        }
+                        trySend(result).isSuccess
+                    }
+                }
+
+            awaitClose { listenerRegistration.remove() }
+        }
+
 
     fun observeUser(
         userId: String,
@@ -106,7 +146,7 @@ class Repository @Inject constructor(
             registration.remove()
         }
     }.map {
-        it?.let{snapshot->
+        it?.let { snapshot ->
             val destination = getDestinationById(
                 snapshot.reference.parent.parent?.id ?: error("Invalid Job path")
             )
@@ -411,7 +451,6 @@ class Repository @Inject constructor(
             doc.toPrintOrderUIModel()
         }
     }.flowOn(Dispatchers.IO)
-
 
 
     fun getAllUsers() = callbackFlow {

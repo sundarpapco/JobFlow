@@ -63,6 +63,7 @@ dependencies {
 
     def composeVersion="1.2.1"
     def paging_version = "3.1.1"
+    def work_version = "2.7.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -83,6 +84,10 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling:$composeVersion"
     implementation "androidx.activity:activity-compose:1.6.0"
     implementation "com.google.android.material:compose-theme-adapter:1.1.19"
+
+    //WorkManager (For transforming and uploading the preview Images to firebase storage)
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+
 
     //Pagination
     implementation "androidx.paging:paging-runtime-ktx:$paging_version"
@@ -115,6 +120,7 @@ dependencies {
 
     //Coil Image loading library to preview images from the cloud storage
     implementation "io.coil-kt:coil-compose:2.2.2"
+    implementation "io.coil-kt:coil:2.2.2"
 
     //Firebase Libraries
     //When using the BoM, you don't specify versions in Firebase library dependencies
@@ -123,6 +129,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-functions-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
+
+    //Zoomable ImageView to enable zooming and panning of Job Previews
+    implementation 'com.jsibbold:zoomage:1.3.1'
 
 
     //Leak canary for leak detection

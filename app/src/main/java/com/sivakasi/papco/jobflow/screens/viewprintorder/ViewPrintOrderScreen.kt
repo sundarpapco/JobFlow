@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.print.PrintAttributes
@@ -32,6 +33,7 @@ import androidx.navigation.NavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.*
 import com.sivakasi.papco.jobflow.extensions.*
+import com.sivakasi.papco.jobflow.preview.PreviewManagementFragment
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
@@ -56,6 +58,7 @@ val LocalScreenState =
 val LocalActivityContext =
     compositionLocalOf<Context> { error("Activity Context must be initialized") }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @FlowPreview
@@ -988,6 +991,19 @@ private fun onOptionsItemSelected(
 
         activityContext.getString(R.string.revoke_po) -> {
             screenState.showRevokeConfirmationDialog()
+        }
+
+        activityContext.getString(R.string.previews) ->{
+            navController.navigate(
+                R.id.action_composeViewPrintOrderFragment_to_previewManagementFragment,
+                PreviewManagementFragment.arguments(
+                    screenState.printOrder!!.previewId(),
+                    activityContext.getString(
+                        R.string.manage_preview_heading,
+                        screenState.printOrder!!.printOrderNumber
+                    )
+                )
+            )
         }
 
     }

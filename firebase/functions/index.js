@@ -105,14 +105,42 @@ exports.indexPrintOrder = functions.firestore
 
     if (!change.before.exists && change.after.exists) {
       //Creation
-      algoilaFunctions.handlePrintOrderCreation(change.after.data(),destinationId);
+      algoilaFunctions.handlePrintOrderCreation(change.after.data(), destinationId);
     }
 
-   if (change.before.exists && change.after.exists) {
+    if (change.before.exists && change.after.exists) {
       //Updation
-      algoilaFunctions.handlePrintOrderUpdation(change.before.data(),change.after.data(),destinationId);
+      algoilaFunctions.handlePrintOrderUpdation(change.before.data(), change.after.data(), destinationId);
     }
 
     //Deletion Operation is Ignored since printOrders once created can only be cancelled and not deleted
 
   });
+
+
+exports.deleteStorageFile = functions.firestore
+  .document('previews/{documentId}')
+  .onDelete((snap, context) => {
+    
+    const deletedRecord = snap.data();
+    const storage = admin.storage().bucket();
+    const result=storage.file(deletedRecord.path).delete();
+    return result;
+
+  });
+
+/*exports.deleteStorageRecord = functions.storage.object().onDelete(async (object) => {
+
+  //Check if this is overwrite. if so, we can return
+
+  if (object.metageneration > 1){
+    functions.logger.log("Overwriting detected onDelete");
+    return;
+  }
+  
+  const filePath=object.name;
+  functions.logger.log("Metageneration:",object.metageneration);
+  functions.logger.log("Path of file deleted:",filePath);
+
+
+});*/

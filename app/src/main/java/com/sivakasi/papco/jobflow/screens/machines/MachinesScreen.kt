@@ -357,6 +357,7 @@ fun MachineListItem(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Icon(
                 modifier = Modifier.size(40.dp),
                 painter = painterResource(id = R.drawable.ic_setting),

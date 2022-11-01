@@ -7,6 +7,10 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.lifecycle.LiveData
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.WorkQuery
 import com.sivakasi.papco.jobflow.R
 import java.io.File
 import java.lang.Exception
@@ -48,4 +52,15 @@ fun Context.getActivity(): AppCompatActivity? {
         currentContext = currentContext.baseContext
     }
     return null
+}
+
+fun Context.getAllPendingWorksForPreviewId(previewId:String): LiveData<List<WorkInfo>> {
+
+    val workQuery = WorkQuery.Builder
+        .fromUniqueWorkNames(listOf(previewId))
+        .addStates(listOf(WorkInfo.State.RUNNING,WorkInfo.State.ENQUEUED,WorkInfo.State.BLOCKED))
+        .build()
+
+    return WorkManager.getInstance(this)
+        .getWorkInfosLiveData(workQuery)
 }

@@ -151,6 +151,24 @@
         <action
             android:id="@+id/action_composeViewPrintOrderFragment_to_print_order_flow"
             app:destination="@id/print_order_flow" />
+        <action
+            android:id="@+id/action_composeViewPrintOrderFragment_self"
+            app:destination="@id/composeViewPrintOrderFragment" />
+        <action
+            android:id="@+id/action_composeViewPrintOrderFragment_to_previewManagementFragment"
+            app:destination="@id/previewManagementFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/previewManagementFragment"
+        android:name="com.sivakasi.papco.jobflow.preview.PreviewManagementFragment"
+        android:label="previewManagementFragment">
+        <action
+            android:id="@+id/action_previewTestFragment_to_viewPreviewFragment"
+            app:destination="@id/viewPreviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/viewPreviewFragment"
+        android:name="com.sivakasi.papco.jobflow.preview.view.ViewPreviewFragment"
+        android:label="ViewPreviewFragment" />
 
 </navigation>

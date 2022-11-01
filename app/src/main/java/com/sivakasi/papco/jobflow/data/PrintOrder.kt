@@ -222,3 +222,13 @@ fun PrintOrder.completeProcessingHistory(context: Context): List<ProcessingHisto
 
     return result
 }
+
+fun PrintOrder.previewId():String{
+
+    require(printOrderNumber > 1){"Cannot create previewId without proper po number"}
+
+    return if(plateMakingDetail.plateNumber > 0)
+        "rid${plateMakingDetail.plateNumber}"
+    else
+        "po${printOrderNumber}"
+}

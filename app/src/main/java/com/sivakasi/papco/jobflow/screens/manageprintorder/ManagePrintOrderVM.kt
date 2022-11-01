@@ -28,8 +28,8 @@ class ManagePrintOrderVM @Inject constructor(
 
     init {
         val processDeathKey = "process_death_key"
-        recoveringFromProcessDeath.value = savedStateHandle.get(processDeathKey) ?: false
-        savedStateHandle.set(processDeathKey, true)
+        recoveringFromProcessDeath.value = savedStateHandle[processDeathKey] ?: false
+        savedStateHandle[processDeathKey] = true
     }
 
     val postPressScreenState = PostPressScreenState(application)

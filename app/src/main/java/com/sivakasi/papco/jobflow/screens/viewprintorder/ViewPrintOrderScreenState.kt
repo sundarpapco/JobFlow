@@ -102,6 +102,7 @@ class ViewPrintOrderScreenState {
 
         val menu = mutableListOf<MenuAction>()
 
+        menu.add(MenuAction(R.drawable.ic_image,null,context.getString(R.string.previews)))
         menu.add(MenuAction(R.drawable.ic_notes, null, context.getString(R.string.notes)))
         menu.add(MenuAction(R.drawable.ic_print, null, context.getString(R.string.print)))
         menu.add(MenuAction(null, null, context.getString(R.string.repeat_this_job)))
