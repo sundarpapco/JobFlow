@@ -40,8 +40,6 @@ class MachinesScreenUIState(
     var isWaitDialogShowing: Boolean by mutableStateOf(false)
         private set
 
-    val bottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden)
-
 
     fun shouldShowFloatingActionButton(): Boolean {
         if (selectionMode)

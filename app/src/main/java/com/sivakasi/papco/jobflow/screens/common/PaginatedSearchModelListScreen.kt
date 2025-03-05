@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.common
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.clients.ui.InformationScreen
@@ -123,22 +123,21 @@ private fun HistoryList(
                 Spacer(Modifier.height(16.dp))
             }
 
-            items(history, key = { it.printOrderNumber }) {
-                it?.let { item ->
+            items(history.itemCount) {index->
+                val searchModel=history[index]
 
                     realTimeUpdatedItem?.let { updatedItem ->
 
                         if (!updatedItem.isAlreadyHandled()) {
-                            if (item.printOrderNumber == updatedItem.peekData().printOrderNumber) {
-                                item.copyValuesFrom(updatedItem.handleEvent())
+                            if (searchModel?.printOrderNumber == updatedItem.peekData().printOrderNumber) {
+                                searchModel.copyValuesFrom(updatedItem.handleEvent())
                             }
                         }
 
-                        SearchListItem(searchModel = item, onClick = onResultClicked)
+                        SearchListItem(searchModel = searchModel!!, onClick = onResultClicked)
 
-                    } ?: SearchListItem(item, onResultClicked)
+                    } ?: SearchListItem(searchModel!!, onResultClicked)
                 }
-            }
 
             item {
                 when (history.loadState.append) {

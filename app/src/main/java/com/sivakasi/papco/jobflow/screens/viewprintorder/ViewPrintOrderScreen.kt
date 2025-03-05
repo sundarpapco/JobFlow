@@ -8,17 +8,43 @@ import android.print.PrintManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.runtime.*
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -31,8 +57,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.*
-import com.sivakasi.papco.jobflow.extensions.*
+import com.sivakasi.papco.jobflow.data.DatabaseContract
+import com.sivakasi.papco.jobflow.data.PartialDispatch
+import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.ProcessingHistory
+import com.sivakasi.papco.jobflow.data.completeProcessingHistory
+import com.sivakasi.papco.jobflow.data.previewId
+import com.sivakasi.papco.jobflow.extensions.asReadableTimeStamp
+import com.sivakasi.papco.jobflow.extensions.calendarWithTime
+import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
+import com.sivakasi.papco.jobflow.extensions.shareReport
 import com.sivakasi.papco.jobflow.preview.PreviewManagementFragment
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
@@ -41,9 +75,18 @@ import com.sivakasi.papco.jobflow.screens.common.ErrorScreen
 import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
 import com.sivakasi.papco.jobflow.screens.processinghistory.PreviousHistoryFragment
 import com.sivakasi.papco.jobflow.screens.processinghistory.ProcessingHistoryList
-import com.sivakasi.papco.jobflow.ui.*
+import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import com.sivakasi.papco.jobflow.ui.OptionsMenu
+import com.sivakasi.papco.jobflow.ui.TwoLineListItem
+import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.Event
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.launch
 
 val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must be initialized") }
 
@@ -57,6 +100,7 @@ val LocalScreenState =
     compositionLocalOf<ViewPrintOrderScreenState> { error("Screen State must be initialized") }
 val LocalActivityContext =
     compositionLocalOf<Context> { error("Activity Context must be initialized") }
+val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalMaterialApi
@@ -70,12 +114,17 @@ fun ViewPrintOrderScreen(
     activityContext: Context
 ) {
 
+    val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+
     CompositionLocalProvider(
         LocalNavigation provides navController,
         LocalViewModel provides viewModel,
         LocalScreenState provides viewModel.screenState,
-        LocalActivityContext provides activityContext
+        LocalActivityContext provides activityContext,
+        LocalSheetState provides sheetState
     ) {
+
+        val bottomSheetState = LocalSheetState.current
 
         JobFlowTheme {
 
@@ -83,9 +132,9 @@ fun ViewPrintOrderScreen(
             val scope = rememberCoroutineScope()
 
             BackHandler {
-                if (screenState.modalBottomSheetState.isVisible) {
+                if (bottomSheetState.isVisible) {
                     scope.launch {
-                        screenState.modalBottomSheetState.hide()
+                        bottomSheetState.hide()
                     }
                 } else
                     navController.popBackStack()
@@ -93,7 +142,7 @@ fun ViewPrintOrderScreen(
 
             ModalBottomSheetLayout(
                 sheetContent = { ViewPrintOrderBottomSheet() },
-                sheetState = screenState.modalBottomSheetState,
+                sheetState = bottomSheetState,
                 sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
                 scrimColor = MaterialTheme.colors.background.copy(alpha = 0.6f)
             ) {
@@ -122,7 +171,7 @@ fun ViewPrintOrderScreen(
 @Composable
 private fun ViewPrintOrderBottomSheet() {
     val screenState = LocalScreenState.current
-    val sheetState = screenState.modalBottomSheetState
+    val sheetState = LocalSheetState.current
     val printOrder = screenState.printOrder
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -247,6 +296,7 @@ private fun ViewPrintOrderTopBar() {
     val screenState = LocalScreenState.current
     val navController = LocalNavigation.current
     val viewModel = LocalViewModel.current
+    val sheetState = LocalSheetState.current
     val scope = rememberCoroutineScope()
     val menuItems = screenState.menuItems
 
@@ -259,7 +309,7 @@ private fun ViewPrintOrderTopBar() {
                     navController.popBackStack()
                 }
             ) {
-                Icon(Icons.Filled.ArrowBack, null)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
             }
         },
         actions = {
@@ -268,7 +318,12 @@ private fun ViewPrintOrderTopBar() {
                     menuItems = it,
                     onItemClick = { itemId ->
                         onOptionsItemSelected(
-                            activityContext, itemId, viewModel, navController, scope
+                            activityContext,
+                            sheetState,
+                            itemId,
+                            viewModel,
+                            navController,
+                            scope
                         )
                     }
                 )
@@ -931,6 +986,7 @@ private fun PreviewPartialDispatchSheet() {
 @ExperimentalCoroutinesApi
 private fun onOptionsItemSelected(
     activityContext: Context,
+    bottomSheetState: ModalBottomSheetState,
     id: String,
     viewModel: ComposeViewModelFragmentVM,
     navController: NavController,
@@ -977,7 +1033,7 @@ private fun onOptionsItemSelected(
             screenState.modalSheetContent =
                 ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
             scope.launch {
-                screenState.modalBottomSheetState.show()
+                bottomSheetState.show()
             }
         }
 
@@ -985,7 +1041,7 @@ private fun onOptionsItemSelected(
             screenState.modalSheetContent =
                 ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
             scope.launch {
-                screenState.modalBottomSheetState.show()
+                bottomSheetState.show()
             }
         }
 

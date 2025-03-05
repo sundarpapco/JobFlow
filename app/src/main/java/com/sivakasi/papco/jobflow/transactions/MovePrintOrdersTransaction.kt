@@ -13,7 +13,7 @@ class MovePrintOrdersTransaction(
     private val sourceDocumentId: String,
     private val destinationDocumentId: String,
     private val movingJobs: List<PrintOrderUIModel>,
-    private inline val apply: (PrintOrder) -> Unit
+    private val apply: (PrintOrder) -> Unit
 ) : Transaction.Function<Boolean> {
 
     private val database = FirebaseFirestore.getInstance()

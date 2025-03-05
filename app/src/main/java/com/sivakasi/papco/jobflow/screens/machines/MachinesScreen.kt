@@ -4,19 +4,42 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -31,7 +54,15 @@ import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment.Companion.KEY_SELECTED_MACHINE_ID
 import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
-import com.sivakasi.papco.jobflow.ui.*
+import com.sivakasi.papco.jobflow.ui.ContextMenu
+import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
+import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import com.sivakasi.papco.jobflow.ui.MenuAction
+import com.sivakasi.papco.jobflow.ui.OptionsMenu
+import com.sivakasi.papco.jobflow.ui.TextInputDialog
+import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.Duration
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import com.sivakasi.papco.jobflow.util.LoadingStatus
@@ -47,6 +78,7 @@ val LocalNavigation = compositionLocalOf<NavController> { error("Navigation cont
 @ExperimentalCoroutinesApi
 val LocalViewModel = compositionLocalOf<ManageMachinesVM> { error("ViewModel not set") }
 val LocalSignOut = compositionLocalOf<() -> Unit> { error("Sign out function not set") }
+val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
 
 @ExperimentalMaterialApi
 val LocalState = compositionLocalOf<MachinesScreenUIState> { error("Machine state not set") }
@@ -70,11 +102,17 @@ fun ManageMachinesScreen(
     viewModel: ManageMachinesVM
 ) {
 
+    val density = LocalDensity.current
+    val bottomSheetState = remember{
+        ModalBottomSheetState(ModalBottomSheetValue.Hidden,density)
+    }
+
     CompositionLocalProvider(
         LocalNavigation provides navController,
         LocalSignOut provides onSignOut,
         LocalViewModel provides viewModel,
-        LocalState provides viewModel.uiState
+        LocalState provides viewModel.uiState,
+        LocalSheetState provides bottomSheetState
     ) {
         val uiState = LocalState.current
         val user = remember(uiState.role) { JobFlowAuth().currentUser }
@@ -88,7 +126,7 @@ fun ManageMachinesScreen(
                         role = uiState.role
                     )
                 },
-                sheetState = uiState.bottomSheetState,
+                sheetState = bottomSheetState,
                 scrimColor = MaterialTheme.colors.background.copy(alpha = 0.3f),
                 sheetShape = RoundedCornerShape(20.dp, 20.dp)
             ) {
@@ -226,8 +264,8 @@ private fun MachinesTopAppBar() {
 private fun PrinterTopBar() {
 
     val context = LocalContext.current
-    val uiState = LocalState.current
     val signOut = LocalSignOut.current
+    val sheetState = LocalSheetState.current
 
     val scope = rememberCoroutineScope()
     val optionsMenu = remember { prepareOptionsMenu(context) }
@@ -238,8 +276,9 @@ private fun PrinterTopBar() {
         {
             OptionsMenu(menuItems = optionsMenu, onItemClick = {
                 onOptionsItemClicked(
+                    context=context,
                     label = it,
-                    uiState = uiState,
+                    bottomSheetState = sheetState,
                     signOut = signOut,
                     scope=scope
                 )
@@ -258,7 +297,7 @@ private fun AdminTopBar() {
         navigationIcon = {
             IconButton(onClick = { popUpBackStack(controller) }) {
                 Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colors.onSurface
                 )
@@ -276,7 +315,7 @@ private fun SelectionModeTopBar() {
         navigationIcon = {
             IconButton(onClick = { popUpBackStack(controller) }) {
                 Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
                     tint = MaterialTheme.colors.onSurface
                 )
@@ -435,22 +474,22 @@ private fun prepareOptionsMenu(context: Context): List<MenuAction> {
 
 @ExperimentalMaterialApi
 private fun onOptionsItemClicked(
+    context: Context,
     label: String,
-    uiState:MachinesScreenUIState,
+    bottomSheetState: ModalBottomSheetState,
     signOut:()->Unit,
     scope:CoroutineScope
-
 ) {
 
     when(label){
 
-        uiState.getString(R.string.sign_out)->{
+        context.getString(R.string.sign_out)->{
             signOut()
         }
 
-        uiState.getString(R.string.Profile)->{
+        context.getString(R.string.Profile)->{
             scope.launch{
-                uiState.bottomSheetState.show()
+                bottomSheetState.show()
             }
         }
 
@@ -463,6 +502,7 @@ private fun popUpBackStack(navController: NavController) {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalCoroutinesApi
 @FlowPreview
 @ExperimentalMaterialApi

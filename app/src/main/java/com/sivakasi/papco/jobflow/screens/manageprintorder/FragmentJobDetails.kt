@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
@@ -98,6 +99,7 @@ class FragmentJobDetails : Fragment() {
         viewBinding.txtInvoiceDetail.clearErrorOnTextChange()
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     private fun observeViewModel() {
 
         viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
@@ -180,6 +182,7 @@ class FragmentJobDetails : Fragment() {
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     private fun navigateToClientSelectionScreen() {
         findNavController().navigate(
             R.id.action_fragmentJobDetails_to_clientSelectionFragment,

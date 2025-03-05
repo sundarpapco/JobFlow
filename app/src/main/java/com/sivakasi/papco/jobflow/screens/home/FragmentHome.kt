@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
@@ -73,6 +74,7 @@ class FragmentHome : Fragment() {
     }
 
 
+    @OptIn(ExperimentalFoundationApi::class)
     private fun observeViewModel() {
 
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Client>(

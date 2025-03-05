@@ -2,8 +2,6 @@ package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.content.Context
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,7 +27,6 @@ class ViewPrintOrderScreenState {
     var toastError: Event<String>? by mutableStateOf(null)
     var fabShowing: Boolean by mutableStateOf(false)
     var menuItems: List<MenuAction>? by mutableStateOf(null)
-    var modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden)
     var poMoved: Boolean by mutableStateOf(false)
     var modalSheetContent: ModalSheetContent by mutableStateOf(ModalSheetContent.NONE)
 

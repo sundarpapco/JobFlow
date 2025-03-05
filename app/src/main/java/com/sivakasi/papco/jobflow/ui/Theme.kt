@@ -1,13 +1,15 @@
 package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RippleConfiguration
 import androidx.compose.material.darkColors
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -76,22 +78,8 @@ private val lightColors = darkColors.copy(
     isLight = true
 )
 
-private val jobFlowRippleTheme = object : RippleTheme {
 
-    @Composable
-    override fun defaultColor(): Color {
-        return MaterialTheme.colors.primary
-    }
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha {
-        return RippleAlpha(
-            0.3f, 0.3f, 0.3f, 0.3f
-        )
-    }
-}
-
-
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun JobFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -107,6 +95,17 @@ fun JobFlowTheme(
             body2 = subDetailText
         ),
     ) {
-        CompositionLocalProvider(LocalRippleTheme provides jobFlowRippleTheme, content = content)
+
+        val rippleColor = MaterialTheme.colors.primary
+        val rippleConfiguration = remember(true) {
+            RippleConfiguration(
+                color = rippleColor,
+                rippleAlpha = RippleAlpha(
+                    0.3f, 0.3f, 0.3f, 0.3f
+                )
+            )
+        }
+
+        CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration, content = content)
     }
 }

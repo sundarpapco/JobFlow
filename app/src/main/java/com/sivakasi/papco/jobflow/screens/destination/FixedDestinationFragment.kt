@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.fragment.app.Fragment
@@ -143,6 +144,7 @@ class FixedDestinationFragment : Fragment(),
         touchHelper.attachToRecyclerView(viewBinding.recycler)
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @FlowPreview
     @ExperimentalComposeUiApi
     @ExperimentalMaterialApi
@@ -453,6 +455,7 @@ class FixedDestinationFragment : Fragment(),
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     private fun navigateToMachineSelectionScreen() {
 
         findNavController().navigate(

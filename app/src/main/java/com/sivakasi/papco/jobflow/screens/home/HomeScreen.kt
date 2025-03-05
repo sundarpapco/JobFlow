@@ -3,6 +3,7 @@ package com.sivakasi.papco.jobflow.screens.home
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -264,6 +265,7 @@ private fun prepareOptionsMenu(role: String, context: Context): List<MenuAction>
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalCoroutinesApi
 @FlowPreview
 @ExperimentalComposeUiApi
@@ -348,6 +350,7 @@ private fun onJobGroupClicked(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi

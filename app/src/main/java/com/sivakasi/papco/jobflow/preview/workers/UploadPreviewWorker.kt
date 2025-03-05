@@ -52,7 +52,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
                 )
                 .setBackoffCriteria(
                     BackoffPolicy.LINEAR,
-                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                    WorkRequest.MIN_BACKOFF_MILLIS,
                     TimeUnit.MILLISECONDS
                 )
                 .addTag(WORK_NAME)
