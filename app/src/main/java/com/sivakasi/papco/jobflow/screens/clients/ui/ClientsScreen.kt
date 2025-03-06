@@ -143,9 +143,9 @@ private fun ContentMain(
 
     }
 
-    DisposableEffect(Unit){
+    DisposableEffect(Unit) {
         searchBarFocus.requestFocus()
-        onDispose {  }
+        onDispose { }
     }
 
 }
@@ -198,6 +198,7 @@ private fun ClientsList(
             itemsIndexed(
                 clientsList,
                 key = { _, item -> item.id }) { index, client: ClientUIModel ->
+
                 SingleLineListItem(
                     data = client,
                     textBlock = { it.name },
@@ -256,18 +257,18 @@ private fun PreviewLoadingScreen() {
 
 @Preview
 @Composable
-private fun PreviewClientsList(){
-    
-    val clients = remember{
+private fun PreviewClientsList() {
+
+    val clients = remember {
         listOf(
             ClientUIModel(1, AnnotatedString("Sundaravel")),
             ClientUIModel(2, AnnotatedString("Madhana"))
         )
     }
-    
+
     JobFlowTheme {
         ClientsList(clientsList = clients, onItemClicked = {})
     }
-    
+
 }
 

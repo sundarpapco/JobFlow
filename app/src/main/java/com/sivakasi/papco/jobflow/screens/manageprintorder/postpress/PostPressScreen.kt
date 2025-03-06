@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.postpress
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -103,8 +104,9 @@ fun PostPressScreen(
         BindingDialog(
             state = it,
             onPositiveClick = {
+                Log.d("SUNDAR","Binding Positive click")
                 state.binding = it.toBinding()
-                state.dismissLaminationDialog()
+                state.dismissBindingDialog()
             },
             onNegativeClick = {
                 state.dismissBindingDialog()

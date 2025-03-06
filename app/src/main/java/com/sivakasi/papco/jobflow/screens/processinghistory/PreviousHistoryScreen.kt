@@ -137,7 +137,7 @@ fun ProcessingHistoryList(
         modifier = modifier
     ) {
         items.forEachIndexed { index, element ->
-            item(element.destinationId) {
+            item(element.completionTime) {
                 ProcessingHistory(
                     element,
                     index < items.size - 1

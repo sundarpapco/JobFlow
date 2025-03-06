@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.preview
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
-import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -141,7 +140,7 @@ fun PreviewGrid(
                 modifier = Modifier.size(150.dp),
                 onDelete = onDelete
             ) {
-                navigateToViewPreviewScreen(navController, preview.downloadUrl)
+                navigateToViewPreviewScreen(navController, preview)
             }
         }
 
@@ -173,7 +172,7 @@ fun PreviewImage(
                     onLongClick = {
                         //Show the delete option context menu only when the image is from server
                         //If it starts with file, then it means that image is still uploading to the server
-                        if (!preview.downloadUrl.startsWith("file"))
+                        if (!preview.displayUrl.startsWith("file"))
                             contextMenuShowing = true
                     }
                 )
@@ -195,9 +194,9 @@ fun PreviewImage(
         }
     }
 
-    LaunchedEffect(key1 = preview.downloadUrl) {
+    LaunchedEffect(key1 = preview.displayUrl) {
         val request = ImageRequest.Builder(context)
-            .data(preview.downloadUrl)
+            .data(preview.displayUrl)
             .crossfade(true)
             .diskCachePolicy(CachePolicy.ENABLED)
             .target(
@@ -210,13 +209,14 @@ fun PreviewImage(
     }
 }
 
+@ExperimentalCoroutinesApi
 private fun navigateToViewPreviewScreen(
     navController: NavController,
-    imageUrl: String
+    preview: JobPreview
 ) {
     navController.navigate(
         R.id.action_previewTestFragment_to_viewPreviewFragment,
-        ViewPreviewFragment.getArgument(imageUrl)
+        ViewPreviewFragment.getArgument(preview)
     )
 }
 

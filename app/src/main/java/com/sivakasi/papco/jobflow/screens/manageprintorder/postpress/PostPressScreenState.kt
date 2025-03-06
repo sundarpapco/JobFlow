@@ -50,8 +50,6 @@ class PostPressScreenState(
     }
 
     fun dismissBindingDialog() {
-
-       if(bindingDialogState!=null)
            bindingDialogState=null
     }
 

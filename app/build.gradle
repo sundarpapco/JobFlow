@@ -15,8 +15,8 @@ android {
         applicationId "com.sivakasi.papco.jobflow"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 9
-        versionName "1.1"
+        versionCode 10
+        versionName "1.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,7 +60,7 @@ kapt {
 }
 
 dependencies {
-
+    
     def composeVersion="1.2.1"
     def paging_version = "3.1.1"
     def work_version = "2.7.1"

@@ -7,7 +7,9 @@ import android.net.Uri
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
+import com.sivakasi.papco.jobflow.extensions.isNetConnected
 import com.sivakasi.papco.jobflow.preview.workers.UploadPreviewWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,10 +24,10 @@ import kotlin.math.min
 
 @ExperimentalCoroutinesApi
 data class JobPreview(
-    private val context:Context,
+    private val context: Context,
     val previewId: String,
     val fileName: String = generateFileName(),
-    val downloadUrl: String = ""
+    val displayUrl: String = ""
 ) {
     companion object {
         const val FIELD_PREVIEW_ID = "previewId"
@@ -45,10 +47,8 @@ data class JobPreview(
             "Invalid previewId or filename while getting cache file"
         }
 
-        val tempDirectory: File
-        val cacheDirectory = context.cacheDir
 
-        tempDirectory = File(cacheDirectory.absolutePath + "/previews/${previewId}")
+        val tempDirectory: File = cacheDirectory()
         if (!tempDirectory.exists())
             tempDirectory.mkdirs()
 
@@ -56,8 +56,14 @@ data class JobPreview(
         return File(filePath)
     }
 
+    fun cacheDirectory():File {
+        val cacheDirectory = context.cacheDir
+        return File(cacheDirectory.absolutePath + "/previews/${previewId}")
+    }
+
+
     @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun cacheContentFromUri(
+    suspend fun cacheContentFromUri(
         fileUri: Uri
     ) = withContext(Dispatchers.IO) {
 
@@ -83,11 +89,12 @@ data class JobPreview(
         //Step 4: Clean up stuff
         fos.close()
         inputStream?.close()
+        fileToWrite
     }
 
-    suspend fun cacheAndUploadFile(fileUri:Uri){
+    suspend fun cacheAndUploadFile(fileUri: Uri) {
         cacheContentFromUri(fileUri)
-        UploadPreviewWorker.startWith(context,this)
+        UploadPreviewWorker.startWith(context, this)
     }
 
     fun storageReference(): StorageReference {
@@ -101,6 +108,34 @@ data class JobPreview(
             reference.downloadUrl
                 .addOnSuccessListener {
                     continuation.resume(it)
+                }
+                .addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+
+    suspend fun downloadFromServer(): File =
+        suspendCancellableCoroutine { continuation ->
+
+            val reference = storageReference()
+            val file = localCacheFile()
+
+            //No need to download the file if it exists in the cache
+            if (file.exists()) {
+                continuation.resume(file)
+                return@suspendCancellableCoroutine
+            }
+
+            //Before Downloading, make sure we have internet connection.
+            if (!context.isNetConnected()) {
+                continuation.resumeWithException(Exception(context.getString(R.string.check_internet_connection)))
+                return@suspendCancellableCoroutine
+            }
+
+            //Download the file
+            reference.getFile(file)
+                .addOnSuccessListener {
+                    continuation.resume(file)
                 }
                 .addOnFailureListener {
                     continuation.resumeWithException(it)
@@ -140,6 +175,15 @@ data class JobPreview(
 }
 
 @ExperimentalCoroutinesApi
-fun JobPreview.toPreviewRecord():PreviewRecord{
-    return PreviewRecord(previewId,fileName,downloadUrl)
+fun JobPreview.deleteCachedFile():Boolean{
+    val fileToDelete= localCacheFile()
+    return if(fileToDelete.exists())
+        fileToDelete.delete()
+    else
+        true
+}
+
+@ExperimentalCoroutinesApi
+fun JobPreview.toPreviewRecord(): PreviewRecord {
+    return PreviewRecord(previewId, fileName, displayUrl)
 }

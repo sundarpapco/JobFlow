@@ -34,7 +34,7 @@ class FragmentHome : Fragment() {
     lateinit var auth:JobFlowAuth
 
     private val viewModel: FragmentHomeVM by lazy {
-        ViewModelProvider(this).get(FragmentHomeVM::class.java)
+        ViewModelProvider(this)[FragmentHomeVM::class.java]
     }
 
     override fun onCreateView(

@@ -221,6 +221,7 @@
     <string name="repeat_this_job">Repeat this job</string>
     <string name="revoke_po">Revoke this Job</string>
     <string name="previews">Previews</string>
+    <string name="share">Share</string>
 
     <!--Notifications-->
     <string name="channel_name_upload_preview">Upload Preview Channel</string>
