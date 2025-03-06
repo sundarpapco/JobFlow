@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
@@ -90,7 +91,7 @@ private fun AlgoliaTopABar(
 
         IconButton(onClick = onBackPressed) {
             Icon(
-                imageVector = Icons.Outlined.ArrowBack,
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "Back"
             )
         }

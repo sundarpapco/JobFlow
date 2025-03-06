@@ -159,8 +159,8 @@ fun ViewPrintOrderScreen(
                                 Icon(Icons.Filled.Edit, "Edit Print Order Button")
                             }
                     }
-                ) {
-                    PrintOrderScreenContent(screenState = screenState)
+                ) {padding->
+                    PrintOrderScreenContent(modifier = Modifier.padding(padding), screenState = screenState)
                 }
             }
         }
@@ -218,6 +218,7 @@ private fun ViewPrintOrderBottomSheet() {
 @ExperimentalMaterialApi
 @Composable
 fun PrintOrderScreenContent(
+    modifier: Modifier = Modifier,
     screenState: ViewPrintOrderScreenState
 ) {
 
@@ -236,7 +237,7 @@ fun PrintOrderScreenContent(
     }
 
     screenState.printOrderRenderInfo?.let {
-        PrintOrder(printOrder = it)
+        PrintOrder(modifier=modifier,printOrder = it)
     }
 
     if (screenState.isWaiting) {
@@ -335,10 +336,11 @@ private fun ViewPrintOrderTopBar() {
 
 @Composable
 fun PrintOrder(
+    modifier: Modifier = Modifier,
     printOrder: PrintOrderRenderInfo
 ) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
             .padding(start = 16.dp, end = 16.dp)
@@ -807,7 +809,7 @@ fun DetailRow(
     detail: String
 ) {
     Row(
-        Modifier.fillMaxWidth()
+        Modifier.fillMaxWidth().padding(bottom = 6.dp)
     ) {
         Text(
             text = label,

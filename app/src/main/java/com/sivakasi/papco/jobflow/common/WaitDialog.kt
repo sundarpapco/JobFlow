@@ -3,7 +3,6 @@ package com.sivakasi.papco.jobflow.common
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 

@@ -2,9 +2,11 @@ package com.sivakasi.papco.jobflow.preview.workers
 
 import android.app.Notification
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
@@ -126,10 +128,13 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
         return result
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(
-            NOTIFICATION_ID_PROGRESS, notificationBuilder.build()
-        )
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            ForegroundInfo(NOTIFICATION_ID_PROGRESS,notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
+        else
+            ForegroundInfo(NOTIFICATION_ID_PROGRESS, notificationBuilder.build())
     }
 
     private fun updateNotification(currentProgress: Int) {

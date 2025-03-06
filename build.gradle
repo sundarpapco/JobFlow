@@ -1,40 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    ext.kotlin_version = "2.1.10"
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.8.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.14'
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.55'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
 plugins{
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.serialization.plugin) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.compose.compiler) apply false
-}
+    alias(libs.plugins.hilt.android.gradle.plugin) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
 
-allprojects {
-
-    /*tasks.withType(KotlinCompile).configureEach {
-        kotlinOptions {
-            freeCompilerArgs = [
-                    '-Xjvm-default=enable',
-                    '-opt-in=androidx.compose.foundation.ExperimentalFoundationApi',
-                    '-opt-in=androidx.compose.ui.ExperimentalComposeUiApi'
-            ] //enable or compatibility
-            jvmTarget = "11"
-        }
-    }*/
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
