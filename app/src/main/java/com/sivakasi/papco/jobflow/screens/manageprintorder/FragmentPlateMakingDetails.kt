@@ -366,7 +366,7 @@ class FragmentPlateMakingDetails : Fragment() {
     private fun checkTrimWidth(): Boolean {
 
         val skipCheck=viewBinding.checkBoxDontCheckSize.isChecked
-        val minValue = if(skipCheck) 1 else 560
+        val minValue = if(skipCheck) 1 else 540
         val maxValue = if(skipCheck) Int.MAX_VALUE else 1020
 
         return viewBinding.txtTrimWidth.validator()

@@ -70,7 +70,7 @@ fun PostPressItem(
 
         Row(
             modifier = modifier,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
                 checked = isSelected,
@@ -143,8 +143,8 @@ private fun PreviewPostPressItem() {
 
                 PostPressItem(
                     name = "Binding",
-                    remarks = "Saddle Stitch",
                     isSelected = false,
+                    remarks = "Saddle Stitch",
                     onCheckedChange = {}
                 )
             }

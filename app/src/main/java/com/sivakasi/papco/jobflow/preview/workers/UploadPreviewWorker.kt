@@ -110,7 +110,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
             )
 
             //Step 3. Create the corresponding fire store record
-            createFireStoreRecord(previewToUpload.copy(downloadUrl = downloadUrl))
+            createFireStoreRecord(previewToUpload.copy(displayUrl = downloadUrl))
 
             //If all the three steps goes well, then its a success
             Result.success()

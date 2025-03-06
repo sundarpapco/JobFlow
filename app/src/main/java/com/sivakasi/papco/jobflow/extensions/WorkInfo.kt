@@ -17,6 +17,6 @@ fun WorkInfo.toJobPreview(context: Context, previewId:String):JobPreview{
         filename[0]
     )
     return preview.copy(
-        downloadUrl = Uri.fromFile(preview.localCacheFile()).toString()
+        displayUrl = Uri.fromFile(preview.localCacheFile()).toString()
     )
 }
