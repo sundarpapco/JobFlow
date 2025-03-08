@@ -28,8 +28,7 @@ If the SearchQuery parameter is provided, it is used to check if the user is sea
 dispatch Invoice number. If the query contains any of the partial dispatch invoice number, then the
 invoice number in this SearchModel is replaced with the partial dispatch Invoice number so that the user
 can see the partial invoice number in the search result instead of the final invoice number
-
- */
+*/
 fun AlgoliaRecord.toSearchModel(context: Context, searchQuery: String = ""): SearchModel {
     val result = SearchModel(context)
     result.printOrderNumber = printOrderNumber
