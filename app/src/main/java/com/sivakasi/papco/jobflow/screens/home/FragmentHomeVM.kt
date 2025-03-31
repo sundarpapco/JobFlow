@@ -99,57 +99,6 @@ class FragmentHomeVM @Inject constructor(
         }
     }
 
-    /*private fun observeNewJobs() {
-        viewModelScope.launch {
-            try {
-                repository.observeDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
-                    .collect { destination ->
-                        renderDestinationToState(destination,newJobsState)
-                    }
-            } catch (e: Exception) {
-                renderDestinationToState(destination = null,newJobsState)
-            }
-        }
-    }
-
-    private fun observeInProgress() {
-        viewModelScope.launch {
-            try {
-                repository.observeDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
-                    .collect { destination ->
-                        renderDestinationToState(destination,inProgressState)
-                    }
-            } catch (e: Exception) {
-                renderDestinationToState(destination=null,newJobsState)
-            }
-        }
-    }
-
-    private fun observeDynamicDestinations() {
-        viewModelScope.launch {
-            try {
-                repository.loadAllMachines()
-                    .map {
-                        if (it.isNotEmpty())
-                            it.reduce { acc, destination ->
-                                acc.jobCount += destination.jobCount
-                                acc.runningTime += destination.runningTime
-                                acc
-                            }
-                        else
-                            emptyDestination(application.getString(R.string.machines))
-                    }.collect {
-                        renderDestinationToState(it,machinesState)
-                    }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                renderDestinationToState(destination = null,machinesState)
-            }
-        }
-
-    }*/
-
     private fun renderDestinationToState(destination: Destination?, state: JobGroupState) {
 
         if (destination == null) {

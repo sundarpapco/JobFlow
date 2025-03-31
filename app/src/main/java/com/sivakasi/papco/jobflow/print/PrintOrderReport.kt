@@ -1,45 +1,94 @@
 package com.sivakasi.papco.jobflow.print
 
 import android.app.Application
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
+import android.graphics.BlurMaskFilter.Blur
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PaintFlagsDrawFilter
+import android.graphics.Path
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.os.ParcelFileDescriptor
-import com.sivakasi.papco.jobflow.extensions.asDateString
-import com.sivakasi.papco.jobflow.extensions.calendarWithTime
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.toColorInt
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.printColors
+import com.sivakasi.papco.jobflow.extensions.asDateString
+import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.math.max
+import androidx.core.graphics.createBitmap
 
 class PrintOrderReport @Inject constructor(
     private val application: Application,
     private val fontArial: Typeface?
 ) {
 
+    // All Dimensions are in Points
+    // Page Size: 21 X 29.7 Cms (A4)
     private val pageHeight = 842
     private val pageWidth = 595
 
     private val leftMargin = 27.58f
     private val cellMargin = 12f
-    private val rowHeight = 25.92f
+    private val rowHeight = 22.0f
     private val rowWidth = 536.96f
+
+    private val sectionGap =15.0f // Gap between the sections
+    private val sectionMargin=2f //Space after the last inside every section
+
+    private lateinit var colors: ReportColors
 
     private lateinit var printOrder: PrintOrder
 
-    private val headingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val subHeadingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val labelTextPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val detailTextPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private val lastRowOfPaperDetail: Int
-        get() = 7 + printOrder.paperDetails!!.size + 1
+    //Initialize all the paints required
+    private val textPaintNormal=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        typeface=Typeface.create(fontArial, Typeface.NORMAL)
+        color=Color.BLACK
+    }
 
+    private val textPaintBold=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        typeface=Typeface.create(fontArial, Typeface.BOLD)
+        color=Color.BLACK
+    }
+
+    private val linePaint by lazy{
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color=colors.primary
+            style=Paint.Style.STROKE
+            strokeWidth=1f
+        }
+    }
+
+    private val sectionBoxPaint by lazy{
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color=colors.primaryContainer
+            style=Paint.Style.FILL
+        }
+    }
+
+    private val shadowPaint by lazy{
+        Paint().apply {
+            color = Color.WHITE // Color of the rectangle
+            style = Paint.Style.FILL // Fill the rectangle
+            setShadowLayer(3f, 3f, 4f, Color.GRAY) // Shadow properties
+            isAntiAlias = true // Smooth edges
+        }
+    }
 
     private lateinit var pdfDocument: PdfDocument
 
@@ -54,43 +103,37 @@ class PrintOrderReport @Inject constructor(
 
     }
 
-    suspend fun generatePdfFile(printOrder:PrintOrder):String= withContext(Dispatchers.IO){
+    suspend fun generatePdfFile(
+        printOrder:PrintOrder
+    ):String= withContext(Dispatchers.IO){
         this@PrintOrderReport.printOrder=printOrder
         drawPdf()
         writeToPdfFile(pdfDocument)
     }
 
     private fun drawPdf(){
+        this.colors=printOrder.printColors()
         val page = initialize()
-        drawHeading(page.canvas)
-        drawSubHeading(page.canvas)
-        drawJobDetails(page.canvas)
-        drawPaperDetails(page.canvas, printOrder)
-        drawPlateMakingDetails(page.canvas, printOrder)
-        drawPrintingDetail(page.canvas)
-        drawPostPressDetails(page.canvas)
+        drawLogo(page.canvas)
+        //drawBitmapShadow(page.canvas,RectF(10f,10f,200f,100f))
+        var yOffset = 4.5f*rowHeight
+        drawCompanyName(page.canvas)
+        drawPrintOrder(page.canvas)
+        yOffset=drawJobDetails(page.canvas,yOffset)
+        yOffset+=10f
+        yOffset=drawPaperDetails(page.canvas, yOffset,printOrder)
+        yOffset+=sectionGap
+        yOffset=drawPlateMakingDetails(page.canvas, yOffset,printOrder)
+        yOffset+=sectionGap
+        yOffset=drawPrintingDetail(page.canvas,yOffset)
+        yOffset+=sectionGap
+        drawPostPressDetails(page.canvas,yOffset)
         drawFooter(page.canvas)
 
         pdfDocument.finishPage(page)
     }
 
     private fun initialize(): PdfDocument.Page {
-        headingPaint.typeface = Typeface.create(fontArial, Typeface.BOLD)
-        headingPaint.textSize = 18f
-
-        subHeadingPaint.typeface = fontArial
-        subHeadingPaint.textSize = 18f
-        subHeadingPaint.flags = Paint.UNDERLINE_TEXT_FLAG
-
-        labelTextPaint.typeface = Typeface.create(fontArial, Typeface.BOLD)
-        labelTextPaint.textSize = 12f
-
-        detailTextPaint.typeface = fontArial
-        detailTextPaint.textSize = 12f
-
-        linePaint.style = Paint.Style.STROKE
-        linePaint.strokeWidth = 0.57f
-
 
         val pageInfo = PdfDocument.PageInfo.Builder(
             pageWidth,
@@ -101,41 +144,48 @@ class PrintOrderReport @Inject constructor(
         return pdfDocument.startPage(pageInfo)
     }
 
-    private fun drawHeading(canvas: Canvas) {
+    private fun drawCompanyName(canvas: Canvas){
 
         val heading = "PAPCO OFFSET PRIVATE LIMITED"
-        val textWidth = headingPaint.measureText(heading)
-        val bounds=rowBounds(2)
-        drawTextInBounds(canvas,heading,headingPaint,bounds,(rowWidth-textWidth)/2)
+        val fontGaramond = ResourcesCompat.getFont(application, R.font.garamond)
+        val companyNamePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create(fontGaramond, Typeface.NORMAL)
+            textSize = 20f
+            color = colors.primary
+        }
+        val textWidth = companyNamePaint.measureText(heading)
+        val bounds=rowBounds(1.5f*rowHeight)
+        drawTextInBounds(canvas,heading,companyNamePaint,bounds,(rowWidth-textWidth))
 
     }
 
-    private fun drawSubHeading(canvas: Canvas) {
-        val heading = "PRINT ORDER"
-        val textWidth = subHeadingPaint.measureText(heading)
-        val bounds=rowBounds(3)
-        drawTextInBounds(canvas,heading,subHeadingPaint,bounds,(rowWidth-textWidth)/2)
+    private fun drawPrintOrder(canvas: Canvas) {
+        val printOrderText = "Print Order"
+        val fontGaramond = ResourcesCompat.getFont(application, R.font.garamond)
+        val printOrderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create(fontGaramond, Typeface.NORMAL)
+            textSize = 24f
+            color = colors.onPrimaryContainer
+        }
+        val textWidth = printOrderPaint.measureText(printOrderText)
+        val bounds=rowBounds(2.5f*rowHeight)
+        drawTextInBounds(canvas,printOrderText,printOrderPaint,bounds,(rowWidth-textWidth))
     }
 
-    private fun drawJobDetails(canvas: Canvas) {
-        var rowNumber=4
-        var bounds=rowBounds(rowNumber)
-        bounds.left -= cellMargin
-        drawLabeledText(canvas,"PO No",printOrder.printOrderNumber.toString(),bounds)
+    private fun drawJobDetails(canvas: Canvas, startingYOffset:Float):Float {
 
-        var labelText="Date"
-        var detailText= calendarWithTime(printOrder.creationTime).asDateString()
-        var textWidth=labeledTextWidth(labelText,detailText)
-        bounds.left += rowWidth-textWidth
-        drawLabeledText(canvas,labelText,detailText,bounds)
+        var currentYOffset=startingYOffset
+        val labelDate = "Date: "
+        val labelClient = "Client: "
+        val labelJobName = "Job Name: "
+        val labelPONumber = "PO No: "
+        val labelPlateNumber = "Plate Number: "
+        val detailDate = calendarWithTime(printOrder.creationTime).asDateString()
+        val detailClient = printOrder.billingName
+        val detailJobName = printOrder.jobName
+        val detailPONumber = printOrder.printOrderNumber.toString()
 
-        rowNumber++
-        bounds=rowBounds(rowNumber)
-        bounds.left -= cellMargin
-        drawLabeledText(canvas,"Billing Name",printOrder.billingName,bounds)
-
-        labelText="Plate number"
-        detailText=if(printOrder.plateMakingDetail.plateNumber==PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+        val detailPlateNumber = if(printOrder.plateMakingDetail.plateNumber==PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
             "Outside plate"
         else {
 
@@ -144,29 +194,80 @@ class PrintOrderReport @Inject constructor(
             else
                 printOrder.plateMakingDetail.plateNumber.toString()
         }
-        textWidth=labeledTextWidth(labelText,detailText)
-        bounds.left += rowWidth-textWidth
-        drawLabeledText(canvas,labelText,detailText,bounds)
 
-        rowNumber++
-        bounds=rowBounds(rowNumber)
-        bounds.left -= cellMargin
-        drawLabeledText(canvas,"Job Name",printOrder.jobName,bounds)
-    }
-
-    private fun drawPaperDetails(canvas: Canvas, printOrder: PrintOrder) {
-
-        drawSectionHeading(canvas, "Paper Details", 7)
-
-        val rectangleBounds = rowRangeBounds(8, lastRowOfPaperDetail)
-        canvas.drawRect(rectangleBounds, linePaint)
-
-        for ((index, paperDetail) in printOrder.paperDetails!!.withIndex()) {
-            drawPaperDetail(index, paperDetail, canvas, 8 + index)
+        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create(fontArial,Typeface.NORMAL)
+            textSize = 12f
+            color = colors.subtleText
         }
 
+        val detailPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create(fontArial,Typeface.BOLD)
+            textSize = 12f
+            color = colors.onPrimaryContainer
+        }
+
+        var rowBounds = rowBounds(currentYOffset)
+        val leftDetailStartingPosition= rowBounds.left + labelPaint.measureText(labelJobName)
+        val rightDetailStartingPosition = run{
+            val detailWidth= max(
+                detailPaint.measureText(detailPlateNumber),
+                detailPaint.measureText(detailPONumber)
+            )
+            rowBounds.left + rowWidth - detailWidth
+        }
+
+        val rightLabelStartingPosition = run{
+            val plateNumberWidth = detailPaint.measureText(labelPlateNumber)
+            rightDetailStartingPosition-plateNumberWidth
+        }
+
+        drawTextInBounds(canvas,labelDate,labelPaint,rowBounds,0f)
+        rowBounds.left = leftDetailStartingPosition
+        drawTextInBounds(canvas,detailDate,detailPaint,rowBounds,0f)
+        rowBounds.left=rightLabelStartingPosition
+        drawTextInBounds(canvas,labelPONumber,labelPaint,rowBounds,0f)
+        rowBounds.left=rightDetailStartingPosition
+        drawTextInBounds(canvas,detailPONumber,detailPaint,rowBounds,0f)
+        currentYOffset+=rowHeight
+        rowBounds= rowBounds(currentYOffset)
+        drawTextInBounds(canvas,labelClient,labelPaint,rowBounds,0f)
+        rowBounds.left = leftDetailStartingPosition
+        drawTextInBounds(canvas,detailClient,detailPaint,rowBounds,0f)
+        rowBounds.left=rightLabelStartingPosition
+        drawTextInBounds(canvas,labelPlateNumber,labelPaint,rowBounds,0f)
+        rowBounds.left=rightDetailStartingPosition
+        drawTextInBounds(canvas,detailPlateNumber,detailPaint,rowBounds,0f)
+        currentYOffset+=rowHeight
+        rowBounds=rowBounds(currentYOffset)
+        drawTextInBounds(canvas,labelJobName,labelPaint,rowBounds,0f)
+        rowBounds.left = leftDetailStartingPosition
+        drawTextInBounds(canvas,detailJobName,detailPaint,rowBounds,0f)
+        return currentYOffset+rowHeight
+    }
+
+
+    private fun drawPaperDetails(canvas: Canvas, yOffset:Float, printOrder: PrintOrder):Float {
+
+        var currentYOffset = yOffset
+
+        val extraSpaceBetweenPaperDetailsAndPrintingSize=6f
+        val sectionBounds = rowRangeBounds(currentYOffset, printOrder.paperDetails!!.size+2)
+        sectionBounds.bottom += sectionMargin+extraSpaceBetweenPaperDetailsAndPrintingSize
+        drawBitmapShadow(canvas,sectionBounds)
+        canvas.drawRect(sectionBounds, sectionBoxPaint)
+        drawSectionHeading(canvas, "Paper Details", currentYOffset,colors)
+
+        for ((index, paperDetail) in printOrder.paperDetails!!.withIndex()) {
+            currentYOffset+=rowHeight
+            drawPaperDetail(index, paperDetail, canvas, currentYOffset)
+        }
+
+        currentYOffset+=rowHeight+extraSpaceBetweenPaperDetailsAndPrintingSize
         val printingSizeDetail = printOrder.printingSizePaperDetail()
-        drawPaperDetail(0, printingSizeDetail, canvas, 8 + printOrder.paperDetails!!.size, true)
+        drawPaperDetail(0, printingSizeDetail, canvas, currentYOffset, true)
+        canvas.drawLine(sectionBounds.left,sectionBounds.bottom,sectionBounds.right,sectionBounds.bottom,linePaint)
+        return sectionBounds.bottom
     }
 
 
@@ -174,11 +275,11 @@ class PrintOrderReport @Inject constructor(
         index: Int,
         paperDetail: PaperDetail,
         canvas: Canvas,
-        rowNumber: Int,
+        yOffset: Float,
         isPrintingSize: Boolean = false
     ) {
 
-        val bounds = rowBounds(rowNumber)
+        val bounds = rowBounds(yOffset)
         val owner = when {
             paperDetail.partyPaper -> "Party's Own"
             else -> "Our Own"
@@ -186,249 +287,268 @@ class PrintOrderReport @Inject constructor(
         val labelText = if (isPrintingSize) "Printing Size" else "${index + 1}. $owner"
         val detailText =
             if (isPrintingSize) paperDetail.asConsolidatedString() else paperDetail.toString()
-        drawLabeledText(canvas, labelText, detailText, bounds)
+    drawLabeledText(canvas, labelText, detailText, bounds)
     }
 
-    private fun drawPlateMakingDetails(canvas: Canvas, printOrder: PrintOrder) {
 
+    private fun drawPlateMakingDetails(canvas: Canvas, yOffset:Float, printOrder: PrintOrder):Float {
+
+        var currentYOffset=yOffset
         val plateMakingDetail = printOrder.plateMakingDetail
-        var rowNumber = lastRowOfPaperDetail + 1
-        drawSectionHeading(canvas, "Plate making Details", rowNumber)
 
-        rowNumber++
-        val rectangleBounds = rowRangeBounds(rowNumber, rowNumber + 3)
-        canvas.drawRect(rectangleBounds, linePaint)
+        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = Typeface.create(fontArial,Typeface.BOLD)
+            color=colors.subtleText
+        }
 
+        val sectionBounds = rowRangeBounds(currentYOffset, 5)
+        sectionBounds.bottom += sectionMargin
+        drawBitmapShadow(canvas,sectionBounds)
+        canvas.drawRect(sectionBounds, sectionBoxPaint)
+        drawSectionHeading(canvas, "Plate making Details", currentYOffset,colors)
+
+        currentYOffset+=rowHeight
         drawPlateMakingDetailRow(
             canvas,
-            rowNumber,
+            currentYOffset,
             "Trimming Size",
             plateMakingDetail.trimmingSize,
             "Machine",
-            plateMakingDetail.machine
+            plateMakingDetail.machine,
+            labelPaint
         )
 
-        rowNumber++
+        currentYOffset+=rowHeight
         drawPlateMakingDetailRow(
             canvas,
-            rowNumber,
+            currentYOffset,
             "Job Size",
             plateMakingDetail.jobSize,
             "Screen",
-            plateMakingDetail.screen
+            plateMakingDetail.screen,
+            labelPaint
         )
 
-        rowNumber++
+        currentYOffset+=rowHeight
         drawPlateMakingDetailRow(
             canvas,
-            rowNumber,
+            currentYOffset,
             "Gripper",
             plateMakingDetail.gripperSize,
             "Backside",
-            plateMakingDetail.backsidePrinting
+            plateMakingDetail.backsidePrinting,
+            labelPaint
         )
 
-        rowNumber++
+        currentYOffset+=rowHeight
         drawPlateMakingDetailRow(
             canvas,
-            rowNumber,
+            currentYOffset,
             "Tail",
             plateMakingDetail.tailSize,
             "Backside Machine",
-            plateMakingDetail.backsideMachine
+            plateMakingDetail.backsideMachine,
+            labelPaint
         )
+
+        canvas.drawLine(sectionBounds.left,sectionBounds.bottom,sectionBounds.right,sectionBounds.bottom,linePaint)
+        return sectionBounds.bottom
 
     }
 
 
-    private fun drawPrintingDetail(canvas: Canvas) {
+    private fun drawPrintingDetail(canvas: Canvas, yOffset:Float):Float {
 
-        var rowNumber = lastRowOfPaperDetail + 6
-        drawSectionHeading(canvas, "Printing Details", rowNumber)
+        var currentYOffset=yOffset
 
-        rowNumber++
-        canvas.drawRect(rowRangeBounds(rowNumber, rowNumber + 6), linePaint)
-        var bounds = rowBounds(rowNumber)
+        val sectionBounds = rowRangeBounds(currentYOffset, 9)
+        sectionBounds.bottom += sectionMargin
+        drawBitmapShadow(canvas,sectionBounds)
+        canvas.drawRect(sectionBounds, sectionBoxPaint)
+        drawSectionHeading(canvas, "Printing Details", currentYOffset,colors)
+
+        currentYOffset+=rowHeight
+        var bounds = rowBounds(currentYOffset)
 
         val plateDetail = if (printOrder.jobType == PrintOrder.TYPE_NEW_JOB)
             "NEW PLATE"
         else
             "REPRINT"
 
-        drawTextInBounds(canvas, plateDetail, labelTextPaint, bounds, cellMargin)
+        drawTextInBounds(canvas, plateDetail, textPaintBold, bounds, cellMargin)
 
         //Measure the color label text and detail text to right align it
         val colorLabelText = "Colours"
         val colorDetailText = printOrder.printingDetail.colours
         val textLength =
-            labeledTextWidth(colorLabelText,colorDetailText)
+            textPaintBold.measureText(colorLabelText)+textPaintNormal.measureText(": $colorDetailText")
         bounds.left = rowWidth - textLength
         drawLabeledText(canvas, colorLabelText, colorDetailText, bounds)
 
         //Draw the printing detail
-        rowNumber++
-        bounds = rowBounds(rowNumber)
+        currentYOffset+=rowHeight
+        bounds = rowBounds(currentYOffset)
         drawMultiLineText(
             canvas,
             bounds.left + cellMargin,
             bounds.top + cellMargin * 2,
             printOrder.printingDetail.printingInstructions,
-            detailTextPaint
+            textPaintNormal
         )
+
+        canvas.drawLine(sectionBounds.left,sectionBounds.bottom,sectionBounds.right,sectionBounds.bottom,linePaint)
+        return sectionBounds.bottom
 
     }
 
-    private fun drawPostPressDetails(canvas: Canvas) {
+    private fun drawPostPressDetails(canvas: Canvas, yOffset:Float):Float {
 
+        var currentYOffset=yOffset
         val numberOfPostPress = postPressCount()
         if (numberOfPostPress == 0)
-            return
+            return currentYOffset
 
-        var rowNumber = lastRowOfPaperDetail + 14
-        drawSectionHeading(canvas, "Post Press Details", rowNumber)
         val rowsForPostPress: Int = if (numberOfPostPress % 3 == 0)
             numberOfPostPress / 3 * 2
         else
             (numberOfPostPress / 3 + 1) * 2
 
-        //Draw the Box for postPress operation
-        rowNumber++
-        var column = 1
-        canvas.drawRect(rowRangeBounds(rowNumber, rowNumber + (rowsForPostPress - 1)), linePaint)
+        val sectionBounds=rowRangeBounds(currentYOffset,rowsForPostPress+1)
+        drawBitmapShadow(canvas,sectionBounds)
+        canvas.drawRect(sectionBounds, sectionBoxPaint)
+        drawSectionHeading(canvas, "Post Press Details", currentYOffset,colors)
 
+
+        //Draw the Box for postPress operation
+        currentYOffset+=rowHeight
+        var column = 1
         printOrder.lamination?.let {
             val detailText="${it}\n${it.remarks}"
-            drawPostPressDetail(canvas,rowNumber,column,"Lamination",detailText)
-            if(column==3){
-                column=1
-                rowNumber+=2
-            }else
-                column++
+            drawPostPressDetail(canvas,currentYOffset,column,"Lamination",detailText)
+            column++
         }
 
         printOrder.foil?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Foil",it)
-            if(column==3){
-                column=1
-                rowNumber+=2
-            }else
-                column++
+            drawPostPressDetail(canvas,currentYOffset,column,"Foil",it)
+            column++
         }
 
         printOrder.scoring?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Scoring",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Scoring",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.folding?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Folding",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Folding",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.binding?.let {
             val detailText="${it.getBindingName(application)}\n${it.remarks}"
-            drawPostPressDetail(canvas,rowNumber,column,"Binding",detailText)
+            drawPostPressDetail(canvas,currentYOffset,column,"Binding",detailText)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.spotUV?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Spot UV",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Spot UV",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.aqueousCoating?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Aqueous Coating",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Aqueous Coating",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.cutting?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Cutting",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Cutting",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
 
         printOrder.packing?.let {
-            drawPostPressDetail(canvas,rowNumber,column,"Packing",it)
+            drawPostPressDetail(canvas,currentYOffset,column,"Packing",it)
             if(column==3){
                 column=1
-                rowNumber+=2
+                currentYOffset+=(2*rowHeight)
             }else
                 column++
         }
+
+        canvas.drawLine(sectionBounds.left,sectionBounds.bottom,sectionBounds.right,sectionBounds.bottom,linePaint)
+        return sectionBounds.bottom
 
     }
 
     private fun drawFooter(canvas: Canvas){
 
         //Last row is 32
-        val rowNumber=32
-        val bounds=rowBounds(rowNumber)
+        val yOffset=pageHeight-rowHeight*1.5f
+        val bounds=rowBounds(yOffset)
         val footer="Approved By                    Checked By"
-        val textWidth=detailTextPaint.measureText(footer)
+        val textWidth=textPaintNormal.measureText(footer)
         bounds.left += rowWidth-textWidth
-        drawTextInBounds(canvas,footer,detailTextPaint,bounds,0f)
+        drawTextInBounds(canvas,footer,textPaintNormal,bounds,0f)
 
     }
 
     private fun drawPlateMakingDetailRow(
         canvas: Canvas,
-        rowNumber: Int,
+        yOffset: Float,
         label1: String,
         detail1: String,
         label2: String,
-        detail2: String
+        detail2: String,
+        labelPaint: Paint
     ) {
-
-        val labelTextWidth = labelTextPaint.measureText("Backside Machine")
-        val bounds = rowBounds(rowNumber)
-        drawLabeledText(canvas, label1, detail1, bounds, labelTextWidth)
+        val labelTextWidth = labelPaint.measureText("Backside Machine")
+        val bounds = rowBounds(yOffset)
+        drawLabeledText(canvas, label1, detail1, bounds, labelTextWidth,labelPaint=labelPaint)
         bounds.left = leftMargin + rowWidth / 2
-        drawLabeledText(canvas, label2, detail2, bounds, labelTextWidth)
+        drawLabeledText(canvas, label2, detail2, bounds, labelTextWidth,labelPaint=labelPaint)
 
     }
 
-    private fun drawSectionHeading(canvas: Canvas, heading: String, rowNumber: Int) {
+    private fun drawSectionHeading(canvas: Canvas, heading: String, yOffset: Float, colors: ReportColors) {
 
         val sectionHeight = 18f
 
-        val sectionHeadingTextPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        sectionHeadingTextPaint.color = Color.WHITE
-        sectionHeadingTextPaint.textSize = 12f
-        sectionHeadingTextPaint.typeface = Typeface.create(fontArial, Typeface.BOLD)
+        val sectionHeadingTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply{
+            color = Color.WHITE
+            textSize=12f
+            typeface=Typeface.create(fontArial, Typeface.BOLD)
+        }
 
-        val sectionHeadingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        sectionHeadingPaint.style = Paint.Style.FILL
-        sectionHeadingPaint.color = Color.BLACK
+        val sectionHeadingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style=Paint.Style.FILL
+            color=colors.primary
+        }
 
-        val textWidth=sectionHeadingTextPaint.measureText(heading)+cellMargin*2
-        val y = rowNumber * rowHeight - sectionHeight
-        val bounds = RectF(leftMargin, y, leftMargin + textWidth, y + sectionHeight)
+        val bounds=rowBounds(yOffset)
+        bounds.bottom=bounds.top+sectionHeight
         canvas.drawRect(bounds, sectionHeadingPaint)
-
-
         drawTextInBounds(canvas, heading, sectionHeadingTextPaint, bounds, cellMargin)
 
     }
@@ -456,15 +576,17 @@ class PrintOrderReport @Inject constructor(
         label: String,
         detail: String,
         bounds: RectF,
-        labelFieldWidth: Float = -1f
+        labelFieldWidth: Float = -1f,
+        labelPaint:Paint = textPaintBold,
+        detailPaint: Paint = textPaintNormal
     ) {
 
         val labelTextWidth: Float =
-            if (labelFieldWidth <= 0) labelTextPaint.measureText(label) else labelFieldWidth
+            if (labelFieldWidth <= 0) labelPaint.measureText(label) else labelFieldWidth
         val useBounds = RectF(bounds)
-        drawTextInBounds(canvas, label, labelTextPaint, useBounds, cellMargin)
+        drawTextInBounds(canvas, label, labelPaint, useBounds, cellMargin)
         useBounds.left += labelTextWidth
-        drawTextInBounds(canvas, ": $detail", detailTextPaint, useBounds, cellMargin)
+        drawTextInBounds(canvas, ": $detail", detailPaint, useBounds, cellMargin)
 
     }
 
@@ -496,27 +618,27 @@ class PrintOrderReport @Inject constructor(
         return abs(textBounds.top) + abs(textBounds.bottom)
     }
 
-    private fun rowBounds(rowNumber: Int): RectF {
+    private fun rowBounds(yOffset: Float): RectF {
         return RectF(
             leftMargin,
-             (rowNumber - 1) * rowHeight,
+             yOffset,
             leftMargin + rowWidth,
-            (rowNumber - 1) * rowHeight + rowHeight
+            yOffset+rowHeight
         )
     }
 
-    private fun rowRangeBounds(fromRow: Int, toRow: Int): RectF {
+    private fun rowRangeBounds(yOffset: Float, rowCount: Int): RectF {
         return RectF(
             leftMargin,
-            (fromRow - 1) * rowHeight,
+            yOffset,
             leftMargin + rowWidth,
-            toRow * rowHeight
+            yOffset+(rowCount*rowHeight)
         )
     }
 
     private fun drawPostPressDetail(
         canvas: Canvas,
-        rowNumber: Int,
+        yOffset: Float,
         columnNumber: Int,
         label: String,
         detail: String
@@ -525,9 +647,9 @@ class PrintOrderReport @Inject constructor(
         val detailPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         detailPaint.typeface = fontArial
         detailPaint.textSize = 8f
-        val bounds = rowBounds(rowNumber)
+        val bounds = rowBounds(yOffset)
         bounds.left += rowWidth / 3 * (columnNumber - 1)
-        drawTextInBounds(canvas, label, labelTextPaint, bounds, cellMargin)
+        drawTextInBounds(canvas, label, textPaintBold, bounds, cellMargin)
         if (detail.isNotBlank()) {
             drawMultiLineText(
                 canvas,
@@ -553,9 +675,6 @@ class PrintOrderReport @Inject constructor(
         return count
     }
 
-    private fun labeledTextWidth(label:String,detail:String):Float=
-        labelTextPaint.measureText(label)+detailTextPaint.measureText(": $detail")
-
     private fun writeToPdfFile(pdfDocument: PdfDocument): String {
 
         //create outputStream
@@ -571,5 +690,68 @@ class PrintOrderReport @Inject constructor(
 
         return filePath
 
+    }
+
+    private fun drawBitmapShadow(pdfCanvas: Canvas,bounds: RectF) {
+
+        // Set the dimensions for the bitmap
+        val width = bounds.width() // Adjust as needed
+        val height = bounds.height() // Adjust as needed
+
+        // Create an empty bitmap with ARGB_8888 configuration
+        val bitmap = createBitmap((width+10f).toInt(), (height+10f).toInt())
+
+        // Create a canvas for the bitmap
+        val canvas = Canvas(bitmap)
+
+        // Enable hardware acceleration for shadow rendering
+        canvas.drawFilter = PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+
+        // Draw a rectangle with the shadow
+        canvas.drawRect(0f, 0f, bounds.width(), bounds.height(), shadowPaint)
+        pdfCanvas.drawBitmap(bitmap,bounds.left,bounds.top,null)
+
+    }
+
+    private fun drawLogo(canvas: Canvas){
+
+        val logoPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color=colors.primary
+            style=Paint.Style.FILL
+        }
+
+        val yearPaint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface=Typeface.create(fontArial, Typeface.NORMAL)
+            textSize=7f
+            color=colors.primary
+        }
+
+        val companyPaint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface=Typeface.create(fontArial, Typeface.BOLD)
+            textSize=9f
+            color=colors.primary
+        }
+
+        val originX=leftMargin+cellMargin
+        val originY=rowHeight*1.5f
+
+        val path = Path()
+        path.moveTo(originX,originY)
+        path.lineTo(originX+26.3f,originY+62.3f)
+        path.lineTo(originX+52.6f,originY)
+        path.lineTo(originX+52.6f-18f,originY)
+        path.lineTo(originX+52.6f-18f,originY+41.4f)
+        path.lineTo(originX+18f,originY+41.4f)
+        path.lineTo(originX+18f,originY)
+        path.lineTo(originX,originY)
+        canvas.drawPath(path,logoPaint)
+
+        canvas.drawText("ESTD",originX,originY-2f,yearPaint)
+        canvas.drawText("1954",originX+52.6f-18f,originY-2f,yearPaint)
+        canvas.drawText("P",originX+23f,originY-1.6f,companyPaint)
+        canvas.drawText("A",originX+23f,originY-1.6f+10f,companyPaint)
+        canvas.drawText("P",originX+23f,originY-1.6f+20f,companyPaint)
+        canvas.drawText("C",originX+23f,originY-1.6f+30f,companyPaint)
+        canvas.drawText("O",originX+23f,originY-1.6f+40f,companyPaint)
     }
 }

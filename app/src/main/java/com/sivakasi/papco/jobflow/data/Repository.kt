@@ -50,7 +50,7 @@ class Repository @Inject constructor(
         }
 
     suspend fun observePreviews(previewId: String) =
-        callbackFlow<List<JobPreview>> {
+        callbackFlow {
 
             val listenerRegistration = database.collection(DatabaseContract.COLLECTION_PREVIEWS)
                 .whereEqualTo(JobPreview.FIELD_PREVIEW_ID, previewId)
@@ -99,7 +99,7 @@ class Repository @Inject constructor(
     }
 
 
-    suspend fun observeDestination(
+    fun observeDestination(
         destinationId: String,
     ) = callbackFlow {
 
