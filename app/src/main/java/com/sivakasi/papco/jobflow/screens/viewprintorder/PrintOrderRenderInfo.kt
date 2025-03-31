@@ -285,7 +285,14 @@ data class PrintingDetailsRenderInfo(
 
             return PrintingDetailsRenderInfo().apply {
                 colours = printingDetail.colours
-                printingInstructions = printingDetail.printingInstructions
+                printingInstructions = if(printingDetail.correction.isNotEmpty()) {
+                    if(printingDetail.printingInstructions.isNotEmpty())
+                        printingDetail.correction + "\n\n" + printingDetail.printingInstructions
+                    else
+                        printingDetail.correction
+                }
+                else
+                    printingDetail.printingInstructions
             }
 
         }

@@ -7,6 +7,11 @@ import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.print.CorrectionPlateColors
+import com.sivakasi.papco.jobflow.print.NewPlateColors
+import com.sivakasi.papco.jobflow.print.OutsidePlateColors
+import com.sivakasi.papco.jobflow.print.RepeatColors
+import com.sivakasi.papco.jobflow.print.ReportColors
 import java.util.*
 
 class PrintOrder {
@@ -72,6 +77,7 @@ class PrintOrder {
         partialDispatches = emptyList()
         if (clientId == -1)
             billingName = ""
+        printingDetail.correction=""
     }
 
     fun prepareForInvoicing(invoiceNumber: String) {
@@ -231,4 +237,19 @@ fun PrintOrder.previewId():String{
         "rid${plateMakingDetail.plateNumber}"
     else
         "po${printOrderNumber}"
+}
+
+fun PrintOrder.printColors():ReportColors{
+
+     return if(plateMakingDetail.plateNumber==PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+        OutsidePlateColors()
+    else {
+        if(jobType==PrintOrder.TYPE_REPEAT_JOB) {
+            if(printingDetail.correction.isNotEmpty())
+                CorrectionPlateColors()
+            else
+                RepeatColors()
+        }else
+            NewPlateColors()
+    }
 }

@@ -20,7 +20,7 @@ import javax.inject.Inject
 @ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 @HiltViewModel
-class ComposeViewModelFragmentVM @Inject constructor(
+class ComposeViewPrintOrderFragmentVM @Inject constructor(
     private val repository: Repository,
     private val application: Application,
     val printOrderReport: PrintOrderReport

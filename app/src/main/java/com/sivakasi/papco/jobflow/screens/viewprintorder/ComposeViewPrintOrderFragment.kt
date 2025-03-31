@@ -38,7 +38,7 @@ class ComposeViewPrintOrderFragment : Fragment() {
     @Inject
     lateinit var printOrderReport: PrintOrderReport
     private val viewModel by lazy {
-        ViewModelProvider(this).get(ComposeViewModelFragmentVM::class.java)
+        ViewModelProvider(this).get(ComposeViewPrintOrderFragmentVM::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

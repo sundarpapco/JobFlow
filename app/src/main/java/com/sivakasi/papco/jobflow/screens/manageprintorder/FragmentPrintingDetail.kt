@@ -107,6 +107,12 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
 
     private fun loadValues(printOrder: PrintOrder) {
         val printingDetails = printOrder.printingDetail
+
+        if(printOrder.jobType!=PrintOrder.TYPE_REPEAT_JOB)
+            viewBinding.layoutCorrection.visibility=View.GONE
+        else
+            viewBinding.txtCorrection.setText(printingDetails.correction)
+
         viewBinding.txtColours.setText(printingDetails.colours)
         viewBinding.txtPrintingDetails.setText(printingDetails.printingInstructions)
         loadRunningTime(
@@ -149,6 +155,7 @@ class FragmentPrintingDetail : Fragment(), DialogRunningTime.DialogRunningTimeLi
         val state = PrintingDetail()
         state.colours = viewBinding.txtColours.text.toString().trim()
         state.printingInstructions = viewBinding.txtPrintingDetails.text.toString()
+        state.correction = viewBinding.txtCorrection.text.toString().trim()
         state.runningMinutes = duration.inMinutes()
         state.hasSpotColours = hasSpotColours
         viewModel.savePrintingDetails(state)

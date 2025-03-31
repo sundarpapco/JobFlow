@@ -93,7 +93,7 @@ val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must
 @ExperimentalMaterialApi
 @ExperimentalCoroutinesApi
 val LocalViewModel =
-    compositionLocalOf<ComposeViewModelFragmentVM> { error("ViewModel must be initialized") }
+    compositionLocalOf<ComposeViewPrintOrderFragmentVM> { error("ViewModel must be initialized") }
 
 @ExperimentalMaterialApi
 val LocalScreenState =
@@ -109,7 +109,7 @@ val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom 
 @ExperimentalCoroutinesApi
 @Composable
 fun ViewPrintOrderScreen(
-    viewModel: ComposeViewModelFragmentVM,
+    viewModel: ComposeViewPrintOrderFragmentVM,
     navController: NavController,
     activityContext: Context
 ) {
@@ -990,7 +990,7 @@ private fun onOptionsItemSelected(
     activityContext: Context,
     bottomSheetState: ModalBottomSheetState,
     id: String,
-    viewModel: ComposeViewModelFragmentVM,
+    viewModel: ComposeViewPrintOrderFragmentVM,
     navController: NavController,
     scope: CoroutineScope
 ) {
@@ -1087,7 +1087,7 @@ private fun print(
 @ExperimentalCoroutinesApi
 private fun sharePdfFile(
     activityContext: Context,
-    viewModel: ComposeViewModelFragmentVM,
+    viewModel: ComposeViewPrintOrderFragmentVM,
     scope: CoroutineScope
 ) {
 
