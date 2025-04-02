@@ -63,20 +63,8 @@ class PrintOrderReport @Inject constructor(
         color=Color.BLACK
     }
 
-    private val linePaint by lazy{
-        Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color=colors.primary
-            style=Paint.Style.STROKE
-            strokeWidth=1f
-        }
-    }
-
-    private val sectionBoxPaint by lazy{
-        Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color=colors.primaryContainer
-            style=Paint.Style.FILL
-        }
-    }
+    private lateinit var linePaint:Paint
+    private lateinit var sectionBoxPaint:Paint
 
     private val shadowPaint by lazy{
         Paint().apply {
@@ -109,7 +97,11 @@ class PrintOrderReport @Inject constructor(
     }
 
     private fun drawPdf(){
+        //initialize for drawing
         this.colors=printOrder.printColors()
+        linePaint = createLinePaint()
+        sectionBoxPaint = createSectionBoxPaint()
+
         val page = initialize()
         drawLogo(page.canvas)
         //drawBitmapShadow(page.canvas,RectF(10f,10f,200f,100f))
@@ -779,5 +771,21 @@ class PrintOrderReport @Inject constructor(
         drawTextInBounds(canvas,text,textPaintNormal,textBounds,cellMargin)
         return textBounds.bottom
 
+    }
+
+
+    private fun createLinePaint():Paint{
+        return  Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color=colors.primary
+            style=Paint.Style.STROKE
+            strokeWidth=1f
+        }
+    }
+
+    private fun createSectionBoxPaint():Paint{
+        return  Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color=colors.primaryContainer
+            style=Paint.Style.FILL
+        }
     }
 }
