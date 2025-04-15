@@ -14,7 +14,7 @@
     <string name="rid">RID</string>
     <string name="blank_if_party_plate">Blank if party plate</string>
     <string name="job_details">Job details</string>
-    <string name="client_name">Client name</string>
+    <string name="client_name">Client Name</string>
     <string name="job_name">Job name</string>
     <string name="our_own">Our own</string>
     <string name="party_own">Party\'s own</string>
@@ -34,6 +34,7 @@
     <string name="old_plate_number">Old plate: %1$d</string>
     <string name="plate_number">Plate number: %1$d</string>
     <string name="blank_if_same_as_front_machine">Blank if same as front machine</string>
+    <string name="error_invalid">Invalid</string>
     <string name="error_invalid_trim_size">Should be %1$d to %2$d</string>
     <string name="error_unknown_error">Unknown error occurred during processing</string>
     <string name="error_not_optional_field">This field is not optional</string>
@@ -223,6 +224,8 @@
     <string name="previews">Previews</string>
     <string name="share">Share</string>
     <string name="correction">Correction</string>
+    <string name="add_client">Add Client</string>
+    <string name="edit_client">Edit Client</string>
 
     <!--Notifications-->
     <string name="channel_name_upload_preview">Upload Preview Channel</string>

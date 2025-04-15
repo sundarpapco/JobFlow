@@ -203,8 +203,4 @@ class ManagePrintOrderVM @Inject constructor(
             }
         }
     }
-
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

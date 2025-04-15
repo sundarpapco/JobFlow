@@ -10,12 +10,12 @@ class PlateMakingDetail{
     }
 
     var plateNumber: Int = PLATE_NUMBER_NOT_YET_ALLOCATED
-    var trimmingHeight: Int = -1
-    var trimmingWidth: Int = -1
-    var jobHeight: Int = -1
-    var jobWidth: Int = -1
-    var gripper: Int = -1
-    var tail: Int = -1
+    var trimmingHeight: Int = 0
+    var trimmingWidth: Int = 0
+    var jobHeight: Int = 0
+    var jobWidth: Int = 0
+    var gripper: Int = 0
+    var tail: Int = 0
     var backsidePrinting: String = "None"
     var machine: String = ""
     var screen: String = ""

@@ -94,7 +94,6 @@ private fun TextInputDialogContent(
             Text(dialogState.title, style = MaterialTheme.typography.h5)
             Spacer(Modifier.height(8.dp))
             SelectableTextField(
-                onTabPressed = {},
                 value = dialogState.text,
                 onValueChange = {
                     dialogState.error = null;dialogState.text = it

@@ -1,0 +1,320 @@
+package com.sivakasi.papco.jobflow.screens.manageprintorder.printingDetails
+
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.extensions.asCommaSeparatedNumber
+import com.sivakasi.papco.jobflow.extensions.intNumber
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ExpressionChecker
+import com.sivakasi.papco.jobflow.ui.JobFlowTextField
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.util.Duration
+
+@Composable
+fun RunningTimeDialog(
+    runningTime: Int,
+    sheetsCount: Int,
+    hasSpotColours: Boolean,
+    onSave: (Duration, Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        RunningTimeDialogContent(
+            runningTime,
+            sheetsCount,
+            hasSpotColours,
+            onSave = onSave
+        )
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@Composable
+private fun RunningTimeDialogContent(
+    runningTime: Int,
+    sheetsCount: Int,
+    hasSpotColours: Boolean,
+    onSave: (Duration, Boolean) -> Unit
+) {
+
+    var runningHours by remember(runningTime) {
+        val duration = Duration.fromMinutes(runningTime)
+        mutableStateOf(TextFieldValue(duration.hours.toString()))
+    }
+
+    var runningMinutes by remember(runningTime) {
+        val duration = Duration.fromMinutes(runningTime)
+        mutableStateOf(TextFieldValue(duration.minutes.toString()))
+    }
+
+    var durationError: String? by rememberSaveable {
+        mutableStateOf(null)
+    }
+
+    var expression by remember(runningTime) {
+        mutableStateOf(TextFieldValue(""))
+    }
+
+    var expressionError: String? by rememberSaveable {
+        mutableStateOf(null)
+    }
+
+    var spotColours by remember(hasSpotColours) {
+        mutableStateOf(hasSpotColours)
+    }
+
+    val sheets = rememberSaveable(sheetsCount) {
+        val sheetsString = sheetsCount.asCommaSeparatedNumber()
+        "$sheetsString\nSheets"
+    }
+
+    val focusManager = LocalFocusManager.current
+    val expressionFocus = remember {
+        FocusRequester()
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.running_time),
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+
+                JobFlowTextField(
+                    modifier = Modifier
+                        .weight(1f)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                runningHours = runningHours.copy(
+                                    selection = TextRange(0, runningHours.text.length)
+                                )
+                            }
+                        },
+                    value = runningHours,
+                    onValueChange = {
+                        runningHours = it
+                    },
+                    label = stringResource(R.string.hours),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.moveFocus(FocusDirection.Next)
+                        }
+                    )
+                )
+
+                JobFlowTextField(
+                    modifier = Modifier
+                        .weight(1f)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                runningMinutes = runningMinutes.copy(
+                                    selection = TextRange(0, runningMinutes.text.length)
+                                )
+                            }
+                        },
+                    value = runningMinutes,
+                    onValueChange = {
+                        durationError = null
+                        runningMinutes = it
+                    },
+                    label = stringResource(R.string.minutes),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.moveFocus(FocusDirection.Next)
+                        }
+                    ),
+                    error = durationError
+                )
+
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        text = sheets,
+                        style = MaterialTheme.typography.body2,
+                        color = MaterialTheme.colors.secondary
+                    )
+                }
+            }
+
+            JobFlowTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(expressionFocus)
+                    .onFocusChanged {
+                        if (it.isFocused) {
+                            val text = expression.text
+                            expression = expression.copy(
+                                selection = TextRange(0, text.length)
+                            )
+                        }
+                    },
+                value = expression,
+                onValueChange = {
+                    expressionError = null
+                    expression = it
+                },
+                label = stringResource(R.string.expression),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(FocusDirection.Next)
+                    }
+                ),
+                error = expressionError
+            )
+            
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                val context = LocalContext.current
+
+                Checkbox(
+                    checked = spotColours,
+                    onCheckedChange = { spotColours = !spotColours }
+                )
+
+                Text(
+                    modifier = Modifier.weight(2f),
+                    text = stringResource(R.string.has_spot_colours)
+                )
+
+                Button(
+                    onClick = {
+                        val expressionText = expression.text.trim()
+                        if (expressionText.isNotBlank()) {
+                            val expressionChecker = ExpressionChecker(expressionText)
+                            if (expressionChecker.isValid) {
+                                val duration = expressionChecker.totalTime()
+                                Log.d("SAATVIK","Running Time: $duration")
+                                val spot = expressionChecker.hasExtraColour
+                                onSave(duration, spot)
+                            } else
+                                expressionError =
+                                    context.getString(R.string.error_invalid_expression)
+                        } else {
+
+                            if (runningMinutes.text.intNumber(0) > 59)
+                                durationError = context.getString(R.string.error_invalid_minutes)
+                            else {
+                                val duration = Duration(
+                                    runningHours.text.intNumber(0),
+                                    runningMinutes.text.intNumber(0)
+                                )
+                                if (duration.inMinutes() == 0)
+                                    durationError =
+                                        context.getString(R.string.error_invalid_minutes)
+                                else
+                                    onSave(duration, spotColours)
+                            }
+                        }
+
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.save)
+                    )
+                }
+            }
+
+            LaunchedEffect(Unit) {
+                expressionFocus.requestFocus()
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRunningDialogContent() {
+    JobFlowTheme {
+        RunningTimeDialogContent(90, 34567, true) { _, _ ->
+
+        }
+    }
+}

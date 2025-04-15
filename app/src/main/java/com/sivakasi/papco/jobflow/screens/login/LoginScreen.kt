@@ -103,9 +103,6 @@ private fun LoginFields(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
                     .focusRequester(nameFocus),
-                onTabPressed = {
-                    emailFocus.requestFocus()
-                },
                 error = authState.nameError,
                 value = authState.name,
                 onValueChange = {
@@ -134,7 +131,6 @@ private fun LoginFields(
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .focusRequester(emailFocus),
-            onTabPressed = { passwordFocus.requestFocus() },
             error = authState.emailError,
             value = authState.email,
             label = stringResource(id = R.string.email),
@@ -161,12 +157,6 @@ private fun LoginFields(
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .focusRequester(passwordFocus),
-            onTabPressed = {
-                if (authState.mode == AuthenticationMode.LOGIN)
-                    emailFocus.requestFocus()
-                else
-                    confirmPasswordFocus.requestFocus()
-            },
             error = authState.passwordError,
             value = authState.password,
             onValueChange = {
@@ -230,7 +220,6 @@ private fun LoginFields(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
                     .focusRequester(confirmPasswordFocus),
-                onTabPressed = { submitButtonFocus.requestFocus() },
                 error = authState.confirmPasswordError,
                 value = authState.confirmPassword,
                 onValueChange = {

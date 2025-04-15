@@ -49,6 +49,10 @@ fun Context.sharePreview(previewImage: File) {
 
 }
 
+fun Context.toast(msg:String,duration:Int=Toast.LENGTH_SHORT){
+    Toast.makeText(this, msg,duration).show()
+}
+
 
 fun Context.toastError(e: Exception) {
     val msg = e.getMessage(this)

@@ -209,13 +209,13 @@ class DialogRunningTime : DialogFragment() {
             duration = readDurationFromFields()
             spotColours=viewBinding.chkboxSpotColours.isChecked
         }else{
-            val patternChecker=PatternChecker(expression)
-            if(!patternChecker.isValid) {
+            val expressionChecker=ExpressionChecker(expression)
+            if(!expressionChecker.isValid) {
                 viewBinding.txtExpression.error=getString(R.string.error_invalid_expression)
                 return false
             }
-            duration=patternChecker.totalTime()
-            spotColours=patternChecker.hasExtraColour
+            duration=expressionChecker.totalTime()
+            spotColours=expressionChecker.hasExtraColour
         }
 
         return if (callback == null)

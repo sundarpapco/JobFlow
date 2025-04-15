@@ -9,17 +9,12 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
-import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.showActionBar
 import com.sivakasi.papco.jobflow.screens.clients.ui.ClientsScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -56,36 +51,34 @@ class ClientsFragment : Fragment() {
         return ComposeView(requireContext()).apply{
             setContent {
                 JobFlowTheme {
-                    ClientsScreen(viewModel, isSelectionMode())
+                    ClientsScreen(
+                        screenState = viewModel.screenState,
+                        isSelectionMode = isSelectionMode(),
+                        onClientSelected = {id,name->
+                            selectClientAndClose(Client(id,name))
+                        },
+                        onClientEdit = {_,name->
+                            viewModel.onUpdateClient(name)
+                        },
+                        onClientAdd = {
+                            viewModel.onAddClient(it)
+                        },
+                        onBackPressed = {findNavController().popBackStack()}
+                    )
                 }
             }
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        enableBackArrow()
-        updateTitle(if (isSelectionMode()) getString(R.string.select_client) else getString(R.string.clients))
-        updateSubTitle("")
-        registerBackArrowMenu()
-        observeViewModel()
+
+    override fun onResume() {
+        super.onResume()
+        hideActionBar()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun observeViewModel() {
-        viewModel.clientsList.observe(viewLifecycleOwner) { status ->
-            if (status is LoadingStatus.Success<*>) {
-                val list = (status.data as List<Client>)
-                if (list.isNotEmpty())
-                    updateSubTitle(getString(R.string.xx_clients, list.size))
-                else
-                    updateSubTitle("")
-            }
-        }
-
-        viewModel.selectedClient.observe(viewLifecycleOwner) {
-            selectClientAndClose(it)
-        }
+    override fun onStop() {
+        super.onStop()
+        showActionBar()
     }
 
     private fun selectClientAndClose(selectedClient: Client) {

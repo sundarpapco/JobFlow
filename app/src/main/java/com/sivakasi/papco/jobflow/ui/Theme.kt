@@ -1,10 +1,12 @@
 package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RippleConfiguration
+import androidx.compose.material.Shapes
 import androidx.compose.material.darkColors
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sivakasi.papco.jobflow.R
 
@@ -32,6 +35,12 @@ private val arialFamily = FontFamily(
 
 private val segoeui = FontFamily(
     Font(R.font.segoeui)
+)
+
+private val screenTitle = TextStyle(
+    fontFamily = segoeui,
+    fontWeight = FontWeight.Normal,
+    fontSize = 24.sp
 )
 
 private val appBarTitle=TextStyle(
@@ -89,11 +98,15 @@ fun JobFlowTheme(
     MaterialTheme(
         colors = colors,
         typography = MaterialTheme.typography.copy(
+            h4= screenTitle,
             h5= appBarTitle,
             h6 = h6,
             body1 = detailText,
             body2 = subDetailText
         ),
+        shapes = MaterialTheme.shapes.copy(
+            medium = RoundedCornerShape(15.dp)
+        )
     ) {
 
         val rippleColor = MaterialTheme.colors.primary

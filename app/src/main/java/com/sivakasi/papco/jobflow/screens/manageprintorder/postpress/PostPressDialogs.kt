@@ -123,9 +123,6 @@ fun LaminationDialogContent(
                     if (!it.text.contains("\t"))
                         state.micron = it
                 },
-                onTabPressed = {
-                    remarksFocus.requestFocus()
-                },
                 error = if (validateLaminationMicron(state.micron.text))
                     null
                 else
@@ -162,9 +159,6 @@ fun LaminationDialogContent(
 
                     if (!it.text.contains("\t"))
                         state.remarks = it
-                },
-                onTabPressed = {
-                    micronFocus.requestFocus()
                 },
                 label = stringResource(id = R.string.remarks),
                 modifier = Modifier
@@ -303,7 +297,6 @@ fun BindingDialogContent(
                     if (!it.text.contains("\t"))
                         state.remarks = it
                 },
-                onTabPressed = {  },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 ),

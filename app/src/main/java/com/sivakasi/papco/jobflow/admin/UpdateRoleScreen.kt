@@ -86,7 +86,6 @@ fun UpdateRoleScreen(
                         disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
                         disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
                     ),
-                    onTabPressed = { },
                     value = updateRoleState.selectedUser?.displayName
                         ?: stringResource(id = R.string.tap_to_select_user),
                     label = stringResource(id = R.string.user),
@@ -151,7 +150,6 @@ fun UpdateRoleScreen(
                             disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
                             disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
                         ),
-                        onTabPressed = { },
                         value = updateRoleState.roles[updateRoleState.selectedRoleIndex],
                         label = stringResource(id = R.string.user_role),
                         onValueChange = {},
