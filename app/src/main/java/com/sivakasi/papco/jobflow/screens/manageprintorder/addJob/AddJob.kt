@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.addJob
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,12 +27,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.extensions.intNumber
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowCircularProgressBar
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
@@ -42,17 +46,23 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 @Composable
 fun AddPrintOrderScreen(
     screenState: AddJobScreenState,
-    onNext: () -> Unit,
-    onClosePressed: () -> Unit,
-    onOldPlateNotFoundContinuation: () -> Unit
+    isEditMode: Boolean,
+    onCreateNewJob: () -> Unit,
+    onCreateRepeatJob: (Int) -> Unit,
+    onLoadRepeatJob: (Int) -> Unit,
+    onClose: () -> Unit
 ) {
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             JobFlowTopBar(
-                title = stringResource(R.string.create_job),
+                title = if (isEditMode)
+                    stringResource(R.string.edit_job)
+                else
+                    stringResource(R.string.create_job),
                 navigationIcon = {
                     IconButton(
-                        onClick = onClosePressed
+                        onClick = onClose
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
@@ -71,7 +81,15 @@ fun AddPrintOrderScreen(
             ) {
                 Button(
                     enabled = !screenState.isWaiting,
-                    onClick = onNext
+                    onClick = {
+                        onFormSubmit(
+                            context,
+                            screenState,
+                            onCreateNewJob,
+                            onCreateRepeatJob,
+                            onLoadRepeatJob
+                        )
+                    }
                 ) {
                     Text(
                         text = stringResource(R.string.next)
@@ -84,7 +102,16 @@ fun AddPrintOrderScreen(
             screenState,
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp),
+            onSearch = {
+                onFormSubmit(
+                    context,
+                    screenState,
+                    onCreateNewJob,
+                    onCreateRepeatJob,
+                    onLoadRepeatJob
+                )
+            }
         )
     }
 
@@ -94,7 +121,12 @@ fun AddPrintOrderScreen(
             message = stringResource(R.string.confirmation_old_print_order_not_found_proceed),
             positiveButtonText = stringResource(R.string.proceed),
             negativeButtonText = stringResource(R.string.cancel),
-            onPositiveClick = onOldPlateNotFoundContinuation,
+            onPositiveClick = {
+                val plateNumber = screenState.ridNumber.intNumber(
+                    PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
+                )
+                onCreateRepeatJob(plateNumber)
+            },
             onDismissListener = { screenState.hideIsPONotFoundDialog() },
             onNegativeClick = { screenState.hideIsPONotFoundDialog() }
         )
@@ -104,7 +136,8 @@ fun AddPrintOrderScreen(
 @Composable
 private fun AddJobScreenContent(
     screenState: AddJobScreenState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSearch: () -> Unit
 ) {
 
     val scrollState = rememberScrollState()
@@ -155,7 +188,10 @@ private fun AddJobScreenContent(
         if (!screenState.isNewJob) {
             JobFlowTextField(
                 value = screenState.ridNumber,
-                onValueChange = { screenState.ridNumber = it },
+                onValueChange = {
+                    screenState.ridError = null
+                    screenState.ridNumber = it
+                },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
@@ -171,10 +207,9 @@ private fun AddJobScreenContent(
                 },
                 enabled = !screenState.isWaiting,
                 keyboardActions = KeyboardActions(
-                    onSearch = {
-
-                    }
-                )
+                    onSearch = { onSearch() }
+                ),
+                error = screenState.ridError
             )
             Text(
                 text = stringResource(R.string.blank_if_party_plate),
@@ -182,6 +217,37 @@ private fun AddJobScreenContent(
             )
         }
 
+    }
+}
+
+private fun onFormSubmit(
+    context: Context,
+    screenState: AddJobScreenState,
+    onCreateNewJob: () -> Unit,
+    onCreateRepeatJob: (Int) -> Unit,
+    onLoadRepeatJob: (Int) -> Unit
+) {
+
+    if (screenState.isNewJob) {
+        onCreateNewJob()
+        return
+    }
+
+    val plateNumber = screenState.ridNumber.intNumber(PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+
+    when (plateNumber) {
+
+        PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE -> {
+            onCreateRepeatJob(plateNumber)
+        }
+
+        0 -> {
+            screenState.ridError = context.getString(R.string.invalid_plate_number)
+        }
+
+        else -> {
+            onLoadRepeatJob(plateNumber)
+        }
     }
 }
 
@@ -196,9 +262,11 @@ private fun PreviewNewJobScreenContent() {
     JobFlowTheme {
         AddPrintOrderScreen(
             screenState,
-            onNext = {},
-            onClosePressed = {},
-            onOldPlateNotFoundContinuation = {}
+            isEditMode = true,
+            onCreateNewJob = {},
+            onCreateRepeatJob = {},
+            onLoadRepeatJob = {},
+            onClose = {}
         )
     }
 }

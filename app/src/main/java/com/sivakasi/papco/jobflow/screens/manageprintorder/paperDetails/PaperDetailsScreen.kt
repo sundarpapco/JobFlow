@@ -1,9 +1,5 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.paperDetails
 
-import android.util.Log
-import android.view.Surface
-import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
@@ -39,17 +34,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.algolia.search.model.response.ResponseLogs
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.extensions.toast
-import com.sivakasi.papco.jobflow.screens.manageprintorder.printingDetails.toPrintingDetails
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 
 
 @Composable
-private fun PaperDetailsScreen(
+fun PaperDetailsScreen(
     screenState: PaperDetailsScreenState,
     onClose:()->Unit,
     onNext:()->Unit
@@ -58,7 +51,7 @@ private fun PaperDetailsScreen(
     Scaffold(
         topBar = {
             JobFlowTopBar(
-                title = if (screenState.isEditMode)
+                title = if (!screenState.isEditMode)
                     stringResource(R.string.create_job)
                 else
                     stringResource(R.string.edit_job),
@@ -245,58 +238,14 @@ private fun PaperDetailListItem(
     }
 }
 
-/*@Preview(name = "List Item")
-@Composable
-private fun PreviewListItem() {
-
-    val paperDetail = remember {
-        PaperDetail(
-            height = 58.5f,
-            width = 91f,
-            gsm = 100,
-            name = "Real Art Paper",
-            sheets = 5000
-        )
-    }
-
-    JobFlowTheme {
-        Box(
-            modifier = Modifier.background(MaterialTheme.colors.background)
-        ) {
-            PaperDetailListItem(
-                paperDetail = paperDetail,
-                onClick = {},
-                onClose = {}
-            )
-        }
-    }
-
-}
-
-@Preview(name = "Paper Detail Button")
-@Composable
-private fun PreviewAddPaperDetailButton() {
-
-    JobFlowTheme {
-        Surface(
-            modifier = Modifier.background(MaterialTheme.colors.background)
-        ) {
-           AddPaperDetailButton {
-               Log.d("SAATVIK","Add paper detail Clicked")
-           }
-        }
-    }
-
-}*/
-
 @Preview(name = "Paper Detail Screen")
 @Composable
 private fun PreviewAddPaperDetailScreen() {
 
-    var context = LocalContext.current
+    val context = LocalContext.current
 
     val state by remember {
-        val state = PaperDetailsScreenState(context,false)
+        val state = PaperDetailsScreenState(context)
         state.paperDetails = emptyList()
         mutableStateOf(state)
     }

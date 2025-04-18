@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.ui.JobFlowDropDown
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -45,7 +46,7 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 @Composable
 fun PlateMakingScreen(
     screenState: PlateMakingDetailsScreenState,
-    onNext: (PlateMakingDetail) -> Unit,
+    onNext: () -> Unit,
     onClose: () -> Unit
 ) {
 
@@ -78,7 +79,7 @@ fun PlateMakingScreen(
                 Button(
                     onClick = {
                         if(screenState.validate())
-                            onNext(screenState.toPlateMakingDetail())
+                            onNext()
                     }
                 ) {
                     Text(
@@ -129,7 +130,7 @@ private fun PlateMakingScreenContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (screenState.isEditMode)
+            if (screenState.isEditMode || screenState.plateNumber > 0)
                 Text(
                     text = if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
                         stringResource(R.string.outside_plate)
@@ -444,7 +445,10 @@ private fun PreviewContent() {
             machine="D3000S5"
             screen="175# Final"
         }
-        state.loadPlateMakingDetail(details)
+        val printOrder = PrintOrder().apply {
+            plateMakingDetail=details
+        }
+        state.loadPrintOrder(printOrder,false)
         state
     }
 

@@ -4,134 +4,66 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.PaperDetail
-import com.sivakasi.papco.jobflow.databinding.FragmentPaperDetailsBinding
-import com.sivakasi.papco.jobflow.extensions.*
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.showActionBar
+import com.sivakasi.papco.jobflow.screens.manageprintorder.paperDetails.PaperDetailsScreen
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
-class FragmentPaperDetails : Fragment(),
-    AddPaperDetailAdapter.CallBack,
-    DialogPaperDetail.DialogPaperDetailListener,
-    PaperDetailsAdapter.PaperDetailAdapterListener {
-
-    private var _viewBinding: FragmentPaperDetailsBinding? = null
-    private val viewBinding: FragmentPaperDetailsBinding
-        get() = _viewBinding!!
-
-    private val paperDetailAdapter: PaperDetailsAdapter by lazy {
-        PaperDetailsAdapter(this)
-    }
-
-    private val adapter: ConcatAdapter by lazy {
-        ConcatAdapter(paperDetailAdapter, AddPaperDetailAdapter(this))
-    }
+class FragmentPaperDetails : Fragment(){
 
     private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
-    private var paperDetailCount =
-        0 //Variable to hold number of paper details added to check for validation
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = FragmentPaperDetailsBinding.inflate(inflater, container, false)
-        return viewBinding.root
+        return ComposeView(requireContext()).apply {
+            setContent {
+                JobFlowTheme {
+                    PaperDetailsScreen(
+                        screenState = viewModel.paperDetailsScreenState,
+                        onClose = { exitOutOfCreationFlow() },
+                        onNext = {
+                            findNavController()
+                                .navigate(R.id.action_fragmentPaperDetails_to_fragmentPlateMakingDetails)
+                        }
+                    )
+                }
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        enableBackAsClose()
-        initViews()
         observeViewModel()
-
-        if (viewModel.isEditMode)
-            updateTitle(getString(R.string.edit_job))
-        else
-            updateTitle(getString(R.string.create_job))
-        updateSubTitle("")
-        registerBackArrowMenu{
-            findNavController().popBackStack(R.id.fragmentJobDetails, true)
-        }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewBinding.recycler.adapter = null
-        _viewBinding = null
+    override fun onResume() {
+        super.onResume()
+        hideActionBar()
     }
 
-    private fun initViews() {
-
-        viewBinding.recycler.layoutManager = LinearLayoutManager(requireContext())
-        viewBinding.recycler.adapter = adapter
-
-        viewBinding.btnNext.setOnClickListener {
-            if (validateForm())
-                findNavController().navigate(R.id.action_fragmentPaperDetails_to_fragmentPlateMakingDetails)
-        }
+    override fun onStop() {
+        super.onStop()
+        showActionBar()
     }
+
 
     private fun observeViewModel() {
-
-        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
-            if(it)
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner) {
+            if (it)
                 exitOutOfCreationFlow()
-        }
-
-        viewModel.loadedJob.observe(viewLifecycleOwner) {
-                paperDetailCount = it.paperDetails?.let { list ->
-                    paperDetailAdapter.submitList(list)
-                    list.size
-                } ?: 0
-        }
-
-    }
-
-    override fun onAddPaperDetail() {
-        showAddPaperDetailDialog()
-    }
-
-    override fun onSubmitPaperDetail(editIndex: Int, paperDetail: PaperDetail) {
-        if (editIndex >= 0)
-            viewModel.updatePaperDetail(editIndex, paperDetail)
-        else
-            viewModel.addPaperDetail(paperDetail)
-    }
-
-    override fun onEditPaperDetail(index: Int, paperDetail: PaperDetail) {
-        showAddPaperDetailDialog(index, paperDetail)
-    }
-
-    override fun onDeletePaperDetail(index: Int) {
-        viewModel.removePaperDetail(index)
-    }
-
-    private fun showAddPaperDetailDialog(
-        editIndex: Int = -1,
-        paperDetailToEdit: PaperDetail? = null
-    ) {
-        DialogPaperDetail.getInstance(editIndex, paperDetailToEdit).show(
-            childFragmentManager,
-            DialogPaperDetail.TAG
-        )
-    }
-
-    private fun validateForm(): Boolean {
-        return if (paperDetailCount > 0) {
-            true
-        } else {
-            toast(getString(R.string.error_at_least_one_paper_detail_required))
-            false
         }
     }
 

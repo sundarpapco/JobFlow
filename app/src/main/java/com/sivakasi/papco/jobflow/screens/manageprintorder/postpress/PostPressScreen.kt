@@ -2,17 +2,23 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder.postpress
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -21,15 +27,15 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
-import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -38,39 +44,67 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
 @Composable
 fun PostPressScreen(
-    viewModel:ManagePrintOrderVM,
-    navigationController:NavController
+    state: PostPressScreenState,
+    onSavePrintOrder:()->Unit,
+    onUpdatePrintOrder:()->Unit,
+    onClose: ()->Unit
 ) {
 
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val state = viewModel.postPressScreenState
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
-    ) {
-        Surface(
-            color = MaterialTheme.colors.background,
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) {
-            PostPressItemsList(postPressScreenState = state)
+    Scaffold(
+        topBar = {
+            JobFlowTopBar(
+                title = if (state.isEditMode)
+                    stringResource(R.string.edit_job)
+                else
+                    stringResource(R.string.create_job),
+                navigationIcon = {
+                    IconButton(
+                        onClick = onClose
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 0.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Button(
+                    onClick = {
+                        if(state.isEditMode)
+                            onUpdatePrintOrder()
+                        else
+                            onSavePrintOrder()
+                    }
+                ) {
+                    Text(
+                        text = if (state.isEditMode)
+                            stringResource(id = R.string.save_print_order).toUpperCase(Locale.current)
+                        else
+                            stringResource(id = R.string.create_print_order).toUpperCase(Locale.current)
+                    )
+                }
+            }
         }
+    ) { paddingValues ->
 
-        BottomButton(
-            text = if (viewModel.isEditMode)
-                stringResource(id = R.string.save_print_order).toUpperCase(Locale.current)
-            else
-                stringResource(id = R.string.create_print_order).toUpperCase(Locale.current)
-        ) {
-            if(viewModel.isEditMode)
-                viewModel.updatePrintOrder()
-            else
-                viewModel.savePrintOrder()
-        }
+       PostPressItemsList(
+           state,
+           modifier = Modifier
+               .padding(paddingValues)
+               .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp)
+       )
+
     }
 
     state.remarksDialogState?.let {
@@ -114,56 +148,26 @@ fun PostPressScreen(
         )
     }
 
-    viewModel.saveUpdateStatus?.let{
-
-        when(it){
-
-            is LoadingStatus.Error ->{
-                //Toast the message here
-                LaunchedEffect(Unit) {
-                    Toast.makeText(
-                        context,
-                        it.exception.message,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    //Remove the error state so that toast will not show up on screen rotation
-                    //Safe to reset the state since we are in a side effect
-                    viewModel.saveUpdateStatus = null
-                }
-            }
-
-            else ->{
-                WaitDialog()
-                if(it is LoadingStatus.Success<*>){
-                    LaunchedEffect(Unit){
-                        navigationController.popBackStack(R.id.fragmentJobDetails, true)
-                    }
-                }
-            }
-
-        }
-
-    }
+    if(state.isWaiting)
+        WaitDialog()
 
 }
 
 @Composable
-fun PostPressItemsList(postPressScreenState: PostPressScreenState) {
+fun PostPressItemsList(postPressScreenState: PostPressScreenState,modifier: Modifier=Modifier) {
 
     val context = LocalContext.current
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
+        modifier = modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        item("top spacing") {
-            Spacer(
-                Modifier
-                    .height(24.dp)
-                    .fillMaxWidth()
+        item("Screen heading") {
+            Text(
+                text = stringResource(R.string.post_press_details),
+                style = MaterialTheme.typography.h4
             )
         }
 
@@ -364,43 +368,25 @@ private fun onRemarksDialogResult(
     screenState.hideRemarksDialog()
 }
 
-@Composable
-private fun BottomButton(
-    text: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(0.dp, 12.dp, 12.dp, 16.dp),
-        contentAlignment = Alignment.CenterEnd
-    ) {
-        Button(onClick = onClick) {
-            Text(
-                text = text
-            )
-        }
-    }
-}
 
-/*
+@OptIn(ExperimentalFoundationApi::class, ExperimentalCoroutinesApi::class)
 @ExperimentalComposeUiApi
 @Preview
 @Composable
 fun PreviewPostPressScreen() {
 
-
-    val viewModel = ManagePrintOrderVM(
-        Repository(application.applicationContext)
-    )
+    val context = LocalContext.current
+    val screenState = remember {
+        PostPressScreenState(context)
+    }
 
     JobFlowTheme {
         PostPressScreen(
-            postPressScreenState = state,
-            isEditMode = false,
+            state=screenState,
+            onSavePrintOrder = {},
             onUpdatePrintOrder = {},
-            onCreatePrintOrder = {}
+            onClose = {}
         )
     }
 
-}*/
+}

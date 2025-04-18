@@ -86,7 +86,7 @@
     <string name="confirmation_old_print_order_not_found_proceed">Old print order not found.
         Do you want to proceed with creating the job with the given plate number anyway?</string>
     <string name="proceed">PROCEED</string>
-    <string name="invalid_plate_number">Should be greater than zero</string>
+    <string name="invalid_plate_number">Invalid Plate Number</string>
     <string name="required_field">*Required</string>
     <string name="urgent">Urgent</string>
     <string name="pending_remarks">Pending remarks</string>

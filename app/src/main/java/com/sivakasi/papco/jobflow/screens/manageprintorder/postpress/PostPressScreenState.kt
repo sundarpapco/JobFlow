@@ -15,6 +15,12 @@ class PostPressScreenState(
     private val context: Context
 ) {
 
+    var isWaiting by mutableStateOf(false)
+    private set
+
+    var isEditMode by mutableStateOf(false)
+        private set
+
     var bindingDialogState: BindingDialogState? by mutableStateOf(null)
         private set
 
@@ -34,6 +40,14 @@ class PostPressScreenState(
     var aqueousCoating: String? by mutableStateOf(null)
     var cutting: String? by mutableStateOf(null)
     var packing: String? by mutableStateOf(null)
+
+    fun showWaitDialog(){
+        isWaiting=true
+    }
+
+    fun hideWaitDialog(){
+        isWaiting=false
+    }
 
 
     fun showLaminationDialog() {
@@ -75,7 +89,8 @@ class PostPressScreenState(
         }
     }
 
-    fun loadPrintOrder(printOrder: PrintOrder) {
+    fun loadPrintOrder(printOrder: PrintOrder,editMode:Boolean) {
+        isEditMode=editMode
         lamination = printOrder.lamination
         foil = printOrder.foil
         scoring = printOrder.scoring
@@ -87,7 +102,7 @@ class PostPressScreenState(
         packing = printOrder.packing
     }
 
-    fun applyToPrintOrder(printOrder: PrintOrder) {
+    fun saveToPrintOrder(printOrder: PrintOrder) {
         printOrder.lamination = lamination
         printOrder.foil = foil
         printOrder.scoring = scoring

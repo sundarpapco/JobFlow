@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.intNumber
 
 class PlateMakingDetailsScreenState(
@@ -31,9 +32,10 @@ class PlateMakingDetailsScreenState(
     var backside by mutableStateOf("None")
     var backsideMachine by mutableStateOf(TextFieldValue(""))
 
-    fun loadPlateMakingDetail(plateMakingDetail: PlateMakingDetail) {
+    fun loadPrintOrder(printOrder: PrintOrder,editMode:Boolean) {
 
-        isEditMode = true
+        val plateMakingDetail = printOrder.plateMakingDetail
+        isEditMode = editMode
         plateNumber = plateMakingDetail.plateNumber
 
         trimHeight = if (plateMakingDetail.trimmingHeight == 0)
@@ -144,9 +146,14 @@ class PlateMakingDetailsScreenState(
 
     }
 
-    fun toPlateMakingDetail():PlateMakingDetail{
+    fun saveToPrintOrder(printOrder: PrintOrder){
+        printOrder.plateMakingDetail = toPlateMakingDetail()
+    }
+
+    private fun toPlateMakingDetail():PlateMakingDetail{
 
        val plateDetails = PlateMakingDetail()
+        plateDetails.plateNumber=plateNumber
         plateDetails.trimmingHeight=trimHeight.text.intNumber(0)
         plateDetails.trimmingWidth=trimWidth.text.intNumber(0)
 

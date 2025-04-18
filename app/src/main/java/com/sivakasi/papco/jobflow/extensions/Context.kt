@@ -54,7 +54,7 @@ fun Context.toast(msg:String,duration:Int=Toast.LENGTH_SHORT){
 }
 
 
-fun Context.toastError(e: Exception) {
+fun <T:Throwable>Context.toastError(e: T) {
     val msg = e.getMessage(this)
     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }

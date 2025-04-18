@@ -1,16 +1,30 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.*
-import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.*
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.sivakasi.papco.jobflow.data.DatabaseContract
+import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.Repository
+import com.sivakasi.papco.jobflow.extensions.toastError
+import com.sivakasi.papco.jobflow.screens.manageprintorder.addJob.AddJobScreenState
+import com.sivakasi.papco.jobflow.screens.manageprintorder.jobDetails.JobDetailsScreenState
+import com.sivakasi.papco.jobflow.screens.manageprintorder.paperDetails.PaperDetailsScreenState
+import com.sivakasi.papco.jobflow.screens.manageprintorder.plateMakingDetails.PlateMakingDetailsScreenState
 import com.sivakasi.papco.jobflow.screens.manageprintorder.postpress.PostPressScreenState
-import com.sivakasi.papco.jobflow.util.*
+import com.sivakasi.papco.jobflow.screens.manageprintorder.printingDetails.PrintingDetailsScreenState
+import com.sivakasi.papco.jobflow.util.Event
+import com.sivakasi.papco.jobflow.util.LoadingStatus
+import com.sivakasi.papco.jobflow.util.dataEvent
+import com.sivakasi.papco.jobflow.util.errorEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +37,12 @@ class ManagePrintOrderVM @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    val addJobScreenState = AddJobScreenState()
+    val jobDetailsScreenState = JobDetailsScreenState(application)
+    val paperDetailsScreenState = PaperDetailsScreenState(application)
+    val plateMakingDetailsScreenState = PlateMakingDetailsScreenState(application)
+    val printingDetailsScreenState = PrintingDetailsScreenState(application)
+    val postPressScreenState = PostPressScreenState(application)
 
     val recoveringFromProcessDeath = MutableLiveData(false)
 
@@ -32,32 +52,15 @@ class ManagePrintOrderVM @Inject constructor(
         savedStateHandle[processDeathKey] = true
     }
 
-    val postPressScreenState = PostPressScreenState(application)
-
     private val _loadedJob = MutableLiveData<PrintOrder>()
-    private val _reprintLoadingStatus = MutableLiveData<Event<LoadingStatus>>()
-
     val loadedJob: LiveData<PrintOrder> = _loadedJob
-    val reprintLoadingStatus: LiveData<Event<LoadingStatus>> = _reprintLoadingStatus
 
-    var saveUpdateStatus: LoadingStatus? by mutableStateOf(null)
+    var saveUpdateStatus:MutableStateFlow<Event<LoadingStatus>?> = MutableStateFlow(null)
     private lateinit var printOrder: PrintOrder
 
     var isEditMode: Boolean = false
     var editingPrintOrderParentDestinationId: String = DatabaseContract.DOCUMENT_DEST_NEW_JOBS
 
-    fun saveLoadedJob(printOrder: PrintOrder) {
-        this.printOrder = printOrder
-        _loadedJob.value = printOrder
-    }
-
-    fun loadRepeatJob(plateNumber: Int, searchByPlateNumber: Boolean) {
-
-        if (plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE) {
-            createRepeatJob(plateNumber)
-        } else
-            loadJobFromRepository(plateNumber, searchByPlateNumber)
-    }
 
     fun createNewJob() {
         printOrder = PrintOrder()
@@ -68,121 +71,88 @@ class ManagePrintOrderVM @Inject constructor(
         printOrder = PrintOrder()
         printOrder.jobType = PrintOrder.TYPE_REPEAT_JOB
         printOrder.plateMakingDetail.plateNumber = plateNumber
+        plateMakingDetailsScreenState.plateNumber=plateNumber
         _loadedJob.value = printOrder
     }
 
-    private fun loadJobFromRepository(plateNumber: Int, searchByPlateNumber: Boolean) {
+    fun loadJobFromRepository(plateNumber: Int) {
 
         viewModelScope.launch {
 
-            _reprintLoadingStatus.value =
-                loadingEvent(application.getString(R.string.one_moment_please))
+            addJobScreenState.showWaiting()
             try {
                 //Load Job from repository here like
-                val searchResult = if (searchByPlateNumber) {
-                    repository.getLatestPrintOrderWithPlateNumber(plateNumber) //Search by plate number
-                } else
-                    repository.fetchPrintOrder(plateNumber) //Search by po number
+                val searchResult=repository.getLatestPrintOrderWithPlateNumber(plateNumber) //Search by plate number
 
                 if (searchResult == null)
-                    _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
+                    addJobScreenState.showIsPONotFoundDialog()
                 else {
                     printOrder = searchResult
                     printOrder.prepareForReprint()
-                    postPressScreenState.loadPrintOrder(printOrder)
-                    _reprintLoadingStatus.value = dataEvent(printOrder)
+                    loadPrintOrderToScreens(printOrder)
+                    _loadedJob.value = printOrder
                 }
             } catch (e: Exception) {
-                _reprintLoadingStatus.value = errorEvent(e)
+                addJobScreenState.hideWaiting()
+                application.toastError(e)
             }
         }
     }
 
     fun loadPrintOrderToEdit(poNumber: Int) {
-        viewModelScope.launch {
 
-            _reprintLoadingStatus.value =
-                loadingEvent(application.getString(R.string.one_moment_please))
+        viewModelScope.launch {
+            addJobScreenState.showWaiting()
             try {
                 //Load Job from repository here like
                 val searchResult = repository.fetchPrintOrder(poNumber)
                 if (searchResult == null)
-                    _reprintLoadingStatus.value = errorEvent(ResourceNotFoundException(""))
+                    addJobScreenState.showIsPONotFoundDialog()
                 else {
                     printOrder = searchResult
-                    postPressScreenState.loadPrintOrder(printOrder)
-                    _reprintLoadingStatus.value = dataEvent(printOrder)
+                    loadPrintOrderToScreens(printOrder)
+                    _loadedJob.value = printOrder
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                _reprintLoadingStatus.value = errorEvent(e)
+                application.toastError(e)
             }
         }
     }
 
-
-    // Paper details
-
-    fun addPaperDetail(paperDetail: PaperDetail) {
-        if (printOrder.paperDetails == null) {
-            printOrder.paperDetails = mutableListOf(paperDetail)
-        } else {
-            /*Create a new Array by copying the old array because the recycler is already holding
-            the reference to list in the printOrder and so, the diffUtil will not find any
-            difference if we simply add to the already existing list. So, we need to create a new
-            list with all existing content, then add the new entry to it and then send that new list
-            to the RecyclerView Adapter */
-
-            val newList = ArrayList(printOrder.paperDetails!!)
-            newList.add(paperDetail)
-            printOrder.paperDetails = newList
-        }
-
-        _loadedJob.value = printOrder
+    private fun loadPrintOrderToScreens(printOrder: PrintOrder){
+        jobDetailsScreenState.loadPrintOrder(printOrder,editingPrintOrderParentDestinationId,isEditMode)
+        paperDetailsScreenState.loadPrintOrder(printOrder,isEditMode)
+        plateMakingDetailsScreenState.loadPrintOrder(printOrder,isEditMode)
+        printingDetailsScreenState.loadPrintOrder(printOrder,isEditMode)
+        postPressScreenState.loadPrintOrder(printOrder,isEditMode)
     }
 
-    fun removePaperDetail(index: Int) {
-
-        if (printOrder.paperDetails == null || printOrder.paperDetails!!.size < index + 1) {
-            return
-        } else {
-            val newList = ArrayList(printOrder.paperDetails!!)
-            newList.removeAt(index)
-            printOrder.paperDetails = newList
-        }
-
-        _loadedJob.value = printOrder
-    }
-
-    fun updatePaperDetail(index: Int, paperDetail: PaperDetail) {
-
-        if (printOrder.paperDetails == null) {
-            return
-        } else {
-            val newList = ArrayList(printOrder.paperDetails!!)
-            newList[index] = paperDetail
-            printOrder.paperDetails = newList
-        }
-
-        _loadedJob.value = printOrder
-    }
-
-
-    fun savePrintingDetails(details: PrintingDetail) {
-        printOrder.printingDetail = details
+    private fun saveScreensToPrintOrder(printOrder: PrintOrder){
+        jobDetailsScreenState.saveToPrintOrder(printOrder)
+        paperDetailsScreenState.saveToPrintOrder(printOrder)
+        plateMakingDetailsScreenState.saveToPrintOrder(printOrder)
+        printingDetailsScreenState.saveToPrintOrder(printOrder)
+        postPressScreenState.saveToPrintOrder(printOrder)
     }
 
     fun savePrintOrder() {
 
+        Log.d("SAATVIK","Saving Print Order")
+
         viewModelScope.launch {
             try {
-                saveUpdateStatus =
-                    LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-                postPressScreenState.applyToPrintOrder(printOrder)
-                repository.createPrintOrder(printOrder)
-                saveUpdateStatus = LoadingStatus.Success(Unit)
+                postPressScreenState.showWaitDialog()
+               saveScreensToPrintOrder(printOrder)
+                Log.d("SAATVIK","Plate Number: ${printOrder.plateMakingDetail.plateNumber}")
+                Log.d("SAATVIK","Job Type: ${printOrder.jobType}")
+                //repository.createPrintOrder(printOrder)
+                delay(2000)
+                postPressScreenState.hideWaitDialog()
+                saveUpdateStatus.value = dataEvent("Success")
             } catch (e: Exception) {
-                saveUpdateStatus = LoadingStatus.Error(e)
+                postPressScreenState.hideWaitDialog()
+                saveUpdateStatus.value = errorEvent(e)
             }
         }
 
@@ -190,16 +160,21 @@ class ManagePrintOrderVM @Inject constructor(
 
     fun updatePrintOrder() {
 
+        Log.d("SAATVIK","Updating Print Order")
 
         viewModelScope.launch {
             try {
-                saveUpdateStatus =
-                    LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-                postPressScreenState.applyToPrintOrder(printOrder)
-                repository.updatePrintOrder(editingPrintOrderParentDestinationId, printOrder)
-                saveUpdateStatus = LoadingStatus.Success(Unit)
+                postPressScreenState.showWaitDialog()
+                saveScreensToPrintOrder(printOrder)
+                Log.d("SAATVIK","Plate Number: ${printOrder.plateMakingDetail.plateNumber}")
+                Log.d("SAATVIK","Job Type: ${printOrder.jobType}")
+                //repository.updatePrintOrder(editingPrintOrderParentDestinationId, printOrder)
+                delay(2000)
+                postPressScreenState.hideWaitDialog()
+                saveUpdateStatus.value = dataEvent("Success")
             } catch (e: Exception) {
-                saveUpdateStatus = LoadingStatus.Error(e)
+                postPressScreenState.hideWaitDialog()
+                saveUpdateStatus.value = errorEvent(e)
             }
         }
     }

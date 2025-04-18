@@ -12,7 +12,6 @@ import com.sivakasi.papco.jobflow.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,6 +44,7 @@ class FragmentHomeVM @Inject constructor(
     }
 
     fun getStates() = listOf(newJobsState,inProgressState,machinesState)
+
 
     private fun observeJobs() {
 

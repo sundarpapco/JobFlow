@@ -1,6 +1,5 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.printingDetails
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -47,7 +45,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
@@ -56,15 +53,14 @@ import com.sivakasi.papco.jobflow.util.Duration
 
 @Composable
 fun PrintingDetailsScreen(
-    isEditMode: Boolean = false,
     screenState: PrintingDetailsScreenState,
-    onNextPressed: (PrintingDetail) -> Unit,
+    onNext: () -> Unit,
     onClose:()->Unit
 ) {
     Scaffold(
         topBar = {
             JobFlowTopBar(
-                title = if (isEditMode)
+                title = if (screenState.isEditMode)
                     stringResource(R.string.create_job)
                 else
                     stringResource(R.string.edit_job),
@@ -79,30 +75,18 @@ fun PrintingDetailsScreen(
                     }
                 }
             )
-        }
-    ) { paddingValues ->
-
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp)
-        ) {
-
-            PrintingDetailsScreenContent(
-                modifier = Modifier.weight(1f),
-                screenState = screenState
-            )
-
+        },
+        bottomBar = {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 0.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Button(
                     onClick = {
-                        if (screenState.validate())
-                            onNextPressed(screenState.toPrintingDetails())
+                        if(screenState.validate())
+                            onNext()
                     }
                 ) {
                     Text(
@@ -111,21 +95,29 @@ fun PrintingDetailsScreen(
                 }
             }
         }
+    ) { paddingValues ->
 
-        if (screenState.isRunningTimeDialogShowing) {
-            RunningTimeDialog(
-                runningTime = screenState.runningMinutes,
-                sheetsCount = 123,
-                hasSpotColours = screenState.hasSpotColours,
-                onSave = { duration, hasSpot ->
-                    screenState.runningMinutes = duration.inMinutes()
-                    screenState.hasSpotColours = hasSpot
-                    screenState.isRunningTimeDialogShowing = false
-                },
-                onDismiss = { screenState.isRunningTimeDialogShowing = false }
+        PrintingDetailsScreenContent(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp),
+                screenState = screenState
             )
-        }
+    }
 
+    if (screenState.isRunningTimeDialogShowing) {
+        RunningTimeDialog(
+            runningTime = screenState.runningMinutes,
+            sheetsCount = 123,
+            hasSpotColours = screenState.hasSpotColours,
+            onSave = { duration, hasSpot ->
+                screenState.runningMinutes = duration.inMinutes()
+                screenState.hasSpotColours = hasSpot
+                screenState.isRunningTimeDialogShowing = false
+            },
+            onDismiss = { screenState.isRunningTimeDialogShowing = false }
+        )
     }
 }
 
@@ -259,14 +251,12 @@ private fun PreviewPrintingDetailsScreen() {
 
     val context = LocalContext.current
     val screenState = remember {
-        PrintingDetailsScreenState(
-            context, PrintingDetail(),false
-        )
+        PrintingDetailsScreenState(context)
     }
     JobFlowTheme {
         PrintingDetailsScreen(
             screenState = screenState,
-            onNextPressed = {Log.d("SAATVIK",it.toString())},
+            onNext = {},
             onClose = {}
         ) 
     }

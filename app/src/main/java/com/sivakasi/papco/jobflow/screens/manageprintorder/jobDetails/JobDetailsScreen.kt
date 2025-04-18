@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -74,7 +76,10 @@ fun JobDetailsScreen(
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Button(
-                    onClick = onNext
+                    onClick = {
+                        if(screenState.validate())
+                            onNext()
+                    }
                 ) {
                     Text(
                         text = stringResource(R.string.next)
@@ -103,9 +108,11 @@ private fun JobDetailsScreenContent(
 ) {
 
     val jobNameFocus = remember { FocusRequester() }
+    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
@@ -139,8 +146,8 @@ private fun JobDetailsScreenContent(
 
         JobFlowTextField(
             modifier = Modifier
-                .focusRequester(jobNameFocus)
                 .clickable {
+                    screenState.clientNameError=null
                     onSelectClientName()
                 },
             value = screenState.clientName,
@@ -162,6 +169,7 @@ private fun JobDetailsScreenContent(
         )
 
         JobFlowTextField(
+            modifier = Modifier.focusRequester(jobNameFocus),
             value = screenState.jobName,
             onValueChange = {
                 screenState.jobNameError = null
@@ -187,14 +195,15 @@ private fun JobDetailsScreenContent(
             )
         }
 
-        JobFlowTextField(
-            value = screenState.invoiceDetail,
-            onValueChange = {
-                screenState.invoiceDetail = it
-            },
-            label = stringResource(R.string.invoice_detail),
-            singleLine = true
-        )
+        if (screenState.editingCompletedPO)
+            JobFlowTextField(
+                value = screenState.invoiceDetail,
+                onValueChange = {
+                    screenState.invoiceDetail = it
+                },
+                label = stringResource(R.string.invoice_detail),
+                singleLine = true
+            )
     }
 
     LaunchedEffect(Unit) {
@@ -208,7 +217,7 @@ private fun PreviewJobDetailsScreen() {
 
     val context = LocalContext.current
     val screenState = remember {
-        JobDetailsScreenState(context, true)
+        JobDetailsScreenState(context)
     }
 
     JobFlowTheme {

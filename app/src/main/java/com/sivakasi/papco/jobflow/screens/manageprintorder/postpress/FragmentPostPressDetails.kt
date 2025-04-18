@@ -9,16 +9,21 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.extensions.enableBackAsClose
-import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.hideKeyboard
+import com.sivakasi.papco.jobflow.extensions.showActionBar
+import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -39,8 +44,10 @@ class FragmentPostPressDetails : Fragment() {
             setContent {
                 JobFlowTheme {
                     PostPressScreen(
-                        viewModel,
-                        findNavController()
+                        state = viewModel.postPressScreenState,
+                        onSavePrintOrder = { viewModel.savePrintOrder() },
+                        onUpdatePrintOrder = { viewModel.updatePrintOrder() },
+                        onClose = { exitOutOfCreationFlow() }
                     )
                 }
             }
@@ -49,24 +56,50 @@ class FragmentPostPressDetails : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        enableBackAsClose()
-
-        if (viewModel.isEditMode)
-            updateTitle(getString(R.string.edit_job))
-        else
-            updateTitle(getString(R.string.create_job))
-
-        updateSubTitle("")
-        registerBackArrowMenu{
-            exitOutOfCreationFlow()
-        }
         observeViewModel()
     }
 
-    private fun observeViewModel(){
-        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner){
-            if(it)
+    override fun onResume() {
+        super.onResume()
+        hideActionBar()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        showActionBar()
+    }
+
+    private fun observeViewModel() {
+        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner) {
+            if (it)
                 exitOutOfCreationFlow()
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.saveUpdateStatus.collect {
+                    it?.let {
+                        if (!it.isAlreadyHandled())
+                            handleSaveUpdateEvent(it.handleEvent())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleSaveUpdateEvent(status: LoadingStatus) {
+        when(status){
+            is LoadingStatus.Success<*>->{
+                exitOutOfCreationFlow()
+            }
+
+            is LoadingStatus.Error->{
+                requireContext().toastError(status.exception)
+            }
+
+            else->{
+
+            }
         }
     }
 

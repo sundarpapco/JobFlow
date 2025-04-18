@@ -5,15 +5,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.sivakasi.papco.jobflow.data.PaperDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
 
 class PaperDetailsScreenState(
     val context:Context,
-    val isEditMode:Boolean
 ) {
 
+    var isEditMode:Boolean=false
+        private set
     var paperDetails:List<PaperDetail> by mutableStateOf(emptyList())
     var paperDialogState:PaperDetailDialogState? by mutableStateOf(null)
         private set
+
+    fun loadPrintOrder(printOrder: PrintOrder,editMode:Boolean){
+        isEditMode=editMode
+        paperDetails=printOrder.paperDetails ?: emptyList()
+    }
+
+    fun saveToPrintOrder(printOrder: PrintOrder){
+        printOrder.paperDetails=paperDetails.toMutableList()
+    }
 
     fun showPaperDetailDialog(
         index:Int,
