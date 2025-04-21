@@ -45,7 +45,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.asCommaSeparatedNumber
 import com.sivakasi.papco.jobflow.extensions.intNumber
-import com.sivakasi.papco.jobflow.screens.manageprintorder.ExpressionChecker
+import com.sivakasi.papco.jobflow.screens.manageprintorder.RunningTimeExpressionChecker
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.util.Duration
@@ -264,10 +264,10 @@ private fun RunningTimeDialogContent(
                     onClick = {
                         val expressionText = expression.text.trim()
                         if (expressionText.isNotBlank()) {
-                            val expressionChecker = ExpressionChecker(expressionText)
-                            if (expressionChecker.isValid) {
-                                val duration = expressionChecker.totalTime()
-                                val spot = expressionChecker.hasExtraColour
+                            val runningTimeExpressionChecker = RunningTimeExpressionChecker(expressionText)
+                            if (runningTimeExpressionChecker.isValid) {
+                                val duration = runningTimeExpressionChecker.totalTime()
+                                val spot = runningTimeExpressionChecker.hasExtraColour
                                 onSave(duration, spot)
                             } else
                                 expressionError =

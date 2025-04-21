@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.extensions.isPositiveNumber
 import com.sivakasi.papco.jobflow.ui.JobFlowDropDown
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -78,7 +79,7 @@ fun PlateMakingScreen(
             ) {
                 Button(
                     onClick = {
-                        if(screenState.validate())
+                        if (screenState.validate())
                             onNext()
                     }
                 ) {
@@ -130,37 +131,7 @@ private fun PlateMakingScreenContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (screenState.isEditMode || screenState.plateNumber > 0)
-                Text(
-                    text = if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
-                        stringResource(R.string.outside_plate)
-                    else
-                        stringResource(R.string.old_plate_number, screenState.plateNumber)
-                )
-            else {
-                Checkbox(
-                    checked = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE,
-                    onCheckedChange = { checked ->
-                        if (checked)
-                            screenState.plateNumber = PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
-                        else
-                            screenState.plateNumber =
-                                PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
-                    }
-                )
-
-                Text(
-                    modifier = Modifier.clickable {
-                        if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
-                            screenState.plateNumber =
-                                PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
-                        else
-                            screenState.plateNumber = PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
-                    },
-                    text = stringResource(R.string.outside_plate),
-                    style = MaterialTheme.typography.subtitle2
-                )
-            }
+            PlateNumber(screenState)
 
             Spacer(Modifier.weight(1f))
 
@@ -196,7 +167,8 @@ private fun PlateMakingScreenContent(
                 value = screenState.trimHeight,
                 onValueChange = {
                     screenState.trimHeightError = null
-                    screenState.trimHeight = it
+                    if (it.text.isPositiveNumber())
+                        screenState.trimHeight = it
                 },
                 label = stringResource(R.string.trim_height),
                 singleLine = true,
@@ -204,7 +176,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                error = screenState.trimHeightError
+                error = screenState.trimHeightError,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
 
             JobFlowTextField(
@@ -220,7 +197,8 @@ private fun PlateMakingScreenContent(
                 value = screenState.trimWidth,
                 onValueChange = {
                     screenState.trimWidthError = null
-                    screenState.trimWidth = it
+                    if (it.text.isPositiveNumber())
+                        screenState.trimWidth = it
                 },
                 label = stringResource(R.string.trim_width),
                 singleLine = true,
@@ -228,7 +206,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                error = screenState.trimWidthError
+                error = screenState.trimWidthError,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
         }
 
@@ -252,8 +235,10 @@ private fun PlateMakingScreenContent(
                     },
                 value = screenState.jobHeight,
                 onValueChange = {
-                    screenState.jobHeight = it
-                    screenState.autoSetGripperAndTail()
+                    if (it.text.isPositiveNumber()) {
+                        screenState.jobHeight = it
+                        screenState.autoSetGripperAndTail()
+                    }
                 },
                 label = stringResource(R.string.job_height),
                 singleLine = true,
@@ -261,7 +246,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                enabled = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                enabled = screenState.enablePlateFields,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
 
             JobFlowTextField(
@@ -281,7 +271,8 @@ private fun PlateMakingScreenContent(
                     },
                 value = screenState.jobWidth,
                 onValueChange = {
-                    screenState.jobWidth = it
+                    if (it.text.isPositiveNumber())
+                        screenState.jobWidth = it
                 },
                 label = stringResource(R.string.job_width),
                 singleLine = true,
@@ -289,7 +280,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                enabled = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                enabled = screenState.enablePlateFields,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
         }
 
@@ -308,7 +304,8 @@ private fun PlateMakingScreenContent(
                     },
                 value = screenState.gripper,
                 onValueChange = {
-                    screenState.gripper = it
+                    if (it.text.isPositiveNumber())
+                        screenState.gripper = it
                 },
                 label = stringResource(R.string.gripper),
                 singleLine = true,
@@ -316,7 +313,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                enabled = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                enabled = screenState.enablePlateFields,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
 
             JobFlowTextField(
@@ -331,7 +333,8 @@ private fun PlateMakingScreenContent(
                     },
                 value = screenState.tail,
                 onValueChange = {
-                    screenState.tail = it
+                    if (it.text.isPositiveNumber())
+                        screenState.tail = it
                 },
                 label = stringResource(R.string.tail),
                 singleLine = true,
@@ -339,7 +342,12 @@ private fun PlateMakingScreenContent(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 ),
-                enabled = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                enabled = screenState.enablePlateFields,
+                trailingIcon = {
+                    Text(
+                        text = "mm"
+                    )
+                }
             )
         }
 
@@ -354,6 +362,7 @@ private fun PlateMakingScreenContent(
                 },
             value = screenState.machine,
             onValueChange = {
+                screenState.machineError = null
                 screenState.machine = it
             },
             label = stringResource(R.string.machine),
@@ -361,7 +370,8 @@ private fun PlateMakingScreenContent(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
-            )
+            ),
+            error = screenState.machineError
         )
 
         JobFlowTextField(
@@ -385,7 +395,7 @@ private fun PlateMakingScreenContent(
                 imeAction = ImeAction.Next
             ),
             error = screenState.screenError,
-            enabled = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+            enabled = screenState.enablePlateFields
         )
 
         JobFlowDropDown(
@@ -428,6 +438,54 @@ private fun PlateMakingScreenContent(
     }
 }
 
+
+@Composable
+private fun PlateNumber(screenState: PlateMakingDetailsScreenState) {
+    if (screenState.isEditMode) {
+        Text(
+            text = if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+                stringResource(R.string.outside_plate)
+            else
+                stringResource(R.string.plate_number, screenState.plateNumber)
+        )
+    } else {
+        if (screenState.jobType == PrintOrder.TYPE_REPEAT_JOB) {
+            Text(
+                text = if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+                    stringResource(R.string.outside_plate)
+                else
+                    stringResource(R.string.old_plate_number, screenState.plateNumber)
+            )
+        } else {
+            Checkbox(
+                checked = screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE,
+                onCheckedChange = { checked ->
+                    if (checked)
+                        screenState.plateNumber =
+                            PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
+                    else
+                        screenState.plateNumber =
+                            PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                }
+            )
+
+            Text(
+                modifier = Modifier.clickable {
+                    if (screenState.plateNumber == PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE)
+                        screenState.plateNumber =
+                            PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED
+                    else
+                        screenState.plateNumber =
+                            PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
+                },
+                text = stringResource(R.string.outside_plate),
+                style = MaterialTheme.typography.subtitle2
+            )
+        }
+    }
+}
+
+
 @Preview(name = "Screen")
 @Composable
 private fun PreviewContent() {
@@ -435,20 +493,20 @@ private fun PreviewContent() {
     val context = LocalContext.current
 
     val screenState = remember {
-        val state=PlateMakingDetailsScreenState(context)
+        val state = PlateMakingDetailsScreenState(context)
         val details = PlateMakingDetail().apply {
             plateNumber = 12345
-            trimmingHeight=585
-            trimmingWidth=910
-            jobHeight=585
-            jobWidth=910
-            machine="D3000S5"
-            screen="175# Final"
+            trimmingHeight = 585
+            trimmingWidth = 910
+            jobHeight = 585
+            jobWidth = 910
+            machine = "D3000S5"
+            screen = "175# Final"
         }
         val printOrder = PrintOrder().apply {
-            plateMakingDetail=details
+            plateMakingDetail = details
         }
-        state.loadPrintOrder(printOrder,false)
+        state.loadPrintOrder(printOrder, false)
         state
     }
 

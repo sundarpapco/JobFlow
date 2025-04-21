@@ -225,10 +225,10 @@ private fun PrintingDetailsScreenContent(
                 },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 disabledTextColor = LocalContentColor.current,
-                disabledBorderColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high),
+                disabledBorderColor = MaterialTheme.colors.secondaryVariant,
                 disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
                 disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+                disabledLabelColor = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
             ),
             value = runningTime,
             onValueChange = {},

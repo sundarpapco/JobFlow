@@ -36,6 +36,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
+import com.sivakasi.papco.jobflow.extensions.isPositiveFloatNumber
+import com.sivakasi.papco.jobflow.extensions.isPositiveNumber
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -45,7 +47,7 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 fun PaperDetailDialog(
     state: PaperDetailDialogState,
     onDismiss: () -> Unit,
-    onSave: (Int,PaperDetail) -> Unit
+    onSave: (Int, PaperDetail) -> Unit
 ) {
 
     Dialog(
@@ -70,7 +72,7 @@ fun PaperDetailDialog(
 @Composable
 private fun PaperDetailDialogContent(
     dialogState: PaperDetailDialogState,
-    onSave: (Int,PaperDetail) -> Unit
+    onSave: (Int, PaperDetail) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -127,7 +129,9 @@ private fun PaperDetailDialogContent(
                 value = dialogState.height,
                 onValueChange = {
                     dialogState.heightError = null
-                    dialogState.height = it
+                    if (it.text.isPositiveFloatNumber()) { // Ensures only positive floats
+                        dialogState.height = it
+                    }
                 },
                 label = stringResource(R.string.height),
                 singleLine = true,
@@ -150,7 +154,9 @@ private fun PaperDetailDialogContent(
                 value = dialogState.width,
                 onValueChange = {
                     dialogState.widthError = null
-                    dialogState.width = it
+                    if (it.text.isPositiveFloatNumber()) {
+                        dialogState.width = it
+                    }
                 },
                 label = stringResource(R.string.width),
                 singleLine = true,
@@ -173,7 +179,8 @@ private fun PaperDetailDialogContent(
                 value = dialogState.gsm,
                 onValueChange = {
                     dialogState.gsmError = null
-                    dialogState.gsm = it
+                    if(it.text.isPositiveNumber())
+                        dialogState.gsm = it
                 },
                 label = stringResource(R.string.gsm),
                 singleLine = true,
@@ -245,7 +252,8 @@ private fun PaperDetailDialogContent(
                 value = dialogState.sheets,
                 onValueChange = {
                     dialogState.sheetsError = null
-                    dialogState.sheets = it
+                    if(it.text.isPositiveNumber())
+                        dialogState.sheets = it
                 },
                 label = stringResource(R.string.sheets),
                 singleLine = true,
@@ -264,7 +272,7 @@ private fun PaperDetailDialogContent(
             Button(
                 onClick = {
                     if (dialogState.validate())
-                        onSave(dialogState.editingIndex,dialogState.toPaperDetail())
+                        onSave(dialogState.editingIndex, dialogState.toPaperDetail())
                 }
             ) {
                 Text(
@@ -287,7 +295,7 @@ private fun ContentPreview() {
     val context = LocalContext.current
 
     val state = remember {
-        PaperDetailDialogState(context, 0,PaperDetail())
+        PaperDetailDialogState(context, 0, PaperDetail())
     }
 
     JobFlowTheme {
@@ -296,7 +304,7 @@ private fun ContentPreview() {
             onDismiss = {
 
             },
-            onSave = {_,_->
+            onSave = { _, _ ->
 
             }
         )

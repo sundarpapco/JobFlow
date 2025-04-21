@@ -7,5 +7,3 @@ sealed class LoadingStatus{
     class Error(val exception:Throwable):LoadingStatus()
 
 }
-
-class LoadingFailedException(message:String):Exception(message)

@@ -37,7 +37,7 @@ import kotlinx.coroutines.delay
 
 class LaminationDialogState {
 
-    var material: Int by mutableStateOf(Lamination.MATERIAL_PVC)
+    var material: Int by mutableIntStateOf(Lamination.MATERIAL_PVC)
     var micron: TextFieldValue by mutableStateOf(TextFieldValue("7"))
     var remarks: TextFieldValue by mutableStateOf(TextFieldValue(""))
 
@@ -46,7 +46,7 @@ class LaminationDialogState {
 }
 
 class BindingDialogState {
-    var binding: Int by mutableStateOf(Binding.TYPE_SADDLE_STITCH)
+    var binding: Int by mutableIntStateOf(Binding.TYPE_SADDLE_STITCH)
     var remarks: TextFieldValue by mutableStateOf(TextFieldValue(""))
 
     fun toBinding(): Binding = Binding(binding, remarks.text)

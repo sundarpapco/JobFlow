@@ -10,13 +10,18 @@ import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.ui.TextInputDialogState
+import com.sivakasi.papco.jobflow.util.LoadingStatus
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 class PostPressScreenState(
     private val context: Context
 ) {
 
+    private val loadingChannel = Channel<LoadingStatus>()
+    val loadingStatus=loadingChannel.receiveAsFlow()
+
     var isWaiting by mutableStateOf(false)
-    private set
 
     var isEditMode by mutableStateOf(false)
         private set
@@ -41,14 +46,17 @@ class PostPressScreenState(
     var cutting: String? by mutableStateOf(null)
     var packing: String? by mutableStateOf(null)
 
-    fun showWaitDialog(){
-        isWaiting=true
+    suspend fun showLoadingStatus(){
+        loadingChannel.send( LoadingStatus.Loading(context.getString(R.string.one_moment_please)))
     }
 
-    fun hideWaitDialog(){
-        isWaiting=false
+    suspend fun loadingErrorStatus(e:Exception){
+        loadingChannel.send(LoadingStatus.Error(e))
     }
 
+    suspend fun <T>loadingSuccessStatus(data:T){
+        loadingChannel.send(LoadingStatus.Success(data))
+    }
 
     fun showLaminationDialog() {
         laminationDialogState = LaminationDialogState()

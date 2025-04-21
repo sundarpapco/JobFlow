@@ -15,12 +15,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
-import com.sivakasi.papco.jobflow.extensions.hideKeyboard
 import com.sivakasi.papco.jobflow.extensions.showActionBar
-import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -31,8 +28,12 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class FragmentPostPressDetails : Fragment() {
 
-
     private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        observeViewModel()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,18 +46,13 @@ class FragmentPostPressDetails : Fragment() {
                 JobFlowTheme {
                     PostPressScreen(
                         state = viewModel.postPressScreenState,
-                        onSavePrintOrder = { viewModel.savePrintOrder() },
+                        onSavePrintOrder = { viewModel.createPrintOrder() },
                         onUpdatePrintOrder = { viewModel.updatePrintOrder() },
                         onClose = { exitOutOfCreationFlow() }
                     )
                 }
             }
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeViewModel()
     }
 
     override fun onResume() {
@@ -70,35 +66,12 @@ class FragmentPostPressDetails : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner) {
-            if (it)
-                exitOutOfCreationFlow()
-        }
-
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.saveUpdateStatus.collect {
-                    it?.let {
-                        if (!it.isAlreadyHandled())
-                            handleSaveUpdateEvent(it.handleEvent())
-                    }
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.recoveringFromProcessDeath.collect{
+                    if(it)
+                        exitOutOfCreationFlow()
                 }
-            }
-        }
-    }
-
-    private fun handleSaveUpdateEvent(status: LoadingStatus) {
-        when(status){
-            is LoadingStatus.Success<*>->{
-                exitOutOfCreationFlow()
-            }
-
-            is LoadingStatus.Error->{
-                requireContext().toastError(status.exception)
-            }
-
-            else->{
-
             }
         }
     }

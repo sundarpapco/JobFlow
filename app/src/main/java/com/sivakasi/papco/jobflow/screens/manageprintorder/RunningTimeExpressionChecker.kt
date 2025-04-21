@@ -3,7 +3,7 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder
 import com.sivakasi.papco.jobflow.util.Duration
 import java.util.regex.Pattern
 
-class ExpressionChecker(private val userInput: String) {
+class RunningTimeExpressionChecker(private val userInput: String) {
 
     private val regex =
         "[1-9][0-9]*(.[1-9])?[SsGgRr]?([Xx][0-9]+[FfHh]?[Ee]?)?(\\+[1-9][0-9]*(.[1-9])?[SsGgRr]?([Xx][0-9]+[FfHh]?[Ee]?)?)*"

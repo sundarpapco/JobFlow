@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.extensions.intNumber
@@ -190,7 +191,8 @@ private fun AddJobScreenContent(
                 value = screenState.ridNumber,
                 onValueChange = {
                     screenState.ridError = null
-                    screenState.ridNumber = it
+                    if(it.isDigitsOnly())
+                        screenState.ridNumber = it
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(

@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
@@ -15,6 +18,7 @@ import com.sivakasi.papco.jobflow.screens.manageprintorder.paperDetails.PaperDet
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -22,6 +26,10 @@ class FragmentPaperDetails : Fragment(){
 
     private val viewModel: ManagePrintOrderVM by hiltNavGraphViewModels(R.id.print_order_flow)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        observeViewModel()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,11 +52,6 @@ class FragmentPaperDetails : Fragment(){
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeViewModel()
-    }
-
     override fun onResume() {
         super.onResume()
         hideActionBar()
@@ -61,9 +64,13 @@ class FragmentPaperDetails : Fragment(){
 
 
     private fun observeViewModel() {
-        viewModel.recoveringFromProcessDeath.observe(viewLifecycleOwner) {
-            if (it)
-                exitOutOfCreationFlow()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.recoveringFromProcessDeath.collect{
+                    if(it)
+                        exitOutOfCreationFlow()
+                }
+            }
         }
     }
 

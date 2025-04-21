@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.postpress
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -32,10 +32,12 @@ import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
+import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
+import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -45,9 +47,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @Composable
 fun PostPressScreen(
     state: PostPressScreenState,
-    onSavePrintOrder:()->Unit,
-    onUpdatePrintOrder:()->Unit,
-    onClose: ()->Unit
+    onSavePrintOrder: () -> Unit,
+    onUpdatePrintOrder: () -> Unit,
+    onClose: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -81,7 +83,7 @@ fun PostPressScreen(
             ) {
                 Button(
                     onClick = {
-                        if(state.isEditMode)
+                        if (state.isEditMode)
                             onUpdatePrintOrder()
                         else
                             onSavePrintOrder()
@@ -98,12 +100,12 @@ fun PostPressScreen(
         }
     ) { paddingValues ->
 
-       PostPressItemsList(
-           state,
-           modifier = Modifier
-               .padding(paddingValues)
-               .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp)
-       )
+        PostPressItemsList(
+            state,
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 0.dp)
+        )
 
     }
 
@@ -138,7 +140,6 @@ fun PostPressScreen(
         BindingDialog(
             state = it,
             onPositiveClick = {
-                Log.d("SUNDAR","Binding Positive click")
                 state.binding = it.toBinding()
                 state.dismissBindingDialog()
             },
@@ -148,13 +149,36 @@ fun PostPressScreen(
         )
     }
 
-    if(state.isWaiting)
+    if (state.isWaiting)
         WaitDialog()
 
+    LaunchedEffect(Unit) {
+        state.loadingStatus.collect { status ->
+
+            when (status) {
+                is LoadingStatus.Loading -> {
+                    state.isWaiting = true
+                }
+
+                is LoadingStatus.Success<*> -> {
+                    state.isWaiting = false
+                    onClose()
+                }
+
+                is LoadingStatus.Error -> {
+                    state.isWaiting = false
+                    context.toastError(status.exception)
+                }
+
+            }
+
+        }
+    }
 }
 
+
 @Composable
-fun PostPressItemsList(postPressScreenState: PostPressScreenState,modifier: Modifier=Modifier) {
+fun PostPressItemsList(postPressScreenState: PostPressScreenState, modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
 
@@ -377,12 +401,14 @@ fun PreviewPostPressScreen() {
 
     val context = LocalContext.current
     val screenState = remember {
-        PostPressScreenState(context)
+        PostPressScreenState(context).apply {
+            folding="Special Book"
+        }
     }
 
     JobFlowTheme {
         PostPressScreen(
-            state=screenState,
+            state = screenState,
             onSavePrintOrder = {},
             onUpdatePrintOrder = {},
             onClose = {}

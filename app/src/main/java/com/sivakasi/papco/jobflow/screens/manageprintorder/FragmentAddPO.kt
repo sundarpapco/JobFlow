@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
@@ -16,6 +19,8 @@ import com.sivakasi.papco.jobflow.screens.manageprintorder.addJob.AddPrintOrderS
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -50,15 +55,17 @@ class FragmentAddPO : Fragment() {
         if(isAutoRepeatMode()){
             check(getEditingPOId() > 0){"Invalid PO number provided in auto repeat mode"}
             //Search and load from repo using the provided PO number and not plate number
-            viewModel.loadPrintOrderToEdit(getEditingPOId())
+            viewModel.loadJobByPONumber(getEditingPOId())
             return
         }
 
         if (isEditMode()) {
             viewModel.isEditMode = true
             viewModel.editingPrintOrderParentDestinationId = getParentDestinationId()
-            viewModel.loadPrintOrderToEdit(getEditingPOId())
+            viewModel.loadJobByPONumber(getEditingPOId())
         }
+
+        observeViewModel()
     }
 
     override fun onCreateView(
@@ -74,7 +81,7 @@ class FragmentAddPO : Fragment() {
                         isEditMode = isEditMode(),
                         onCreateNewJob = viewModel::createNewJob,
                         onCreateRepeatJob = viewModel::createRepeatJob,
-                        onLoadRepeatJob = viewModel::loadJobFromRepository,
+                        onLoadRepeatJob = viewModel::loadJobByPlateNumber,
                         onClose = {findNavController().popBackStack()}
                     )
                 }
@@ -82,15 +89,17 @@ class FragmentAddPO : Fragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeViewModel()
-    }
-
     private fun observeViewModel() {
-        viewModel.loadedJob.observe(viewLifecycleOwner) {
-            //A valid print order has been successfully loaded. So, navigate to next screen
-            navigateToNextScreen()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.loadedJob.collectLatest {
+                    it?.let{
+                        //A valid print order has been successfully loaded. So, navigate to next screen
+                        navigateToNextScreen()
+                    }
+                }
+            }
         }
     }
 

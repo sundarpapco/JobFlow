@@ -57,14 +57,14 @@ class PaperDetailDialogState(
     fun validate():Boolean{
         var valid=true
 
-        if(height.text.floatNumber(0f)==0f){
-            heightError=context.getString(R.string.required_field)
+        if(height.text.floatNumber(0f)<=0f){
+            heightError=context.getString(R.string.error_invalid)
             valid=false
         }
 
 
         if(width.text.floatNumber(0f)==0f) {
-            widthError = context.getString(R.string.required_field)
+            widthError = context.getString(R.string.error_invalid)
             valid=false
         }
 

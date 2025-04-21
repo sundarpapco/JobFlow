@@ -14,8 +14,10 @@ import com.sivakasi.papco.jobflow.extensions.intNumber
 class PlateMakingDetailsScreenState(
     private val context: Context
 ) {
+    //Job type needed to determine whether to show CheckBox or Plate number Text
+    var jobType = PrintOrder.TYPE_NEW_JOB
     var isEditMode by mutableStateOf(false)
-    var plateNumber by  mutableIntStateOf( PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED)
+    var plateNumber by mutableIntStateOf(PlateMakingDetail.PLATE_NUMBER_NOT_YET_ALLOCATED)
     var dontCheckSize by mutableStateOf(false)
     var trimHeight by mutableStateOf(TextFieldValue(""))
     var trimHeightError: String? by mutableStateOf(null)
@@ -28,42 +30,46 @@ class PlateMakingDetailsScreenState(
     var machine by mutableStateOf(TextFieldValue(""))
     var machineError: String? by mutableStateOf(null)
     var screen by mutableStateOf(TextFieldValue(""))
-    var screenError:String? by mutableStateOf(null)
+    var screenError: String? by mutableStateOf(null)
     var backside by mutableStateOf("None")
     var backsideMachine by mutableStateOf(TextFieldValue(""))
+    val enablePlateFields: Boolean
+        get() = jobType==PrintOrder.TYPE_NEW_JOB
+                && plateNumber!=PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
 
-    fun loadPrintOrder(printOrder: PrintOrder,editMode:Boolean) {
+    fun loadPrintOrder(printOrder: PrintOrder, editMode: Boolean) {
 
+        jobType = printOrder.jobType
         val plateMakingDetail = printOrder.plateMakingDetail
         isEditMode = editMode
         plateNumber = plateMakingDetail.plateNumber
 
-        trimHeight = if (plateMakingDetail.trimmingHeight == 0)
+        trimHeight = if (plateMakingDetail.trimmingHeight <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.trimmingHeight.toString())
 
-        trimWidth = if (plateMakingDetail.trimmingWidth == 0)
+        trimWidth = if (plateMakingDetail.trimmingWidth <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.trimmingWidth.toString())
 
-        jobHeight = if (plateMakingDetail.jobHeight == 0)
+        jobHeight = if (plateMakingDetail.jobHeight <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.jobHeight.toString())
 
-        jobWidth = if (plateMakingDetail.jobWidth == 0)
+        jobWidth = if (plateMakingDetail.jobWidth <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.jobWidth.toString())
 
-        gripper = if (plateMakingDetail.gripper == 0)
+        gripper = if (plateMakingDetail.gripper <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.gripper.toString())
 
-        tail = if (plateMakingDetail.tail == 0)
+        tail = if (plateMakingDetail.tail <= 0)
             TextFieldValue("")
         else
             TextFieldValue(plateMakingDetail.tail.toString())
@@ -74,19 +80,19 @@ class PlateMakingDetailsScreenState(
         backsideMachine = TextFieldValue(plateMakingDetail.backsideMachine)
     }
 
-    fun autoSetGripperAndTail(){
+    fun autoSetGripperAndTail() {
         val trimHeightNumber = trimHeight.text.intNumber(0)
         val jobHeightNumber = jobHeight.text.intNumber(0)
-        val space =trimHeightNumber-jobHeightNumber
-        if(space > 10){
+        val space = trimHeightNumber - jobHeightNumber
+        if (space > 10) {
             gripper = TextFieldValue("10")
-            tail = TextFieldValue((space-10).toString())
-        }else{
+            tail = TextFieldValue((space - 10).toString())
+        } else {
             gripper = TextFieldValue(space.toString())
-            tail=TextFieldValue("0")
+            tail = TextFieldValue("0")
         }
 
-        if(space < 0){
+        if (space < 0) {
             gripper = TextFieldValue("")
             tail = TextFieldValue("")
         }
@@ -110,7 +116,7 @@ class PlateMakingDetailsScreenState(
         if (!dontCheckSize) {
 
             if (trimHeightNumber !in 360..720) {
-                trimHeightError = context.getString(R.string.error_invalid_trim_size, 340, 720)
+                trimHeightError = context.getString(R.string.error_invalid_trim_size, 360, 720)
                 valid = false
             }
 
@@ -118,24 +124,26 @@ class PlateMakingDetailsScreenState(
                 trimWidthError = context.getString(R.string.error_invalid_trim_size, 540, 1020)
                 valid = false
             }
+        }
 
-            if(plateNumber != PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE){
-                if(jobHeightNumber+gripperNumber+tailNumber != trimHeightNumber){
-                    trimHeightError=context.getString(R.string.error_invalid)
-                    valid=false
-                }
+        //Validate only when the fields are enabled
+        if (enablePlateFields) {
+            if (jobHeightNumber + gripperNumber + tailNumber != trimHeightNumber) {
+                trimHeightError = context.getString(R.string.error_invalid)
+                valid = false
+            }
 
-                if( jobWidthNumber > trimWidthNumber){
-                    trimWidthError=context.getString(R.string.error_invalid)
-                    valid=false
-                }
+            if (jobWidthNumber > trimWidthNumber) {
+                trimWidthError = context.getString(R.string.error_invalid)
+                valid = false
+            }
 
-                if(screen.text.isBlank()){
-                    screenError=context.getString(R.string.required_field)
-                    valid=false
-                }
+            if (screen.text.isBlank()) {
+                screenError = context.getString(R.string.required_field)
+                valid = false
             }
         }
+
 
         if (machine.text.isBlank()) {
             machineError = context.getString(R.string.required_field)
@@ -146,34 +154,34 @@ class PlateMakingDetailsScreenState(
 
     }
 
-    fun saveToPrintOrder(printOrder: PrintOrder){
+    fun saveToPrintOrder(printOrder: PrintOrder) {
         printOrder.plateMakingDetail = toPlateMakingDetail()
     }
 
-    private fun toPlateMakingDetail():PlateMakingDetail{
+    private fun toPlateMakingDetail(): PlateMakingDetail {
 
-       val plateDetails = PlateMakingDetail()
-        plateDetails.plateNumber=plateNumber
-        plateDetails.trimmingHeight=trimHeight.text.intNumber(0)
-        plateDetails.trimmingWidth=trimWidth.text.intNumber(0)
+        val plateDetails = PlateMakingDetail()
+        plateDetails.plateNumber = plateNumber
+        plateDetails.trimmingHeight = trimHeight.text.intNumber(0)
+        plateDetails.trimmingWidth = trimWidth.text.intNumber(0)
 
-        if(plateNumber != PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE) {
+        if (plateNumber != PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE) {
             plateDetails.jobHeight = jobHeight.text.intNumber(0)
             plateDetails.jobWidth = jobWidth.text.intNumber(0)
             plateDetails.gripper = gripper.text.intNumber(0)
-            plateDetails.tail=tail.text.intNumber(0)
+            plateDetails.tail = tail.text.intNumber(0)
             plateDetails.screen = screen.text.trim()
-        }else{
+        } else {
             plateDetails.jobHeight = 0
             plateDetails.jobWidth = 0
             plateDetails.gripper = 0
-            plateDetails.tail=0
-            plateDetails.screen=""
+            plateDetails.tail = 0
+            plateDetails.screen = ""
         }
 
         plateDetails.machine = machine.text.trim()
         plateDetails.backsidePrinting = backside.trim()
-        plateDetails.backsideMachine=backsideMachine.text.trim()
+        plateDetails.backsideMachine = backsideMachine.text.trim()
 
         return plateDetails
 
