@@ -1,35 +1,28 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.*
-import androidx.appcompat.app.AlertDialog
-import androidx.core.view.MenuProvider
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.common.ConfirmationDialog
-import com.sivakasi.papco.jobflow.common.hideWaitDialog
-import com.sivakasi.papco.jobflow.common.showWaitDialog
-import com.sivakasi.papco.jobflow.databinding.FragmentNotesBinding
-import com.sivakasi.papco.jobflow.extensions.*
-import com.sivakasi.papco.jobflow.util.EventObserver
-import com.sivakasi.papco.jobflow.util.LoadingStatus
-import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.showActionBar
+import com.sivakasi.papco.jobflow.screens.notes.NotesScreen
+import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
-class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener {
+class NotesFragment : Fragment() {
 
     companion object {
         private const val KEY_PO_NUMBER = "key:po:number"
         private const val KEY_INITIAL_NOTES = "key:initial:notes"
-        private const val KEY_PRESERVE_TEXT_CHANGED = "key:preserve:text:changed"
-        private const val CONFIRM_ID_EXIT = 1
 
         fun getArguments(poNumber:Int, initialNotes: String): Bundle =
             Bundle().apply {
@@ -38,10 +31,6 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
             }
     }
 
-    private var textChanged = false
-    private var _viewBinding: FragmentNotesBinding? = null
-    private val viewBinding: FragmentNotesBinding
-        get() = _viewBinding!!
 
     private val viewModel: NotesFragmentVM by lazy {
         ViewModelProvider(this)[NotesFragmentVM::class.java]
@@ -49,166 +38,36 @@ class NotesFragment : Fragment(), ConfirmationDialog.ConfirmationDialogListener 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        textChanged = savedInstanceState?.getBoolean(KEY_PRESERVE_TEXT_CHANGED) ?: false
-        viewModel.observePrintOrderForRemoval(getPoNumber())
+        viewModel.observePrintOrderForRemoval(getPoNumber(),getInitialNotes())
     }
-
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewBinding = FragmentNotesBinding.inflate(inflater, container, false)
-
-        if (savedInstanceState == null)
-            viewBinding.txtNotes.setText(getInitialNotes())
-
-        return viewBinding.root
+       return ComposeView(requireContext()).apply {
+           setContent {
+               JobFlowTheme {
+                   NotesScreen(
+                       screenState = viewModel.screenState,
+                       title = getString(R.string.notes_title,getPoNumber().toString()),
+                       onSave= {viewModel.saveNotes()},
+                       onClose = {findNavController().popBackStack()}
+                   )
+               }
+           }
+       }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        enableBackArrow()
-        updateTitle(getString(R.string.notes_title,getPoNumber().toString()))
-        updateSubTitle("")
-        initViews()
-        prepareMenu()
-        observeViewModel()
-        registerBackPressedListener{
-            checkAndExitFragment()
-        }
+    override fun onResume() {
+        super.onResume()
+        hideActionBar()
     }
 
-    private fun prepareMenu() {
-        val menuProvider = object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.fragment_notes, menu)
-
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    android.R.id.home -> {
-                        checkAndExitFragment()
-                        true
-                    }
-                    R.id.mnu_save -> {
-                        if (textChanged) {
-                            val newNotes = viewBinding.txtNotes.text.toString().trim()
-                            viewModel.saveNotes(newNotes)
-                        } else
-                            findNavController().popBackStack()
-
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }
-        requireActivity().addMenuProvider(menuProvider,viewLifecycleOwner)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean(KEY_PRESERVE_TEXT_CHANGED, textChanged)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _viewBinding = null
-    }
-
-    private fun initViews() {
-        viewBinding.txtNotes.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-                textChanged = true
-            }
-        })
-    }
-
-    private fun observeViewModel() {
-
-        viewModel.saveStatus.observe(viewLifecycleOwner, EventObserver {
-            handleSaveStatusEvent(it)
-        })
-
-        viewModel.isPrintOrderMovedOrRemoved.observe(viewLifecycleOwner){removedOrMoved->
-            if(removedOrMoved)
-                showPrintOrderRemovedDialog()
-        }
-
-    }
-
-    private fun checkAndExitFragment() {
-        if (textChanged)
-            showConfirmationDialog()
-        else
-            findNavController().popBackStack()
-    }
-
-    private fun handleSaveStatusEvent(event: LoadingStatus) {
-
-        when (event) {
-
-            is LoadingStatus.Loading -> {
-                showWaitDialog(event.msg)
-            }
-
-            is LoadingStatus.Success<*> -> {
-                hideWaitDialog()
-                toast(getString(R.string.notes_saved_successfully))
-                findNavController().popBackStack()
-            }
-
-            is LoadingStatus.Error -> {
-                hideWaitDialog()
-                if (event.exception is ResourceNotFoundException)
-                    toast(getString(R.string.print_order_not_found))
-                else
-                    toast(event.exception.message ?: getString(R.string.error_unknown_error))
-
-            }
-
-        }
-
-    }
-
-    private fun showPrintOrderRemovedDialog(){
-
-        val builder=AlertDialog.Builder(requireContext())
-        builder.setMessage(getString(R.string.po_not_found_desc))
-        builder.setTitle(getString(R.string.po_not_found))
-        builder.setPositiveButton(getString(R.string.exit)){_,_->
-            findNavController().popBackStack(R.id.composeViewPrintOrderFragment,true)
-        }
-        builder.setCancelable(false)
-        builder.create().show()
-    }
-
-
-    private fun showConfirmationDialog() {
-        ConfirmationDialog.getInstance(
-            getString(R.string.unsaved_changes_confirmation),
-            getString(R.string.exit),
-            CONFIRM_ID_EXIT,
-            getString(R.string.unsaved_changes_title)
-        ).show(childFragmentManager, ConfirmationDialog.TAG)
-    }
-
-    override fun onConfirmationDialogConfirm(confirmationId: Int, extra: String) {
-        if(confirmationId== CONFIRM_ID_EXIT){
-            hideKeyboard(requireContext(),viewBinding.txtNotes)
-            findNavController().popBackStack()
-        }
+    override fun onStop() {
+        super.onStop()
+        showActionBar()
     }
 
     private fun getPoNumber(): Int =

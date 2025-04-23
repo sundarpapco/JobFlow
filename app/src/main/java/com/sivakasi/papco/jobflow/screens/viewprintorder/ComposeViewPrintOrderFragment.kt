@@ -70,22 +70,8 @@ class ComposeViewPrintOrderFragment : Fragment() {
                     activityContext = requireContext()
                 )
             }
-
-
         }
     }
-
-    /*fun print() {
-        viewModel.screenState.printOrder?.let{
-            val printAttributes = PrintAttributes.Builder()
-                .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
-                .build()
-            val printManager = requireContext().getSystemService(Context.PRINT_SERVICE) as PrintManager
-            val jobName = "PrintOrder"
-            val printAdapter = PrintOrderAdapter(it, printOrderReport)
-            printManager.print(jobName, printAdapter, printAttributes)
-        }
-    }*/
 
     private fun getPoNumber(): Int =
         arguments?.getInt(KEY_PO_NUMBER) ?: error("PO Number argument not found")

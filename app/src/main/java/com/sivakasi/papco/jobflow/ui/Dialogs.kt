@@ -202,9 +202,14 @@ fun JobFlowAlertDialog(
     negativeButtonText: String? = null,
     title: String? = null,
     onNegativeClick: () -> Unit = {},
-    onDismissListener: () -> Unit = {}
+    onDismissListener: () -> Unit = {},
+    cancellable:Boolean=true
 ) {
     AlertDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = cancellable,
+            dismissOnClickOutside = cancellable
+        ),
         onDismissRequest = onDismissListener,
         buttons = {
             Row(

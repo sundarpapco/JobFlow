@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.widget.Space
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -538,7 +539,7 @@ private fun PaperDetails(
                     ) {
 
                         if (index > 0)
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth()
@@ -555,6 +556,8 @@ private fun PaperDetails(
                                 textAlign = TextAlign.End
                             )
                         }
+
+                        Spacer(Modifier.height(4.dp))
 
                         Text(
                             modifier = Modifier.fillMaxWidth(),

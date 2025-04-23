@@ -9,7 +9,10 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
@@ -22,6 +25,7 @@ import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @ExperimentalMaterialApi
@@ -32,10 +36,15 @@ import javax.inject.Inject
 class FragmentHome : Fragment() {
 
     @Inject
-    lateinit var auth:JobFlowAuth
+    lateinit var auth: JobFlowAuth
 
     private val viewModel: FragmentHomeVM by lazy {
         ViewModelProvider(this)[FragmentHomeVM::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        observeViewModel()
     }
 
     override fun onCreateView(
@@ -47,7 +56,7 @@ class FragmentHome : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 HomeScreen(
-                    role=currentUserRole(),
+                    role = currentUserRole(),
                     jobGroups = viewModel.getStates(),
                     findNavController(),
                     this@FragmentHome::signOut
@@ -57,11 +66,6 @@ class FragmentHome : Fragment() {
     }
 
     private fun signOut() = auth.logout()
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        observeViewModel()
-    }
 
     override fun onResume() {
         super.onResume()
@@ -76,15 +80,17 @@ class FragmentHome : Fragment() {
 
     @OptIn(ExperimentalFoundationApi::class)
     private fun observeViewModel() {
-
-        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Client>(
-            ClientsFragment.KEY_CLIENT
-        )?.observe(viewLifecycleOwner) {
-
-            findNavController().currentBackStackEntry?.savedStateHandle?.remove<Client>(
-                ClientsFragment.KEY_CLIENT
-            )
-            navigateToClientHistoryScreen(it)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val handle = findNavController().currentBackStackEntry?.savedStateHandle
+                handle?.getStateFlow<Client?>(ClientsFragment.KEY_CLIENT, null)
+                    ?.collect {
+                        it?.let{
+                            navigateToClientHistoryScreen(it)
+                            handle[ClientsFragment.KEY_CLIENT]=null
+                        }
+                    }
+            }
         }
     }
 

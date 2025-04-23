@@ -1,14 +1,13 @@
 package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.app.Application
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PrintOrderWithDestination
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.util.*
+import com.sivakasi.papco.jobflow.screens.notes.NotesScreenState
+import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -21,29 +20,26 @@ class NotesFragmentVM @Inject constructor(
     private val application: Application
 ) : ViewModel() {
 
-    private val _saveStatus = MutableLiveData<Event<LoadingStatus>>()
-    private val _isPrintOrderMovedOrRemoved = MutableLiveData<Boolean>()
+    val screenState = NotesScreenState()
+
     private var loadedPo: PrintOrderWithDestination? = null
-    val saveStatus: LiveData<Event<LoadingStatus>> = _saveStatus
-    val isPrintOrderMovedOrRemoved: LiveData<Boolean> = _isPrintOrderMovedOrRemoved
     private var isAlreadyObserving = false
 
-    fun observePrintOrderForRemoval(poNumber: Int) {
-
+    fun observePrintOrderForRemoval(poNumber: Int,initialNotes:String) {
         if (isAlreadyObserving)
             return
         else
             isAlreadyObserving = true
 
+        screenState.loadInitialNotes(initialNotes)
         viewModelScope.launch {
-
             try {
                 repository.observePrintOrder(poNumber)
                     .collect { po ->
                         if (po != null)
                             loadedPo = po
                         else
-                            _isPrintOrderMovedOrRemoved.value = true
+                            screenState.showPOMovedDialog()
                     }
 
             } catch (_: Exception) {
@@ -53,26 +49,26 @@ class NotesFragmentVM @Inject constructor(
     }
 
 
-    fun saveNotes(newNotes: String) {
+    fun saveNotes() {
         viewModelScope.launch {
+            val newNotes=screenState.notes.trim()
             loadedPo?.let {
-                _saveStatus.value = loadingEvent(application.getString(R.string.one_moment_please))
+                screenState.startLoading()
                 try {
-                    repository.updateNotes(
+                     repository.updateNotes(
                         it.destination.id,
                         it.printOrder.documentId(),
                         newNotes
                     )
-                    _saveStatus.value = dataEvent(true)
+                    screenState.loadingSuccess()
                 } catch (e: Exception) {
-                    _saveStatus.value = errorEvent(e)
+                    screenState.loadingError(e)
                 }
             } ?: run {
-                _saveStatus.value = errorEvent(
-                    ResourceNotFoundException(
-                        application.getString(R.string.po_not_found)
+                screenState
+                    .loadingError(
+                        ResourceNotFoundException(application.getString(R.string.po_not_found))
                     )
-                )
             }
         }
     }
