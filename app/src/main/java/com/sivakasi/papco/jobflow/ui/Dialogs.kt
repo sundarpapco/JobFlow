@@ -41,7 +41,7 @@ fun TextInputDialog(
     dialogState: TextInputDialogState<*>,
     onPositiveClick: (String) -> Unit = {},
     onNegativeClick: () -> Unit = {},
-    dismissOnClickOutside: Boolean = false,
+    dismissOnClickOutside: Boolean = true,
     allowBlank: Boolean = false
 ) {
 

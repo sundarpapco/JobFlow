@@ -1,15 +1,26 @@
 package com.sivakasi.papco.jobflow.preview.workers
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.*
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.ForegroundInfo
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
 import com.sivakasi.papco.jobflow.JobFlowApplication
@@ -26,13 +37,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+
 @ExperimentalCoroutinesApi
 class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
     CoroutineWorker(context, workParams) {
 
     companion object {
         private const val INPUT_DATA_PREVIEW_ID = "jobFlow:preview:id"
-        private const val Input_DATA_FILE_NAME = "jobFlow:preview:fileName"
+        private const val INPUT_DATA_FILE_NAME = "jobFlow:preview:fileName"
         private const val WORK_NAME = "JobFlow:uploadPreviewWork"
 
         private const val NOTIFICATION_ID_PROGRESS = 1
@@ -49,7 +61,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
                 .setInputData(
                     workDataOf(
                         INPUT_DATA_PREVIEW_ID to preview.previewId,
-                        Input_DATA_FILE_NAME to preview.fileName
+                        INPUT_DATA_FILE_NAME to preview.fileName
                     )
                 )
                 .setBackoffCriteria(
@@ -81,6 +93,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
             priority = NotificationCompat.PRIORITY_DEFAULT
         }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override suspend fun doWork(): Result {
 
         setForeground(getForegroundInfo())
@@ -117,7 +130,6 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
 
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.d("SUNDAR", "Worker Failed. Will retry later")
             //If this work is re attempting to run more than 10 times, then lets quit
             if (runAttemptCount >= 10)
                 Result.failure()
@@ -131,10 +143,10 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override suspend fun getForegroundInfo(): ForegroundInfo {
 
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            ForegroundInfo(NOTIFICATION_ID_PROGRESS,notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
-        else
-            ForegroundInfo(NOTIFICATION_ID_PROGRESS, notificationBuilder.build())
+        return ForegroundInfo(
+            NOTIFICATION_ID_PROGRESS,notificationBuilder.build(),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
+        )
     }
 
     private fun updateNotification(currentProgress: Int) {
@@ -160,8 +172,10 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
         notify(notification)
     }
 
+
+    @SuppressLint("MissingPermission")
     private fun notify(notification: Notification, id: Int = NOTIFICATION_ID_PROGRESS) {
-        NotificationManagerCompat.from(applicationContext).apply {
+        NotificationManagerCompat.from(applicationContext).apply  {
             notify(id, notification)
         }
     }
@@ -206,7 +220,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
         inputData.getString(INPUT_DATA_PREVIEW_ID) ?: error("Preview Id input not found")
 
     private fun fileName(): String =
-        inputData.getString(Input_DATA_FILE_NAME) ?: error("File name input not found")
+        inputData.getString(INPUT_DATA_FILE_NAME) ?: error("File name input not found")
 
     private fun getPreview(): JobPreview = JobPreview(
         context = applicationContext,

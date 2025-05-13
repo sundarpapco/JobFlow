@@ -321,7 +321,8 @@ fun JobFlowTopBar(
                 if (subtitle != null)
                     Text(
                         text = subtitle,
-                        style = MaterialTheme.typography.subtitle2
+                        style = MaterialTheme.typography.subtitle2,
+                        color = MaterialTheme.colors.onSurface.copy(0.6f)
                     )
             }
         },

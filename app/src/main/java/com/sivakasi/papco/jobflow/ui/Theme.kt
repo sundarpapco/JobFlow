@@ -114,7 +114,7 @@ fun JobFlowTheme(
             RippleConfiguration(
                 color = rippleColor,
                 rippleAlpha = RippleAlpha(
-                    0.3f, 0.3f, 0.3f, 0.3f
+                    0.6f, 0.6f, 0.6f, 0.6f
                 )
             )
         }

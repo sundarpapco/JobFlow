@@ -259,7 +259,7 @@ private fun PaperDetailDialogContent(
                 singleLine = true,
                 error = dialogState.sheetsError,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
+                    keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 )
             )

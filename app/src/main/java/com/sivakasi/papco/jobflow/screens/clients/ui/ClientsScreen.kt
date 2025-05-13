@@ -242,10 +242,12 @@ private fun ClientsList(
 
 
 @Composable
-fun LoadingScreen() {
+fun LoadingScreen(
+    modifier: Modifier = Modifier
+) {
     Surface(
         color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         Box(contentAlignment = Alignment.Center) {
             CircularProgressIndicator(

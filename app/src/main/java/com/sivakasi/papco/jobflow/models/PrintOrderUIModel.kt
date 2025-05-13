@@ -48,18 +48,8 @@ data class PrintOrderUIModel(
         require(printOrderNumber > 0) { "Invalid print order number while generating document ID" }
         return "po$printOrderNumber"
     }
-}
 
-class PrintOrderUIModelDiff : DiffUtil.ItemCallback<PrintOrderUIModel>(){
-
-    override fun areItemsTheSame(oldItem: PrintOrderUIModel, newItem: PrintOrderUIModel): Boolean {
-        return oldItem.printOrderNumber==newItem.printOrderNumber
-    }
-
-    override fun areContentsTheSame(
-        oldItem: PrintOrderUIModel,
-        newItem: PrintOrderUIModel
-    ): Boolean {
-        return oldItem==newItem
+    override fun equals(other: Any?): Boolean {
+        return this.printOrderNumber == (other as PrintOrderUIModel).printOrderNumber
     }
 }

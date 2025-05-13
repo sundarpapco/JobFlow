@@ -23,10 +23,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -116,6 +119,7 @@ private fun PlateMakingScreenContent(
         context.resources.getStringArray(R.array.backsideOptions).toList()
     }
 
+    val trimmingSizeFocus = remember{FocusRequester()}
     Column(
         modifier = modifier
             .verticalScroll(scrollState),
@@ -157,6 +161,7 @@ private fun PlateMakingScreenContent(
             JobFlowTextField(
                 modifier = Modifier
                     .weight(1f)
+                    .focusRequester(trimmingSizeFocus)
                     .onFocusChanged {
                         if (it.hasFocus) {
                             screenState.trimHeight = screenState.trimHeight.copy(
@@ -435,6 +440,10 @@ private fun PlateMakingScreenContent(
                 color = MaterialTheme.colors.secondaryVariant
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        trimmingSizeFocus.requestFocus()
     }
 }
 

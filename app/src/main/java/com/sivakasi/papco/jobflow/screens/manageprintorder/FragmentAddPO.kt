@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +48,7 @@ class FragmentAddPO : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        observeViewModel()
         /*
         Auto repeat mode means that the user clicked "Repeat this job" in the
         menu of the ViewPrintOrder Screen. In this case, the printOrderNumber provided
@@ -64,8 +66,6 @@ class FragmentAddPO : Fragment() {
             viewModel.editingPrintOrderParentDestinationId = getParentDestinationId()
             viewModel.loadJobByPONumber(getEditingPOId())
         }
-
-        observeViewModel()
     }
 
     override fun onCreateView(
@@ -92,6 +92,7 @@ class FragmentAddPO : Fragment() {
     private fun observeViewModel() {
 
         lifecycleScope.launch {
+            Log.d("SAATVIK","Listening for loaded Job")
             repeatOnLifecycle(Lifecycle.State.STARTED){
                 viewModel.loadedJob.collectLatest {
                     it?.let{

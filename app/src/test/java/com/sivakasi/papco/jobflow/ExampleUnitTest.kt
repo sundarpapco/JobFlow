@@ -3,6 +3,7 @@ package com.sivakasi.papco.jobflow
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.util.Duration
+import org.jetbrains.annotations.TestOnly
 import org.junit.Test
 import java.util.*
 
@@ -41,7 +42,7 @@ class ExampleUnitTest {
         println(printOrder.ageString())
     }
 
-    @Test
+    @TestOnly
     fun durationTimeFormatTest(){
         val duration=Duration(6,28)
         println(duration.timeFormatString())

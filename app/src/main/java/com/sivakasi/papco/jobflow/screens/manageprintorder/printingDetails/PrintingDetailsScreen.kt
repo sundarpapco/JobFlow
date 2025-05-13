@@ -109,7 +109,6 @@ fun PrintingDetailsScreen(
     if (screenState.isRunningTimeDialogShowing) {
         RunningTimeDialog(
             runningTime = screenState.runningMinutes,
-            sheetsCount = 123,
             hasSpotColours = screenState.hasSpotColours,
             onSave = { duration, hasSpot ->
                 screenState.runningMinutes = duration.inMinutes()

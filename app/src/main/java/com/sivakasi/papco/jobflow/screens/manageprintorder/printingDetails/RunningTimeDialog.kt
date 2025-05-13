@@ -2,11 +2,9 @@ package com.sivakasi.papco.jobflow.screens.manageprintorder.printingDetails
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.extensions.asCommaSeparatedNumber
 import com.sivakasi.papco.jobflow.extensions.intNumber
 import com.sivakasi.papco.jobflow.screens.manageprintorder.RunningTimeExpressionChecker
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
@@ -53,7 +50,6 @@ import com.sivakasi.papco.jobflow.util.Duration
 @Composable
 fun RunningTimeDialog(
     runningTime: Int,
-    sheetsCount: Int,
     hasSpotColours: Boolean,
     onSave: (Duration, Boolean) -> Unit,
     onDismiss: () -> Unit
@@ -67,7 +63,6 @@ fun RunningTimeDialog(
     ) {
         RunningTimeDialogContent(
             runningTime,
-            sheetsCount,
             hasSpotColours,
             onSave = onSave
         )
@@ -79,7 +74,6 @@ fun RunningTimeDialog(
 @Composable
 private fun RunningTimeDialogContent(
     runningTime: Int,
-    sheetsCount: Int,
     hasSpotColours: Boolean,
     onSave: (Duration, Boolean) -> Unit
 ) {
@@ -108,11 +102,6 @@ private fun RunningTimeDialogContent(
 
     var spotColours by remember(hasSpotColours) {
         mutableStateOf(hasSpotColours)
-    }
-
-    val sheets = rememberSaveable(sheetsCount) {
-        val sheetsString = sheetsCount.asCommaSeparatedNumber()
-        "$sheetsString\nSheets"
     }
 
     val focusManager = LocalFocusManager.current
@@ -197,19 +186,6 @@ private fun RunningTimeDialogContent(
                     error = durationError
                 )
 
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        text = sheets,
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.secondary
-                    )
-                }
             }
 
             JobFlowTextField(
@@ -308,7 +284,7 @@ private fun RunningTimeDialogContent(
 @Composable
 private fun PreviewRunningDialogContent() {
     JobFlowTheme {
-        RunningTimeDialogContent(90, 34567, true) { _, _ ->
+        RunningTimeDialogContent(90, true) { _, _ ->
 
         }
     }

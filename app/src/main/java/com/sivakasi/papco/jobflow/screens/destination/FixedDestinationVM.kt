@@ -1,23 +1,18 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
 import android.app.Application
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.common.JobListSelection
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.ProcessingHistory
 import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
-import com.sivakasi.papco.jobflow.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,25 +23,18 @@ class FixedDestinationVM @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-    val jobSelections = JobListSelection(application)
     private var isAlreadyLoaded = false
-    private val _loadedJobs = MutableLiveData<LoadingStatus>()
-    private val _destination = MutableLiveData<Destination>()
-    private val _workingStatus = MutableLiveData<Event<LoadingStatus>>()
-    val loadedJobs: LiveData<LoadingStatus> = _loadedJobs
-    val destination: LiveData<Destination> = _destination
-    val workingStatus: LiveData<Event<LoadingStatus>> = _workingStatus
-
+    val screenState = DestinationScreenState(application)
 
     private fun observeDestination(destinationId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.observeDestination(destinationId)
                     .collect {
-                        _destination.postValue(it ?: Destination(name = destinationId))
+                        screenState.destination = it ?: Destination(name = destinationId)
                     }
             } catch (e: Exception) {
-                //Toast the error message or send a signal to UI
+                screenState.workError(e)
             }
         }
     }
@@ -61,18 +49,18 @@ class FixedDestinationVM @Inject constructor(
     }
 
     private fun triggerJobsLoading(destinationId: String) {
-        _loadedJobs.value = LoadingStatus.Loading("")
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.jobsOfDestination(destinationId)
                     .collect {
-                        _loadedJobs.postValue(LoadingStatus.Success(it))
+                        screenState.loadJobs(it)
                     }
             } catch (e: Exception) {
-                _loadedJobs.postValue(LoadingStatus.Error(e))
+                screenState.workError(e)
             }
         }
     }
+
 
     fun updateJobs(destinationId: String, jobs: List<PrintOrderUIModel>) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -81,7 +69,7 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun cancelSelectedJobs(sourceId: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         val time = currentTimeInMillis()
         doWork {
             repository.moveJobs(sourceId, DatabaseContract.DOCUMENT_DEST_CANCELLED, jobs) {
@@ -96,18 +84,16 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun allotSelectedJobs(sourceId: String, destinationId: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         doWork { repository.moveJobs(sourceId, destinationId, jobs) }
     }
 
     fun invoiceSelectedJob(sourceId: String, invoiceDetail: String) {
-        val jobs = jobSelections.asList()
-        doWork {
 
-            /*
-            Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
-            the same customer before actually invoicing
-            */
+        val jobs = screenState.selection.asList()
+        doWork {
+            /*Only jobs from the same customer can be Invoiced together. Make sure all the jobs are from
+            the same customer before actually invoicing*/
             val customerId = jobs.first().clientId
             jobs.forEach {
                 if (it.clientId != customerId)
@@ -125,7 +111,7 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun partDispatchSelectedJob(sourceId: String, invoiceDetail: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         doWork {
             repository.partDispatchJobs(
                 sourceId,
@@ -136,13 +122,11 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun markSelectedJobsAsComplete(sourceId: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         if (jobs.isEmpty())
             return
 
-        val processingDestination =
-            destination.value ?: error("No valid destination found while completing")
-
+        val processingDestination = screenState.destination
         doWork {
             repository.moveJobs(
                 sourceId,
@@ -155,20 +139,20 @@ class FixedDestinationVM @Inject constructor(
     }
 
     fun backtrackSelectedJobs(sourceId: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         doWork { repository.backtrackJobs(sourceId, jobs) }
     }
 
-    fun clearPendingStatus(destinationId: String, item: PrintOrderUIModel) =
-        doWork { repository.clearPendingStatus(destinationId, listOf(item)) }
-
-    fun clearPendingStatusOfSelectedItems(destinationId: String) {
-        val jobs = jobSelections.asList()
+    //Clear the pending status of a single job or the selected Jobs
+    //If the item is passed, then only the status of that item will be cleared
+    //If its null, then all the selected items will be cleared
+    fun clearPendingStatus(destinationId: String, item: PrintOrderUIModel?) {
+        val jobs = item?.let { listOf(it) } ?: screenState.selection.asList()
         doWork { repository.clearPendingStatus(destinationId, jobs) }
     }
 
     fun markAsPending(destinationId: String, remark: String) {
-        val jobs = jobSelections.asList()
+        val jobs = screenState.selection.asList()
         doWork {
             repository.markAsPending(destinationId, remark, jobs)
         }
@@ -178,11 +162,11 @@ class FixedDestinationVM @Inject constructor(
     private inline fun doWork(crossinline block: suspend () -> Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                _workingStatus.postValue(loadingEvent(application.getString(R.string.one_moment_please)))
-                val result = block()
-                _workingStatus.postValue(dataEvent(result))
+                screenState.startWorking()
+                block()
+                screenState.workCompleted()
             } catch (e: Exception) {
-                _workingStatus.postValue(errorEvent(e))
+                screenState.workError(e)
             }
         }
     }

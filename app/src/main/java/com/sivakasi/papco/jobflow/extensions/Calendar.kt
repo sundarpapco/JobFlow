@@ -12,6 +12,7 @@ fun currentTimeInMillis(): Long =
 fun Calendar.asDateString(): String {
 
     return String.format(
+        Locale.getDefault(),
         "%02d/%02d/%04d",
         get(Calendar.DAY_OF_MONTH),
         get(Calendar.MONTH) + 1,
@@ -34,6 +35,7 @@ fun Calendar.asReadableTimeStamp(): String {
         hour = 12
 
     return String.format(
+        Locale.getDefault(),
         "%02d/%02d/%04d, %02d:%02d",
         get(Calendar.DAY_OF_MONTH),
         get(Calendar.MONTH) + 1,
