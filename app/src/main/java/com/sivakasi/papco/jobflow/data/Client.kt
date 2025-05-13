@@ -1,12 +1,9 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.os.Parcelable
-import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import com.google.firebase.firestore.Exclude
 import com.sivakasi.papco.jobflow.ui.pink
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -16,7 +13,6 @@ data class Client(
 ) : Parcelable {
 
     companion object {
-        const val FIELD_ID = "id"
         const val FIELD_NAME = "name"
     }
 

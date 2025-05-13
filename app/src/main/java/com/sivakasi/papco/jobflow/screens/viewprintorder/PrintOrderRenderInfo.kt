@@ -2,7 +2,12 @@ package com.sivakasi.papco.jobflow.screens.viewprintorder
 
 import android.content.Context
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.*
+import com.sivakasi.papco.jobflow.data.Binding
+import com.sivakasi.papco.jobflow.data.Lamination
+import com.sivakasi.papco.jobflow.data.PaperDetail
+import com.sivakasi.papco.jobflow.data.PlateMakingDetail
+import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.data.PrintingDetail
 import com.sivakasi.papco.jobflow.extensions.asDateString
 import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 

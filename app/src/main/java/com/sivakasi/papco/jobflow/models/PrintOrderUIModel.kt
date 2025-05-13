@@ -1,6 +1,5 @@
 package com.sivakasi.papco.jobflow.models
 
-import androidx.recyclerview.widget.DiffUtil
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.util.Duration
 
@@ -49,7 +48,11 @@ data class PrintOrderUIModel(
         return "po$printOrderNumber"
     }
 
-    override fun equals(other: Any?): Boolean {
+    /*override fun equals(other: Any?): Boolean {
         return this.printOrderNumber == (other as PrintOrderUIModel).printOrderNumber
     }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }*/
 }

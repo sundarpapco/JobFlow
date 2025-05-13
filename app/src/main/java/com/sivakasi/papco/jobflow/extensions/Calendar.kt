@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.extensions
 
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 fun getCalendarInstance(): Calendar =
     Calendar.getInstance(Locale.getDefault())

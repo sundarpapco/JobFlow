@@ -4,7 +4,12 @@ import android.app.Application
 import androidx.core.text.isDigitsOnly
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Source
+import com.google.firebase.firestore.Transaction
+import com.google.firebase.firestore.WriteBatch
 import com.sivakasi.papco.jobflow.extensions.toDestination
 import com.sivakasi.papco.jobflow.extensions.toPrintOrder
 import com.sivakasi.papco.jobflow.extensions.toPrintOrderUIModel
@@ -14,15 +19,32 @@ import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.preview.JobPreview
 import com.sivakasi.papco.jobflow.preview.PreviewRecord
 import com.sivakasi.papco.jobflow.preview.toJobPreview
-import com.sivakasi.papco.jobflow.transactions.*
+import com.sivakasi.papco.jobflow.transactions.BackTrackPrintOrderTransaction
+import com.sivakasi.papco.jobflow.transactions.ClearPendingStatusTransaction
+import com.sivakasi.papco.jobflow.transactions.CreateClientTransaction
+import com.sivakasi.papco.jobflow.transactions.CreateMachineTransaction
+import com.sivakasi.papco.jobflow.transactions.CreatePrintOrderTransaction
+import com.sivakasi.papco.jobflow.transactions.DeleteMachineTransaction
+import com.sivakasi.papco.jobflow.transactions.MarkAsPendingTransaction
+import com.sivakasi.papco.jobflow.transactions.MovePrintOrdersTransaction
+import com.sivakasi.papco.jobflow.transactions.PartDispatchTransaction
+import com.sivakasi.papco.jobflow.transactions.UpdateClientTransaction
+import com.sivakasi.papco.jobflow.transactions.UpdateJobsBatch
+import com.sivakasi.papco.jobflow.transactions.UpdateMachineTransaction
+import com.sivakasi.papco.jobflow.transactions.UpdateNotesTransaction
+import com.sivakasi.papco.jobflow.transactions.UpdatePrintOrderTransaction
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import dagger.hilt.android.scopes.ViewModelScoped
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import java.util.*
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import java.util.LinkedList
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -49,7 +71,7 @@ class Repository @Inject constructor(
 
         }
 
-    suspend fun observePreviews(previewId: String) =
+    fun observePreviews(previewId: String) =
         callbackFlow {
 
             val listenerRegistration = database.collection(DatabaseContract.COLLECTION_PREVIEWS)
@@ -480,7 +502,7 @@ class Repository @Inject constructor(
     }
 
 
-    suspend fun loadAllMachines() = callbackFlow {
+    fun loadAllMachines() = callbackFlow {
 
         val listenerRegistration = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
             .whereEqualTo("type", Destination.TYPE_DYNAMIC)
@@ -508,7 +530,7 @@ class Repository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    suspend fun loadAllClients() = callbackFlow {
+    fun loadAllClients() = callbackFlow {
 
         val listenerRegistration = database.collection(DatabaseContract.COLLECTION_CLIENTS)
             .orderBy(Client.FIELD_NAME, Query.Direction.ASCENDING)

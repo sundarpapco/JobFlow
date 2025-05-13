@@ -1,24 +1,16 @@
 package com.sivakasi.papco.jobflow.preview.view
 
-import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sivakasi.papco.jobflow.extensions.isNetConnected
 import com.sivakasi.papco.jobflow.preview.JobPreview
 import com.sivakasi.papco.jobflow.util.Event
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import java.io.File
-import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
-@HiltViewModel
-class ViewPreviewVM @Inject constructor(
-    private val application: Application
-) : ViewModel() {
+class ViewPreviewVM : ViewModel() {
 
     val screenState = ViewPreviewScreenState()
     private val _sharePreview = MutableLiveData<Event<Any>>()

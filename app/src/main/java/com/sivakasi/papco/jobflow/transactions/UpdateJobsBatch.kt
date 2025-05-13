@@ -5,7 +5,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.WriteBatch
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
-import com.sivakasi.papco.jobflow.models.SearchModel
 
 class UpdateJobsBatch(
     private val destinationId: String,

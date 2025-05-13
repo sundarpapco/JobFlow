@@ -1,14 +1,24 @@
 package com.sivakasi.papco.jobflow.screens.common
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +31,6 @@ import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.clients.ui.InformationScreen
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.util.Event
-import androidx.compose.runtime.getValue
 
 /*
 Lazy Column list which will display the list from the paging 3 API
@@ -38,7 +47,6 @@ the item will not be copied again and again whenever that particular item is ren
 
 
 @ExperimentalMaterialApi
-@Suppress("UNCHECKED_CAST")
 @Composable
 fun PaginatedSearchModelListScreen(
     data: LazyPagingItems<SearchModel>,

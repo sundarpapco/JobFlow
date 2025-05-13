@@ -1,6 +1,5 @@
 package com.sivakasi.papco.jobflow.transactions
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Transaction
 import com.sivakasi.papco.jobflow.data.Destination

@@ -12,6 +12,8 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.os.ParcelFileDescriptor
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
@@ -26,8 +28,6 @@ import java.io.FileOutputStream
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.max
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.toColorInt
 
 class PrintOrderReport @Inject constructor(
     private val application: Application,
@@ -382,7 +382,7 @@ class PrintOrderReport @Inject constructor(
             currentYOffset = drawCorrectionText(
                 canvas,
                 printOrder.printingDetail.correction,
-                leftMargin + cellMargin,                currentYOffset
+                currentYOffset
             )
             linesToPrint=9
         }
@@ -759,7 +759,8 @@ class PrintOrderReport @Inject constructor(
         canvas.drawText("O",originX+23f,originY-1.6f+40f,companyPaint)
     }
 
-    private fun drawCorrectionText(canvas:Canvas,text:String,x:Float,y:Float):Float{
+    private fun drawCorrectionText(canvas:Canvas,text:String,y:Float):Float{
+        val x = leftMargin + cellMargin
         val correctionLength = textPaintNormal.measureText(text)
         val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color="#CBDB2A".toColorInt()

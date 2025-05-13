@@ -12,7 +12,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.extensions.*
+import com.sivakasi.papco.jobflow.extensions.hideActionBar
+import com.sivakasi.papco.jobflow.extensions.showActionBar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 

@@ -5,7 +5,7 @@ import com.sivakasi.papco.jobflow.extensions.asDateString
 import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.models.SearchModel
 import kotlinx.serialization.Serializable
-import java.util.*
+import java.util.Locale
 
 @Serializable
 data class AlgoliaRecord(

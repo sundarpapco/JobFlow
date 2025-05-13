@@ -1,13 +1,17 @@
 package com.sivakasi.papco.jobflow.transactions
 
-import com.google.firebase.firestore.*
-import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Transaction
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.data.PrintOrder
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.extensions.toDestination
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
-import java.util.*
+import java.util.LinkedList
 
 class MovePrintOrdersTransaction(
     private val sourceDocumentId: String,

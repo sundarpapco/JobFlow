@@ -4,9 +4,9 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Transaction
-import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.extensions.currentTimeInMillis
 
 class CreateMachineTransaction(
     private val machineName: String
@@ -23,7 +23,7 @@ class CreateMachineTransaction(
         creationTime= currentTimeInMillis()
     }
 
-    override fun apply(transaction: Transaction): Boolean? {
+    override fun apply(transaction: Transaction): Boolean {
 
         //First try to read the machine document and lets see if it already exists
         documentSnapShot = transaction.get(documentReference)

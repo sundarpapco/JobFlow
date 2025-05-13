@@ -8,7 +8,7 @@ import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.poReference
 import com.sivakasi.papco.jobflow.extensions.toPrintOrder
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
-import java.util.*
+import java.util.LinkedList
 
 class ClearPendingStatusTransaction(
     private val destinationId: String,

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.print.PrintAttributes
 import android.print.PrintManager
-import android.widget.Space
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -340,6 +339,7 @@ fun PrintOrder(
     modifier: Modifier = Modifier,
     printOrder: PrintOrderRenderInfo
 ) {
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -358,27 +358,35 @@ fun PrintOrder(
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
+
         item {
             PlateMakingDetails(details = printOrder.plateMakingDetailsRenderInfo)
         }
+
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
+
         item {
             PaperDetails(details = printOrder.paperDetailsRenderInfo)
         }
+
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
+
         item {
             PrintingDetails(detail = printOrder.printingDetailRenderInfo)
         }
+
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
+
         item {
             PostPressDetails(details = printOrder.postPressDetailRenderInfo)
         }
+
         item {
             Spacer(modifier = Modifier.height(60.dp))
         }
@@ -812,7 +820,9 @@ fun DetailRow(
     detail: String
 ) {
     Row(
-        Modifier.fillMaxWidth().padding(bottom = 6.dp)
+        Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
     ) {
         Text(
             text = label,

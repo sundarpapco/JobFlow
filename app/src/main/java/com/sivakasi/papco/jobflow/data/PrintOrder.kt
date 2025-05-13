@@ -12,7 +12,7 @@ import com.sivakasi.papco.jobflow.print.NewPlateColors
 import com.sivakasi.papco.jobflow.print.OutsidePlateColors
 import com.sivakasi.papco.jobflow.print.RepeatColors
 import com.sivakasi.papco.jobflow.print.ReportColors
-import java.util.*
+import java.util.Locale
 
 class PrintOrder {
 
