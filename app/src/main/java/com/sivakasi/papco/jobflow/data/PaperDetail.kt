@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import com.sivakasi.papco.jobflow.extensions.asString
 import kotlinx.parcelize.Parcelize
+import kotlin.math.round
 
 @Parcelize
 data class PaperDetail(
@@ -22,8 +23,14 @@ data class PaperDetail(
             "${height.asString()} X ${width.asString()} Cm - $sheets Sheets"
     }
 
-    fun asConsolidatedString(): String =
-        "${height.asString()} X ${width.asString()} Cm - $sheets Sheets"
+    fun asConsolidatedString(): String{
+
+        val gross = round( sheets.toFloat()/144f*10)/10
+        val ream = round(sheets.toFloat()/500f*10)/10
+
+        return "${height.asString()} X ${width.asString()} Cm - $sheets Sheets (${gross}G / ${ream}R)"
+    }
+
 
     fun tilePaperSize(trimHeight: Float, trimWidth: Float): Int {
 

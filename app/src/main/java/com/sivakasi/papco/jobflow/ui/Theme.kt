@@ -1,16 +1,25 @@
 package com.sivakasi.papco.jobflow.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RippleConfiguration
+import androidx.compose.material.Surface
 import androidx.compose.material.darkColors
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -118,6 +127,14 @@ fun JobFlowTheme(
             )
         }
 
-        CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration, content = content)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.surface)
+                .windowInsetsPadding(WindowInsets.statusBars)
+        ){
+            CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration, content = content)
+        }
+
     }
 }

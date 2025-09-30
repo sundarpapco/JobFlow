@@ -366,7 +366,7 @@ class PrintOrderReport @Inject constructor(
 
         drawTextInBounds(canvas, plateDetail, textPaintBold, bounds, cellMargin)
 
-        //Measure the color label text and detail text to right align it
+        //Measure the color label text and detail text to right align
         val colorLabelText = "Colours"
         val colorDetailText = printOrder.printingDetail.colours
         val textLength =
@@ -377,15 +377,17 @@ class PrintOrderReport @Inject constructor(
         //Draw the printing detail
         //Draw the correction Line if needed
         var linesToPrint=10
-        currentYOffset += rowHeight
-        if(printOrder.printingDetail.correction.isNotEmpty()) {
-            currentYOffset = drawCorrectionText(
+        currentYOffset = if(printOrder.printingDetail.correction.isNotEmpty()) {
+            linesToPrint=9
+            drawCorrectionText(
                 canvas,
                 printOrder.printingDetail.correction,
-                currentYOffset
+                currentYOffset+rowHeight
             )
-            linesToPrint=9
+        }else{
+            bounds.bottom+rowHeight
         }
+
         drawMultiLineText(
             canvas,
             leftMargin+ cellMargin,
@@ -563,7 +565,7 @@ class PrintOrderReport @Inject constructor(
 
         var currentLine=1
         val textHeight = paintHeight(textPaint)
-        var calculatedY = y + cellMargin + 5
+        var calculatedY = y+3
         val multiLineText = text.split("\n")
         for (line in multiLineText) {
             if(currentLine<=linesToPrint){
@@ -770,7 +772,7 @@ class PrintOrderReport @Inject constructor(
         val highlightStartingX = x-cellMargin/2
         canvas.drawRect(highlightStartingX,y,highlightStartingX+correctionLength+cellMargin,y+rowHeight,highlightPaint)
         drawTextInBounds(canvas,text,textPaintNormal,textBounds,cellMargin)
-        return textBounds.bottom
+        return y+(rowHeight*1.5f)
 
     }
 
