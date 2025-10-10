@@ -14,9 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.enableBackArrow
-import com.sivakasi.papco.jobflow.extensions.registerBackArrowMenu
-import com.sivakasi.papco.jobflow.extensions.updateSubTitle
-import com.sivakasi.papco.jobflow.extensions.updateTitle
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.screens.viewprintorder.ComposeViewPrintOrderFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -52,18 +49,12 @@ class InvoiceHistoryFragment : Fragment() {
                 JobFlowTheme {
                     InvoiceHistoryScreen(
                         viewModel = viewModel,
-                        onItemClicked = this@InvoiceHistoryFragment::onItemClick
+                        onItemClicked = this@InvoiceHistoryFragment::onItemClick,
+                        onBackPressed = {findNavController().popBackStack()}
                     )
                 }
             }
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        updateTitle(getString(R.string.invoice_history))
-        updateSubTitle("")
-        registerBackArrowMenu()
     }
 
     //Navigate to view Print order screen

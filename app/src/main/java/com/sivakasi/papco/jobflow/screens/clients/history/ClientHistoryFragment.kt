@@ -67,22 +67,16 @@ class ClientHistoryFragment : Fragment() {
             setContent {
                 JobFlowTheme {
                     ClientHistoryScreen(
-                        viewModel,
-                        this@ClientHistoryFragment::navigateToViewPrintOrderScreen
+                        client=client,
+                        viewModel = viewModel,
+                        onItemClicked = this@ClientHistoryFragment::navigateToViewPrintOrderScreen,
+                        onBackPressed = {findNavController().popBackStack()}
                     )
                 }
             }
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        enableBackArrow()
-        updateTitle(client.name)
-        updateSubTitle(getString(R.string.client_history))
-        registerBackArrowMenu()
-    }
 
     @ExperimentalComposeUiApi
     @FlowPreview
