@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.app.Application
+import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
@@ -271,6 +272,44 @@ class Repository @Inject constructor(
                 }
 
         }
+
+    suspend fun deleteOldestFiveHundredRecords()=
+        suspendCancellableCoroutine { continuation ->
+
+            val collectionRef = database.collection(DatabaseContract.COLLECTION_DESTINATIONS)
+                .document(DatabaseContract.DOCUMENT_DEST_COMPLETED)
+                .collection(DatabaseContract.COLLECTION_JOBS)
+            // 1. Query for the 500 oldest and completed records
+            collectionRef
+                .orderBy(PrintOrder.FIELD_PRINT_ORDER_NUMBER, Query.Direction.ASCENDING)
+                .limit(500)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) return@addOnSuccessListener
+
+                    // 2. Prepare the Batch
+                    val batch = database.batch()
+
+                    for (document in documents) {
+                        val printOrder = document.toPrintOrder()
+                        Log.d("SAAT","Deleting print order: ${printOrder.printOrderNumber}")
+                        batch.delete(document.reference)
+                    }
+
+                    // 3. Commit the Batch
+                    batch.commit().addOnSuccessListener {
+                        Log.d("SAAT","Deleted Successfully")
+                        continuation.resume(Unit)
+
+                    }.addOnFailureListener { e ->
+                        e.printStackTrace()
+                        continuation.resumeWithException(e)
+                    }
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+
 
 
     suspend fun invoiceHistory(loadParams: LoadParams<DocumentSnapshot>): LoadResult<DocumentSnapshot, SearchModel> =

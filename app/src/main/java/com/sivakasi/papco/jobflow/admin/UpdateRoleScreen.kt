@@ -56,7 +56,8 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 fun UpdateRoleScreen(
     updateRoleState: UpdateRoleState,
     onSubmit: () -> Unit,
-    onUserChange:()->Unit
+    onUserChange:()->Unit,
+    onUserDelete:()->Unit
 ) {
     JobFlowTheme {
         Surface {
@@ -230,6 +231,20 @@ fun UpdateRoleScreen(
                 ) {
                     Text(text = stringResource(id = R.string.update_role_caps))
                 }
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(buttonFocus)
+                        .focusable(true),
+                    onClick = {
+                        focusManager.clearFocus()
+                        onUserDelete()
+                    },
+                    enabled = !updateRoleState.isLoading
+                ) {
+                    Text(text = stringResource(id = R.string.delete_user))
+                }
 
                 Spacer(Modifier.height(28.dp))
 
@@ -275,7 +290,7 @@ fun MenuItem(text: String, onClick: () -> Unit) {
 @Composable
 private fun UpdateRoleScreenPreview() {
     UpdateRoleScreen(
-        UpdateRoleState(),{}
+        UpdateRoleState(),{}, onUserChange = {},
     ) {
 
     }

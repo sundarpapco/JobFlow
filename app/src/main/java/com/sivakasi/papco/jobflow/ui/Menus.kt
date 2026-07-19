@@ -64,7 +64,6 @@ fun OptionsMenu(
             }
 
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-
                 overFlowItems.forEach {
                     MenuItem(text = it.label) {
                         expanded = false

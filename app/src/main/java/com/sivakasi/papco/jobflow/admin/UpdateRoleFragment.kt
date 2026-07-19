@@ -42,6 +42,9 @@ class UpdateRoleFragment : Fragment() {
                     onUserChange = {
                         //Navigate to the select User screen
                         findNavController().navigate(R.id.action_updateRoleFragment_to_selectUserFragment)
+                    },
+                    onUserDelete = {
+                        viewModel.deleteUser()
                     }
                 )
             }

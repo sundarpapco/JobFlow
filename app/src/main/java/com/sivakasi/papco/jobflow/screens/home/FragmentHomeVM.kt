@@ -45,7 +45,6 @@ class FragmentHomeVM @Inject constructor(
 
     fun getStates() = listOf(newJobsState,inProgressState,machinesState)
 
-
     private fun observeJobs() {
 
         viewModelScope.launch(Dispatchers.IO) {

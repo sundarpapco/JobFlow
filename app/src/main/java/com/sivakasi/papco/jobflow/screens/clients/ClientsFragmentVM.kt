@@ -16,6 +16,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,7 +40,10 @@ class ClientsFragmentVM @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.loadAllClients()
-                    .combine(screenState.query.debounce(500)) { list, query ->
+                    .combine(screenState.query
+                        .debounce(500)
+                        .onStart { emit("") }
+                    ) { list, query ->
                         if (query.isBlank())
                             return@combine list
 

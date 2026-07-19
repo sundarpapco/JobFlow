@@ -8,8 +8,7 @@
     <fragment
         android:id="@+id/fixedDestinationFragment"
         android:name="com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment"
-        android:label="FixedDestinationFragment"
-        tools:layout="@layout/destination_fixed">
+        android:label="FixedDestinationFragment">
         <action
             android:id="@+id/action_fixedDestinationFragment_to_print_order_flow"
             app:destination="@id/print_order_flow" />

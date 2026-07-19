@@ -64,9 +64,7 @@ class LoginFragmentVM @Inject constructor(
                 if (registerBeforeLogin)
                     auth.registerUser(authState.email, authState.password, authState.name)
 
-                Log.d("SUNDAR","Logging In")
                 auth.logIn(authState.email, authState.password)
-                Log.d("SUNDAR","Logged In Successfully")
 
             } catch (e: Exception) {
                 authState.loginFailed(e.getMessage(application))

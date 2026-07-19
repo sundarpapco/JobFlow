@@ -64,7 +64,7 @@ class JobFlowAuth @Inject constructor() {
                 "displayName" to displayName
             )
 
-            functions.getHttpsCallable("createNewUser")
+            functions.getHttpsCallable("createnewuser")
                 .call(data)
                 .addOnSuccessListener {
                     continuation.resume(it)
@@ -75,6 +75,22 @@ class JobFlowAuth @Inject constructor() {
 
         }
 
+    suspend fun deleteUser(email: String): HttpsCallableResult? =
+        suspendCancellableCoroutine { continuation->
+
+            val data = hashMapOf(
+                "email" to email
+            )
+
+            functions.getHttpsCallable("deleteuser")
+                .call(data)
+                .addOnSuccessListener {
+                    continuation.resume(it)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+
     suspend fun updateUserClaim(email: String, role: String): HttpsCallableResult? =
         suspendCancellableCoroutine { continuation ->
 
@@ -83,7 +99,7 @@ class JobFlowAuth @Inject constructor() {
                 "role" to role
             )
 
-            functions.getHttpsCallable("updateUserClaim")
+            functions.getHttpsCallable("updateuserclaim")
                 .call(data)
                 .addOnSuccessListener {
                     continuation.resume(it)

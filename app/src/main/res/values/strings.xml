@@ -177,10 +177,14 @@
     <string name="change_user_role">Change user role</string>
     <string name="update_role">Update Role</string>
     <string name="update_role_caps">UPDATE ROLE</string>
+    <string name="delete_user">DELETE USER</string>
     <string name="update_role_desc">Enter the email address of the user for whom you wish
         to update the role</string>
     <string name="user_role">User Role</string>
     <string name="role_update_success">User role updated successfully!</string>
+    <string name="user_deleted_successfully">User deleted successfully!</string>
+    <string name="you_cannot_delete_your_own_account">You cannot delete your own account!</string>
+    <string name="cannot_delete_primary_account">You cannot delete the primary account</string>
     <string name="activation_needed">Activation Needed</string>
     <string name="machine_delete_confirmation">Are you sure want to delete this machine?</string>
     <string name="oops_no_internet">OOPS!\nNO INTERNET</string>
