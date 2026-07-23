@@ -1,23 +1,23 @@
 [versions]
-agp="8.8.2"
-activityCompose = "1.10.1"
+agp= "9.2.1"
+activityCompose = "1.13.0"
 composeThemeAdapter = "1.2.1"
-compose = "1.7.8"
+composeBom="2026.06.00"
 constraintlayout="2.2.1"
-coreKtx="1.15.0"
+coreKtx="1.19.0"
 easyvalidationCore="1.0.4"
-firebaseBom="28.4.0"
-hiltAndroid="2.55"
-hiltNavigationFragment="1.2.0"
-kotlin="2.1.10"
-googleServices="4.3.14"
-navigation ="2.8.8"
+firebaseBom="34.16.0"
+hiltAndroid="2.60.1"
+hiltNavigationFragment="1.4.0"
+kotlin="2.4.10"
+ksp="2.3.9"
+googleServices="4.5.0"
+navigation ="2.9.8"
 pagingCompose = "3.3.6"
 workRuntimeKtx="2.10.0"
-recyclerview="1.4.0"
 coil="2.2.2"
-algoliaClientKotlin ="1.12.0"
-okHttp ="1.6.7"
+algoliaClientKotlin ="3.46.0"
+okHttp ="3.5.1"
 espressoCore="3.6.1"
 androidJunit ="1.2.1"
 jUnit="4.13.2"
@@ -42,9 +42,6 @@ androidx-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fr
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 
-#RecyclerView - Needed for Concat adapter
-androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
-
 #Reorderable LazyColumn Needed for Drag and Drop support in the machines
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
@@ -52,25 +49,25 @@ reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reo
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 #Compose
-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
-foundation-layout = { module = "androidx.compose.foundation:foundation-layout", version.ref = "compose" }
+compose-bom = {group="androidx.compose", name = "compose-bom", version.ref = "composeBom"}
+foundation = { group="androidx.compose.foundation", name = "foundation" }
+foundation-layout = { group="androidx.compose.foundation", name ="foundation-layout"}
 
-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-androidx-material = { module = "androidx.compose.material:material", version.ref = "compose" }
-androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "compose" }
-androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-material-icons={module="androidx.compose.material:material-icons-extended",version.ref="compose"}
+runtime = { group="androidx.compose.runtime", name ="runtime"}
+ui = { group="androidx.compose.ui", name ="ui"}
+androidx-material = { group="androidx.compose.material", name ="material"}
+androidx-ui-tooling = { group="androidx.compose.ui", name ="ui-tooling"}
+material-icons={group="androidx.compose.material", name ="material-icons-extended"}
 
 #Easy Validation for validation of Input fields
 easyvalidation-core = { module = "com.wajahatkarim:easyvalidation-core", version.ref = "easyvalidationCore" }
 
 #Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-auth-ktx = { group = "com.google.firebase",name ="firebase-auth-ktx" }
-firebase-firestore-ktx = { group = "com.google.firebase", name="firebase-firestore-ktx" }
-firebase-functions-ktx = { group = "com.google.firebase", name = "firebase-functions-ktx" }
-firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx" }
+firebase-auth = { group = "com.google.firebase",name ="firebase-auth" }
+firebase-firestore = { group = "com.google.firebase", name="firebase-firestore" }
+firebase-functions= { group = "com.google.firebase", name = "firebase-functions" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 #Pagination
 androidx-paging-common-ktx = { module = "androidx.paging:paging-common-ktx", version.ref = "pagingCompose" }
@@ -92,6 +89,5 @@ hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.re
 google-services ={id = 'com.google.gms.google-services', version.ref="googleServices"}
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization-plugin = {id="org.jetbrains.kotlin.plugin.serialization", version.ref="kotlin"}
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
-kotlin-kapt={id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
+kotlin-ksp = {id="com.google.devtools.ksp", version.ref="ksp"}
