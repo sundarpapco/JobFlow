@@ -22,8 +22,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.toastError
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.screens.viewprintorder.NotesFragmentVM
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
@@ -31,6 +37,30 @@ import com.sivakasi.papco.jobflow.ui.MenuAction
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.LoadingStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.notesScreenEntry(
+    backStack: NavBackStack<NavKey>
+){
+    entry<AppGraph.Notes> {key->
+
+        val viewModel: NotesFragmentVM = hiltViewModel()
+
+        NotesScreen(
+            screenState = viewModel.screenState,
+            title = stringResource(R.string.notes_title,key.poNumber.toString()),
+            onSave = {viewModel.saveNotes()},
+            onClose = {backStack.removeLastOrNull()}
+        )
+
+        LaunchedEffect(Unit) {
+            viewModel.observePrintOrderForRemoval(key.poNumber,key.initialNotes)
+        }
+
+    }
+}
+
 
 @Composable
 fun NotesScreen(

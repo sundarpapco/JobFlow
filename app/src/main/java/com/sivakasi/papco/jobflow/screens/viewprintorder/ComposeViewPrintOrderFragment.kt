@@ -64,11 +64,11 @@ class ComposeViewPrintOrderFragment : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                ViewPrintOrderScreen(
+                /*ViewPrintOrderScreen(
                     viewModel =viewModel,
                     navController = findNavController(),
                     activityContext = requireContext()
-                )
+                )*/
             }
         }
     }

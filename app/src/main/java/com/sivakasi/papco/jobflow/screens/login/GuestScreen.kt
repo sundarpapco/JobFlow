@@ -23,8 +23,20 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
+
+fun EntryProviderScope<NavKey>.guestScreenEntry(
+    auth: JobFlowAuth
+){
+    entry<AppGraph.Guest>{
+        GuestScreen { auth.logout() }
+    }
+}
 
 @Composable
 fun GuestScreen(

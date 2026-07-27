@@ -31,6 +31,7 @@ import com.sivakasi.papco.jobflow.preview.toPreviewRecord
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -112,7 +113,9 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
             uploadFileToStorage(
                 previewToUpload.storageReference(),
                 fileToUpload
-            ).collect {
+            ).catch {
+                throw it
+            }.collect {
                 updateNotification(it)
             }
 
@@ -144,7 +147,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
     override suspend fun getForegroundInfo(): ForegroundInfo {
 
         return ForegroundInfo(
-            NOTIFICATION_ID_PROGRESS,notificationBuilder.build(),
+            NOTIFICATION_ID_PROGRESS, notificationBuilder.build(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
         )
     }
@@ -175,7 +178,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
 
     @SuppressLint("MissingPermission")
     private fun notify(notification: Notification, id: Int = NOTIFICATION_ID_PROGRESS) {
-        NotificationManagerCompat.from(applicationContext).apply  {
+        NotificationManagerCompat.from(applicationContext).apply {
             notify(id, notification)
         }
     }
@@ -194,7 +197,7 @@ class UploadPreviewWorker(context: Context, workParams: WorkerParameters) :
                 }
                 .addOnFailureListener {
                     it.printStackTrace()
-                    throw it
+                    close(it)
                 }
 
             awaitClose { listenerRegistration.cancel() }

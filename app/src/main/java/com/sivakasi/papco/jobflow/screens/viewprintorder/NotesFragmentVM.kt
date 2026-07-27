@@ -10,6 +10,7 @@ import com.sivakasi.papco.jobflow.screens.notes.NotesScreenState
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ class NotesFragmentVM @Inject constructor(
     private var loadedPo: PrintOrderWithDestination? = null
     private var isAlreadyObserving = false
 
-    fun observePrintOrderForRemoval(poNumber: Int,initialNotes:String) {
+    fun observePrintOrderForRemoval(poNumber: Int, initialNotes: String) {
         if (isAlreadyObserving)
             return
         else
@@ -33,29 +34,25 @@ class NotesFragmentVM @Inject constructor(
 
         screenState.loadInitialNotes(initialNotes)
         viewModelScope.launch {
-            try {
-                repository.observePrintOrder(poNumber)
-                    .collect { po ->
-                        if (po != null)
-                            loadedPo = po
-                        else
-                            screenState.showPOMovedDialog()
-                    }
-
-            } catch (_: Exception) {
-
-            }
+            repository.observePrintOrder(poNumber)
+                .catch { }
+                .collect { po ->
+                    if (po != null)
+                        loadedPo = po
+                    else
+                        screenState.showPOMovedDialog()
+                }
         }
     }
 
 
     fun saveNotes() {
         viewModelScope.launch {
-            val newNotes=screenState.notes.trim()
+            val newNotes = screenState.notes.trim()
             loadedPo?.let {
                 screenState.startLoading()
                 try {
-                     repository.updateNotes(
+                    repository.updateNotes(
                         it.destination.id,
                         it.printOrder.documentId(),
                         newNotes

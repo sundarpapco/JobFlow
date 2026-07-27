@@ -55,12 +55,12 @@ class FragmentHome : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                HomeScreen(
+                /*HomeScreen(
                     role = currentUserRole(),
                     jobGroups = viewModel.getStates(),
                     findNavController(),
                     this@FragmentHome::signOut
-                )
+                )*/
             }
         }
     }

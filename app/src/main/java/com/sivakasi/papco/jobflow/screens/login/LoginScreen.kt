@@ -47,9 +47,33 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
+fun EntryProviderScope<NavKey>.loginScreenEntry(
+    backstack: NavBackStack<NavKey>
+){
+    entry<AppGraph.Login> {
+        val viewModel: LoginFragmentVM = hiltViewModel()
+
+        LoginScreen(
+            authState = viewModel.authState,
+            onFormSubmit = viewModel::onFormSubmit,
+            onForgotPassword = {backstack.add(AppGraph.ForgotPassword)},
+            onModeChange = viewModel::onModeChanged
+        )
+    }
+}
+
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

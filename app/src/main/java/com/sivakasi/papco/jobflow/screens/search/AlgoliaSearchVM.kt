@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -64,19 +65,19 @@ class AlgoliaSearchVM @Inject constructor(
         printOrderObservingJob?.cancel()
         printOrderObservingJob = viewModelScope.launch(Dispatchers.IO) {
 
-            try {
-                repository.observePrintOrder(item.printOrderNumber)
-                    .collect {
-                        userUpdatedItem = it?.let { po ->
-                            Event(po.printOrder.toSearchModel(
+            repository.observePrintOrder(item.printOrderNumber)
+                .catch { }
+                .collect {
+                    userUpdatedItem = it?.let { po ->
+                        Event(
+                            po.printOrder.toSearchModel(
                                 application,
                                 po.destination.id,
                                 query ?: ""
-                            ))
-                        }
+                            )
+                        )
                     }
-            } catch (_: Exception) {
-            }
+                }
         }
     }
 

@@ -9,24 +9,24 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.nav3.util.ToasterState
 import com.sivakasi.papco.jobflow.ui.TextInputDialogState
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 
 @ExperimentalMaterialApi
 class MachinesScreenUIState(
     private val context: Context
-) {
+): ToasterState() {
 
-    var role: String = "printer"
-    var selectionMode = false
+    sealed interface Dialog {
+        object None: Dialog
+        object WaitDialog : Dialog
+        data class EditMachineDialog(val state: TextInputDialogState<Destination>) : Dialog
+        data class AddMachineDialog(val state: TextInputDialogState<Unit>) : Dialog
+        data class DeleteConfirmationDialog(val deletingDestination: Destination) : Dialog
+    }
 
-    var editMachineDialogState: TextInputDialogState<Destination>? by mutableStateOf(null)
-        private set
-
-    var addMachineDialogState: TextInputDialogState<Unit>? by mutableStateOf(null)
-        private set
-
-    var deletingMachineId: String? by mutableStateOf(null)
+    var dialog by mutableStateOf<Dialog>(Dialog.None)
         private set
 
     var machines: LoadingStatus by mutableStateOf(
@@ -35,16 +35,12 @@ class MachinesScreenUIState(
         )
     )
 
-    var isWaitDialogShowing: Boolean by mutableStateOf(false)
-        private set
-
-
-    fun shouldShowFloatingActionButton(): Boolean {
+    /*fun shouldShowFloatingActionButton(role:String): Boolean {
         if (selectionMode)
             return false
 
         return role == "root" || role == "admin"
-    }
+    }*/
 
     fun showEditMachineDialog(destination: Destination) {
 
@@ -61,11 +57,11 @@ class MachinesScreenUIState(
             data=destination
         }
 
-        editMachineDialogState = state
+        dialog = Dialog.EditMachineDialog(state)
     }
 
-    fun hideEditMachineDialog() {
-        editMachineDialogState = null
+    fun clearDialog(){
+        dialog = Dialog.None
     }
 
     fun showAddMachineDialog() {
@@ -78,30 +74,18 @@ class MachinesScreenUIState(
             label = context.getString(R.string.machine_name)
         }
 
-        addMachineDialogState = state
+        dialog = Dialog.AddMachineDialog(state)
     }
 
-    fun hideAddMachineDialog() {
-        addMachineDialogState = null
+    fun showDeleteConfirmationDialog(destination: Destination) {
+       dialog = Dialog.DeleteConfirmationDialog(destination)
     }
 
-    fun showDeleteConfirmationDialog(destinationId: String) {
-        deletingMachineId = destinationId
-    }
-
-    fun hideDeleteConfirmationDialog() {
-        deletingMachineId = null
-    }
-
-    fun shouldShowContextMenu(): Boolean =
-        !selectionMode && (role == "admin" || role == "root")
+   /* fun shouldShowContextMenu(): Boolean =
+        !selectionMode && (role == "admin" || role == "root")*/
 
     fun showWaitDialog() {
-        isWaitDialogShowing = true
-    }
-
-    fun hideWaitDialog() {
-        isWaitDialogShowing = false
+        dialog = Dialog.WaitDialog
     }
 
     fun getString(id: Int): String =

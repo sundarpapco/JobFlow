@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -58,6 +59,8 @@ class PreviewManagementVM @Inject constructor(
                     var combinedList = serverList + localList
                     combinedList = combinedList.distinctBy { "${it.previewId}${it.fileName}" }
                     combinedList.sortedBy { it.fileName }
+                }.catch {
+                    it.printStackTrace()
                 }
                 .collect {
                     screenState.imageUris = it

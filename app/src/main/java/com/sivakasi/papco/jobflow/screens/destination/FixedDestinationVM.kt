@@ -13,6 +13,7 @@ import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,14 +29,15 @@ class FixedDestinationVM @Inject constructor(
 
     private fun observeDestination(destinationId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                repository.observeDestination(destinationId)
-                    .collect {
-                        screenState.destination = it ?: Destination(name = destinationId)
-                    }
-            } catch (e: Exception) {
-                screenState.workError(e)
-            }
+
+            repository.observeDestination(destinationId)
+                .catch {
+                    val e = it as? Exception ?: Exception(it)
+                    screenState.workError(e)
+                }.collect {
+                    screenState.destination = it ?: Destination(name = destinationId)
+                }
+
         }
     }
 
@@ -50,14 +52,14 @@ class FixedDestinationVM @Inject constructor(
 
     private fun triggerJobsLoading(destinationId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                repository.jobsOfDestination(destinationId)
-                    .collect {
-                        screenState.loadJobs(it)
-                    }
-            } catch (e: Exception) {
-                screenState.workError(e)
-            }
+
+            repository.jobsOfDestination(destinationId)
+                .catch {
+                    val e = it as? Exception ?: Exception(it)
+                    screenState.workError(e)
+                }.collect {
+                    screenState.loadJobs(it)
+                }
         }
     }
 

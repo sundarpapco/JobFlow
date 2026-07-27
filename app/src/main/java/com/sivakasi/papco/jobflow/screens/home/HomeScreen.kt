@@ -2,20 +2,18 @@ package com.sivakasi.papco.jobflow.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.provider.DocumentsContract
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,12 +46,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
-import com.sivakasi.papco.jobflow.screens.clients.ClientsFragment
+import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
 import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
 import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
@@ -68,12 +71,29 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import java.util.LinkedList
 
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
+    ExperimentalComposeUiApi::class, FlowPreview::class
+)
+fun EntryProviderScope<NavKey>.homeScreenEntry(
+    navBackStack: NavBackStack<NavKey>,
+    onSignOut: () -> Unit
+) {
+    entry<AppGraph.Home> {
+
+        val viewModel: FragmentHomeVM = hiltViewModel()
+
+        HomeScreen(
+            jobGroups = viewModel.getStates(),
+            navBackstack = navBackStack,
+            onSignOut = onSignOut
+        )
+    }
+}
+
 @ExperimentalMaterialApi
 val LocalBottomSheetState =
     compositionLocalOf<ModalBottomSheetState> { error("Bottom sheet state must be provided") }
-val LocalRole = compositionLocalOf<String> { error("Role must be provided") }
-val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must be initialized") }
-val LocalSignOut = compositionLocalOf<() -> Unit> { error("Logout function not set") }
 
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -81,40 +101,36 @@ val LocalSignOut = compositionLocalOf<() -> Unit> { error("Logout function not s
 @ExperimentalMaterialApi
 @Composable
 fun HomeScreen(
-    role: String,
     jobGroups: List<JobGroupState>,
-    navController: NavController,
+    navBackstack: NavBackStack<NavKey>,
     onSignOut: () -> Unit
 ) {
 
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     CompositionLocalProvider(
-        LocalNavigation provides navController,
-        LocalBottomSheetState provides bottomSheetState,
-        LocalRole provides role,
-        LocalSignOut provides onSignOut
+        LocalBottomSheetState provides bottomSheetState
     ) {
-        JobFlowTheme {
 
-            val user = remember(role) { JobFlowAuth().currentUser }
+        val role = LocalUserClaim.current
+        val user = remember(role) { JobFlowAuth().currentUser }
 
-            ModalBottomSheetLayout(
-                sheetContent = {
-                    ProfileScreen(
-                        name = user?.displayName ?: "null",
-                        email = user?.email ?: "null",
-                        role = role
-                    )
-                },
-                sheetState = bottomSheetState,
-                scrimColor = MaterialTheme.colors.background.copy(alpha = 0.3f),
-                sheetShape = RoundedCornerShape(20.dp, 20.dp)
-            ) {
-                HomeScreenContent(jobGroups = jobGroups)
-            }
-
+        ModalBottomSheetLayout(
+            sheetContent = {
+                ProfileScreen(
+                    name = user?.displayName ?: "null",
+                    email = user?.email ?: "null",
+                    role = role ?: "none"
+                )
+            },
+            sheetState = bottomSheetState,
+            scrimColor = MaterialTheme.colors.background.copy(alpha = 0.3f),
+            sheetShape = RoundedCornerShape(20.dp, 20.dp)
+        ) {
+            HomeScreenContent(jobGroups = jobGroups, navBackstack, onSignOut)
         }
+
     }
 }
 
@@ -125,20 +141,31 @@ fun HomeScreen(
 @ExperimentalMaterialApi
 @Composable
 private fun HomeScreenContent(
-    jobGroups: List<JobGroupState>
+    jobGroups: List<JobGroupState>,
+    backStack: NavBackStack<NavKey>,
+    onSignOut: () -> Unit
 ) {
-
-    val navController = LocalNavigation.current
-    val role = LocalRole.current
 
     Scaffold(
         topBar = {
-            HomeScreenTopBar()
+            HomeScreenTopBar(backStack, onSignOut)
         }
     ) {
 
-        JobGroupList(jobGroups = jobGroups, onJobGroupClicked = {
-            onJobGroupClicked(it, navController, role)
+        JobGroupList(jobGroups = jobGroups, onJobGroupClicked = { index ->
+            when (index) {
+                0 -> {
+                    backStack.add(
+                        AppGraph.Destination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                    Destination.TYPE_FIXED)
+                    )
+                }
+                1 -> { backStack.add(
+                    AppGraph.Destination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
+                        Destination.TYPE_FIXED)
+                )}
+                2 -> {backStack.add(AppGraph.Machines(false))}
+            }
         })
     }
 }
@@ -244,13 +271,14 @@ fun JobGroup(
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @Composable
-private fun HomeScreenTopBar() {
+private fun HomeScreenTopBar(
+    backStack: NavBackStack<NavKey>,
+    onSignOut: () -> Unit
+) {
 
     val context = LocalContext.current
-    val role = LocalRole.current
-    val navController = LocalNavigation.current
+    val role = LocalUserClaim.current ?: "none"
     val bottomSheetState = LocalBottomSheetState.current
-    val signOut = LocalSignOut.current
     val menuItems = remember(role) { prepareOptionsMenu(role, context) }
     val scope = rememberCoroutineScope()
 
@@ -261,10 +289,10 @@ private fun HomeScreenTopBar() {
                 onOptionsItemClicked(
                     it,
                     context,
-                    navController,
+                    backStack,
                     bottomSheetState,
                     scope,
-                    signOut
+                    onSignOut
                 )
             })
         }
@@ -298,15 +326,14 @@ private fun prepareOptionsMenu(role: String, context: Context): List<MenuAction>
 private fun onOptionsItemClicked(
     clickedItemLabel: String,
     context: Context,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     bottomSheetState: ModalBottomSheetState,
     scope: CoroutineScope,
     onSignOut: () -> Unit
 ) {
     when (clickedItemLabel) {
         context.getString(R.string.search) -> {
-            //navController.navigate(R.id.action_fragmentHome_to_searchFragment)
-            navController.navigate(R.id.action_fragmentHome_to_algoliaSearchFragment)
+            //navController.navigate(R.id.action_fragmentHome_to_algoliaSearchFragment)
         }
 
         context.getString(R.string.Profile) -> {
@@ -316,22 +343,22 @@ private fun onOptionsItemClicked(
         }
 
         context.getString(R.string.clients) -> {
-            navController.navigate(R.id.action_fragmentHome_to_clientsFragment)
+            //navController.navigate(R.id.action_fragmentHome_to_clientsFragment)
         }
 
         context.getString(R.string.client_history) -> {
-            navController.navigate(
+            /*navController.navigate(
                 R.id.action_fragmentHome_to_clientsFragment,
                 ClientsFragment.getArguments(true)
-            )
+            )*/
         }
 
         context.getString(R.string.invoice_history) -> {
-            navController.navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
+            //navController.navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
         }
 
         context.getString(R.string.change_user_role) -> {
-            navController.navigate(R.id.action_fragmentHome_to_updateRoleFragment)
+            //navController.navigate(R.id.action_fragmentHome_to_updateRoleFragment)
         }
 
         context.getString(R.string.sign_out) -> {

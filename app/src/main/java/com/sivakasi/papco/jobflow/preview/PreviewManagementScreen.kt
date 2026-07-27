@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.preview
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -40,13 +41,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.admin.MenuItem
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.preview.view.ViewPreviewFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
@@ -54,22 +60,48 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.managePreviewsScreenEntry(
+    backStack: NavBackStack<NavKey>
+){
+    entry<AppGraph.ManagePreviews> {key->
+
+        val viewModel: PreviewManagementVM = hiltViewModel()
+
+        PreviewManagementScreen(
+            title = key.title,
+            onBack = {backStack.removeLastOrNull()},
+            onPreviewClicked = {backStack.add(AppGraph.Preview(it.displayUrl,it.previewId,it.fileName))},
+            onPreviewDelete = {viewModel.deletePreview(it)},
+            screenState = viewModel.screenState,
+            onUploadToStorage = {viewModel.uploadFileToStorage(it)},
+        )
+
+        LaunchedEffect(Unit) {
+            viewModel.observePreviews(key.previewId)
+        }
+
+    }
+}
+
+
 @ExperimentalCoroutinesApi
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun PreviewManagementScreen(
-    viewModel: PreviewManagementVM,
-    navController: NavController,
-    title:String
+    screenState: PreviewManagementScreenState,
+    title:String,
+    onBack:()->Unit,
+    onPreviewClicked:(JobPreview)->Unit,
+    onPreviewDelete:(JobPreview)->Unit,
+    onUploadToStorage:(Uri)->Unit
 ) {
-
-    val screenState = viewModel.screenState
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            viewModel.uploadFileToStorage(it)
+            onUploadToStorage(it)
         }
     }
 
@@ -79,7 +111,7 @@ fun PreviewManagementScreen(
                 title = title,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        onClick = onBack
                     ) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
@@ -97,8 +129,8 @@ fun PreviewManagementScreen(
         else
             ContentMain(
                 screenState = screenState,
-                navController = navController,
-                viewModel = viewModel
+                onPreviewClicked=onPreviewClicked,
+                onDeletePreview = onPreviewDelete
             )
     }
 }
@@ -107,17 +139,17 @@ fun PreviewManagementScreen(
 @Composable
 private fun ContentMain(
     screenState:PreviewManagementScreenState,
-    navController: NavController,
-    viewModel: PreviewManagementVM
+    onPreviewClicked: (JobPreview) -> Unit,
+    onDeletePreview:(JobPreview)->Unit
 ){
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         PreviewGrid(
             previews = screenState.imageUris,
-            navController = navController,
             modifier = Modifier.fillMaxSize(),
-            onDelete = { screenState.showDeleteConfirmation(it) }
+            onPreviewDelete = { screenState.showDeleteConfirmation(it) },
+            onPreviewClick = onPreviewClicked
         )
 
         screenState.previewToDelete?.let {
@@ -125,7 +157,7 @@ private fun ContentMain(
                 message = stringResource(id = R.string.delete_preview_confirmation),
                 positiveButtonText = stringResource(id = R.string.menu_delete),
                 negativeButtonText = stringResource(id = R.string.cancel),
-                onPositiveClick = { viewModel.deletePreview(it) },
+                onPositiveClick = {onDeletePreview(it)},
                 onNegativeClick = { screenState.hideDeleteConfirmationDialog() },
                 onDismissListener = { screenState.hideDeleteConfirmationDialog() }
             )
@@ -138,9 +170,9 @@ private fun ContentMain(
 @Composable
 fun PreviewGrid(
     previews: List<JobPreview>,
-    navController: NavController,
     modifier: Modifier = Modifier,
-    onDelete: (JobPreview) -> Unit
+    onPreviewClick:(JobPreview)->Unit,
+    onPreviewDelete: (JobPreview) -> Unit
 ) {
     LazyVerticalGrid(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -153,10 +185,9 @@ fun PreviewGrid(
             PreviewImage(
                 preview,
                 modifier = Modifier.size(150.dp),
-                onDelete = onDelete
-            ) {
-                navigateToViewPreviewScreen(navController, preview)
-            }
+                onDelete = onPreviewDelete,
+                onClick=onPreviewClick
+            )
         }
 
     }

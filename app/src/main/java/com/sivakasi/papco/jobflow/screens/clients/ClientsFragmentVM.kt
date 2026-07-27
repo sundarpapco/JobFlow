@@ -13,12 +13,14 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -38,10 +40,9 @@ class ClientsFragmentVM @Inject constructor(
     private fun loadFilteredClients() {
 
         viewModelScope.launch(Dispatchers.IO) {
-            try {
                 repository.loadAllClients()
                     .combine(screenState.query
-                        .debounce(500)
+                        .debounce(500.milliseconds)
                         .onStart { emit("") }
                     ) { list, query ->
                         if (query.isBlank())
@@ -54,13 +55,13 @@ class ClientsFragmentVM @Inject constructor(
                         it.map { client ->
                             ClientUIModel(client.id, client.annotatedName(screenState.query.value))
                         }
+                    }.catch {
+                        val e = it as? Exception ?: Exception(it)
+                        screenState.loadingError(e)
+
                     }.collect {
                         screenState.loadClientList(it)
                     }
-            } catch (e: Exception) {
-                if (e !is CancellationException)
-                    screenState.loadingError(e)
-            }
         }
     }
 

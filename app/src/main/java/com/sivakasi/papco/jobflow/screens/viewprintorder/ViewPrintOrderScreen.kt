@@ -55,7 +55,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.PartialDispatch
@@ -67,6 +71,8 @@ import com.sivakasi.papco.jobflow.extensions.asReadableTimeStamp
 import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.extensions.shareReport
+import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.preview.PreviewManagementFragment
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
@@ -88,19 +94,149 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
-val LocalNavigation = compositionLocalOf<NavController> { error("Navigation must be initialized") }
+@SuppressLint("LocalContextGetResourceValueCall")
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
+    ExperimentalComposeUiApi::class, FlowPreview::class
+)
+fun EntryProviderScope<NavKey>.viewPrintOrderEntry(
+    backStack: NavBackStack<NavKey>
+) {
+    entry<AppGraph.ViewPrintOrder> { key ->
+
+        val role = LocalUserClaim.current
+        val viewModel: ComposeViewPrintOrderFragmentVM = hiltViewModel()
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val screenState = viewModel.screenState
+
+        ViewPrintOrderScreen(
+            screenState = screenState,
+            onBack = { backStack.removeLastOrNull() },
+            onPrint = {
+                print(context, screenState.printOrder!!, viewModel.printOrderReport)
+            },
+            onSharePdf = { sharePdfFile(context, viewModel, scope) },
+            navigateToNotes = {
+                backStack.add(AppGraph.Notes(key.poNumber,screenState.printOrder!!.notes))
+            },
+            onRepeatJob = {
+                // TO DO
+                //Navigate to the print order flow
+            },
+            onPreviousHistory = {
+                screenState.printOrder?.let{
+                    backStack.add(AppGraph.PreviousHistory(it.plateMakingDetail.plateNumber))
+                }
+            },
+            onRevokeJob = { viewModel.revokePrintOrder(screenState.printOrder!!) },
+            onPreviewClicked = {
+                backStack.add(AppGraph.ManagePreviews(
+                    screenState.printOrder!!.previewId(),
+                    context.getString(R.string.manage_preview_heading,
+                        screenState.printOrder!!.printOrderNumber)
+                ))
+            },
+            onEditPrintOrder = {
+                //TO DO
+                //Navigate to the print order flow
+            }
+        )
+
+        LaunchedEffect(Unit) {
+            viewModel.loadPrintOrder(key.poNumber, role ?: "none")
+        }
+
+    }
+}
 
 @ExperimentalMaterialApi
+@ExperimentalComposeUiApi
+@FlowPreview
 @ExperimentalCoroutinesApi
-val LocalViewModel =
-    compositionLocalOf<ComposeViewPrintOrderFragmentVM> { error("ViewModel must be initialized") }
+private fun onOptionsItemSelected(
+    activityContext: Context,
+    bottomSheetState: ModalBottomSheetState,
+    id: String,
+    viewModel: ComposeViewPrintOrderFragmentVM,
+    navController: NavController,
+    scope: CoroutineScope
+) {
 
-@ExperimentalMaterialApi
-val LocalScreenState =
-    compositionLocalOf<ViewPrintOrderScreenState> { error("Screen State must be initialized") }
-val LocalActivityContext =
-    compositionLocalOf<Context> { error("Activity Context must be initialized") }
-val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
+    val screenState = viewModel.screenState
+
+    when (id) {
+
+        activityContext.getString(R.string.print) -> {
+            print(activityContext, screenState.printOrder!!, viewModel.printOrderReport)
+        }
+
+        activityContext.getString(R.string.menu_share_as_pdf) -> {
+            sharePdfFile(activityContext, viewModel, scope)
+        }
+
+        activityContext.getString(R.string.notes) -> {
+            navigateToNotesScreen(
+                navController,
+                screenState.printOrder!!.printOrderNumber,
+                screenState.printOrder!!.notes
+            )
+        }
+
+        activityContext.getString(R.string.repeat_this_job) -> {
+            screenState.printOrder?.let {
+                repeatThisJob(
+                    navController, it.printOrderNumber
+                )
+            }
+        }
+
+        activityContext.getString(R.string.previous_processing_history) -> {
+            screenState.printOrder?.let {
+                navigateToPreviousHistoryScreen(
+                    navController, it
+                )
+            }
+        }
+
+        activityContext.getString(R.string.processing_history) -> {
+            screenState.modalSheetContent =
+                ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
+            scope.launch {
+                bottomSheetState.show()
+            }
+        }
+
+        activityContext.getString(R.string.partial_dispatches) -> {
+            screenState.modalSheetContent =
+                ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
+            scope.launch {
+                bottomSheetState.show()
+            }
+        }
+
+        activityContext.getString(R.string.revoke_po) -> {
+            screenState.showRevokeConfirmationDialog()
+        }
+
+        activityContext.getString(R.string.previews) -> {
+            navController.navigate(
+                R.id.action_composeViewPrintOrderFragment_to_previewManagementFragment,
+                PreviewManagementFragment.arguments(
+                    screenState.printOrder!!.previewId(),
+                    activityContext.getString(
+                        R.string.manage_preview_heading,
+                        screenState.printOrder!!.printOrderNumber
+                    )
+                )
+            )
+        }
+
+    }
+}
+
+val LocalSheetState =
+    compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalMaterialApi
@@ -109,18 +245,21 @@ val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom 
 @ExperimentalCoroutinesApi
 @Composable
 fun ViewPrintOrderScreen(
-    viewModel: ComposeViewPrintOrderFragmentVM,
-    navController: NavController,
-    activityContext: Context
+    screenState: ViewPrintOrderScreenState,
+    onBack: () -> Unit,
+    onPrint: () -> Unit,
+    onSharePdf: () -> Unit,
+    navigateToNotes: () -> Unit,
+    onRepeatJob: () -> Unit,
+    onPreviousHistory: () -> Unit,
+    onRevokeJob: (PrintOrder) -> Unit,
+    onPreviewClicked: () -> Unit,
+    onEditPrintOrder: () -> Unit
 ) {
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
     CompositionLocalProvider(
-        LocalNavigation provides navController,
-        LocalViewModel provides viewModel,
-        LocalScreenState provides viewModel.screenState,
-        LocalActivityContext provides activityContext,
         LocalSheetState provides sheetState
     ) {
 
@@ -128,7 +267,6 @@ fun ViewPrintOrderScreen(
 
         JobFlowTheme {
 
-            val screenState = LocalScreenState.current
             val scope = rememberCoroutineScope()
 
             BackHandler {
@@ -137,30 +275,59 @@ fun ViewPrintOrderScreen(
                         bottomSheetState.hide()
                     }
                 } else
-                    navController.popBackStack()
+                    onBack()
             }
 
             ModalBottomSheetLayout(
-                sheetContent = { ViewPrintOrderBottomSheet() },
+                sheetContent = { ViewPrintOrderBottomSheet(screenState) },
                 sheetState = bottomSheetState,
                 sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
                 scrimColor = MaterialTheme.colors.background.copy(alpha = 0.6f)
             ) {
                 Scaffold(
-                    topBar = { ViewPrintOrderTopBar() },
+                    topBar = {
+                        ViewPrintOrderTopBar(
+                            screenState = screenState,
+                            onBack = onBack,
+                            onPrint = onPrint,
+                            onSharePdf = onSharePdf,
+                            onNotes = navigateToNotes,
+                            onRepeatJob = onRepeatJob,
+                            onPreviousHistory = onPreviousHistory,
+                            onPartialDispatch = {
+                                screenState.modalSheetContent =
+                                    ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            onRevokePrintOrder = { screenState.showRevokeConfirmationDialog() },
+                            onPreviewClicked = onPreviewClicked,
+                            onProcessingHistory = {
+                                screenState.modalSheetContent =
+                                    ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
+                                scope.launch {
+                                    bottomSheetState.show()
+                                }
+                            }
+                        )
+                    },
                     floatingActionButton = {
                         if (screenState.fabShowing)
                             FloatingActionButton(
                                 backgroundColor = MaterialTheme.colors.primary,
-                                onClick = {
-                                    navigateToEditPrintOrderScreen(navController, screenState)
-                                }
+                                onClick = onEditPrintOrder
                             ) {
                                 Icon(Icons.Filled.Edit, "Edit Print Order Button")
                             }
                     }
-                ) {padding->
-                    PrintOrderScreenContent(modifier = Modifier.padding(padding), screenState = screenState)
+                ) { padding ->
+                    PrintOrderScreenContent(
+                        modifier = Modifier.padding(padding),
+                        screenState = screenState,
+                        onRevokePrintOrder = onRevokeJob,
+                        onPoMoved = onBack
+                    )
                 }
             }
         }
@@ -169,8 +336,9 @@ fun ViewPrintOrderScreen(
 
 @ExperimentalMaterialApi
 @Composable
-private fun ViewPrintOrderBottomSheet() {
-    val screenState = LocalScreenState.current
+private fun ViewPrintOrderBottomSheet(
+    screenState: ViewPrintOrderScreenState
+) {
     val sheetState = LocalSheetState.current
     val printOrder = screenState.printOrder
     val context = LocalContext.current
@@ -219,12 +387,12 @@ private fun ViewPrintOrderBottomSheet() {
 @Composable
 fun PrintOrderScreenContent(
     modifier: Modifier = Modifier,
-    screenState: ViewPrintOrderScreenState
+    screenState: ViewPrintOrderScreenState,
+    onRevokePrintOrder: (PrintOrder) -> Unit,
+    onPoMoved: () -> Unit
 ) {
 
-    val navController = LocalNavigation.current
     val context = LocalContext.current
-    val viewModel = LocalViewModel.current
 
     if (screenState.isLoading) {
         LoadingScreen()
@@ -237,7 +405,7 @@ fun PrintOrderScreenContent(
     }
 
     screenState.printOrderRenderInfo?.let {
-        PrintOrder(modifier=modifier,printOrder = it)
+        PrintOrder(modifier = modifier, printOrder = it)
     }
 
     if (screenState.isWaiting) {
@@ -246,9 +414,9 @@ fun PrintOrderScreenContent(
 
     if (screenState.isRevokeConfirmationShowing) {
         RevokeConfirmationDialog(onCancel = { screenState.hideRevokeConfirmationDialog() }) {
-            screenState.printOrder?.let{
+            screenState.printOrder?.let {
                 screenState.hideRevokeConfirmationDialog()
-                viewModel.revokePrintOrder(it)
+                onRevokePrintOrder(it)
             }
         }
     }
@@ -267,7 +435,7 @@ fun PrintOrderScreenContent(
             title = stringResource(id = R.string.po_not_found),
             message = stringResource(id = R.string.po_not_found_desc),
             positiveButtonText = stringResource(id = R.string.exit).toUpperCase(Locale.current),
-            onPositiveClick = { navController.popBackStack() }
+            onPositiveClick = onPoMoved
         )
     }
 
@@ -286,17 +454,27 @@ private fun RevokeConfirmationDialog(onCancel: () -> Unit, onConfirm: () -> Unit
 }
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @FlowPreview
 @ExperimentalCoroutinesApi
 @Composable
-private fun ViewPrintOrderTopBar() {
+private fun ViewPrintOrderTopBar(
+    screenState: ViewPrintOrderScreenState,
+    onBack: () -> Unit,
+    onPrint: () -> Unit,
+    onSharePdf: () -> Unit,
+    onNotes: () -> Unit,
+    onRepeatJob: () -> Unit,
+    onPreviousHistory: () -> Unit,
+    onPartialDispatch: () -> Unit,
+    onRevokePrintOrder: () -> Unit,
+    onPreviewClicked: () -> Unit,
+    onProcessingHistory: () -> Unit
+) {
 
-    val activityContext = LocalActivityContext.current
-    val screenState = LocalScreenState.current
-    val navController = LocalNavigation.current
-    val viewModel = LocalViewModel.current
+    val context = LocalContext.current
     val sheetState = LocalSheetState.current
     val scope = rememberCoroutineScope()
     val menuItems = screenState.menuItems
@@ -306,9 +484,7 @@ private fun ViewPrintOrderTopBar() {
         subtitle = screenState.destinationName,
         navigationIcon = {
             IconButton(
-                onClick = {
-                    navController.popBackStack()
-                }
+                onClick = onBack
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
             }
@@ -318,14 +494,51 @@ private fun ViewPrintOrderTopBar() {
                 OptionsMenu(
                     menuItems = it,
                     onItemClick = { itemId ->
-                        onOptionsItemSelected(
-                            activityContext,
-                            sheetState,
-                            itemId,
-                            viewModel,
-                            navController,
-                            scope
-                        )
+                        when (itemId) {
+                            context.getString(R.string.print) -> {
+                                onPrint()
+                            }
+
+                            context.getString(R.string.menu_share_as_pdf) -> {
+                                onSharePdf()
+                            }
+
+                            context.getString(R.string.notes) -> {
+                                onNotes()
+                            }
+
+                            context.getString(R.string.repeat_this_job) -> {
+                                onRepeatJob()
+                            }
+
+                            context.getString(R.string.previous_processing_history) -> {
+                                onPreviousHistory()
+                            }
+
+                            context.getString(R.string.processing_history) -> {
+                                onProcessingHistory()
+                            }
+
+                            context.getString(R.string.partial_dispatches) -> {
+                                onPartialDispatch()
+                            }
+
+                            context.getString(R.string.revoke_po) -> {
+                                onRevokePrintOrder()
+                            }
+
+                            context.getString(R.string.previews) -> {
+                                onPreviewClicked()
+                            }
+                        }
+                        /* onOptionsItemSelected(
+                             context,
+                             sheetState,
+                             itemId,
+                             viewModel,
+                             navController,
+                             scope
+                         )*/
                     }
                 )
             }
@@ -719,6 +932,7 @@ private fun PostPressDetails(
 
 }
 
+
 @ExperimentalMaterialApi
 @Composable
 private fun ProcessingHistorySheet(
@@ -738,7 +952,7 @@ private fun ProcessingHistorySheet(
         ) {
             Text(
                 modifier = Modifier.weight(2f),
-                text = context.getString(R.string.processing_history),
+                text = stringResource(R.string.processing_history),
                 style = MaterialTheme.typography.h5
             )
             IconButton(onClick = {
@@ -778,7 +992,7 @@ private fun PartDispatchesSheet(
         ) {
             Text(
                 modifier = Modifier.weight(2f),
-                text = context.getString(R.string.partial_dispatches),
+                text = stringResource(R.string.partial_dispatches),
                 style = MaterialTheme.typography.h5
             )
             IconButton(onClick = {
@@ -995,90 +1209,6 @@ private fun PreviewPartialDispatchSheet() {
 
 }
 
-@ExperimentalMaterialApi
-@ExperimentalComposeUiApi
-@FlowPreview
-@ExperimentalCoroutinesApi
-private fun onOptionsItemSelected(
-    activityContext: Context,
-    bottomSheetState: ModalBottomSheetState,
-    id: String,
-    viewModel: ComposeViewPrintOrderFragmentVM,
-    navController: NavController,
-    scope: CoroutineScope
-) {
-
-    val screenState = viewModel.screenState
-
-    when (id) {
-
-        activityContext.getString(R.string.print) -> {
-            print(activityContext, screenState.printOrder!!, viewModel.printOrderReport)
-        }
-
-        activityContext.getString(R.string.menu_share_as_pdf) -> {
-            sharePdfFile(activityContext, viewModel, scope)
-        }
-
-        activityContext.getString(R.string.notes) -> {
-            navigateToNotesScreen(
-                navController,
-                screenState.printOrder!!.printOrderNumber,
-                screenState.printOrder!!.notes
-            )
-        }
-
-        activityContext.getString(R.string.repeat_this_job) -> {
-            screenState.printOrder?.let {
-                repeatThisJob(
-                    navController, it.printOrderNumber
-                )
-            }
-        }
-
-        activityContext.getString(R.string.previous_processing_history) -> {
-            screenState.printOrder?.let {
-                navigateToPreviousHistoryScreen(
-                    navController, it
-                )
-            }
-        }
-
-        activityContext.getString(R.string.processing_history) -> {
-            screenState.modalSheetContent =
-                ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
-            scope.launch {
-                bottomSheetState.show()
-            }
-        }
-
-        activityContext.getString(R.string.partial_dispatches) -> {
-            screenState.modalSheetContent =
-                ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
-            scope.launch {
-                bottomSheetState.show()
-            }
-        }
-
-        activityContext.getString(R.string.revoke_po) -> {
-            screenState.showRevokeConfirmationDialog()
-        }
-
-        activityContext.getString(R.string.previews) ->{
-            navController.navigate(
-                R.id.action_composeViewPrintOrderFragment_to_previewManagementFragment,
-                PreviewManagementFragment.arguments(
-                    screenState.printOrder!!.previewId(),
-                    activityContext.getString(
-                        R.string.manage_preview_heading,
-                        screenState.printOrder!!.printOrderNumber
-                    )
-                )
-            )
-        }
-
-    }
-}
 
 private fun print(
     activityContext: Context,

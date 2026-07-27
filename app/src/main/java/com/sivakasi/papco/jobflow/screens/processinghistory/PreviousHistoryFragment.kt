@@ -55,9 +55,9 @@ class PreviousHistoryFragment:Fragment() {
 
         return ComposeView(requireContext()).apply{
             setContent {
-                JobFlowTheme {
+              /*  JobFlowTheme {
                     PreviousHistoryScreen(viewModel)
-                }
+                }*/
             }
         }
     }

@@ -1,19 +1,23 @@
 package com.sivakasi.papco.jobflow
 
+import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.FirebaseNetworkException
+import androidx.navigation3.runtime.NavKey
 import com.google.firebase.auth.FirebaseAuth
 import com.sivakasi.papco.jobflow.data.Repository
-import com.sivakasi.papco.jobflow.util.Event
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,25 +25,29 @@ import javax.inject.Inject
 @HiltViewModel
 class MainActivityVM @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val auth: JobFlowAuth,
+    val auth: JobFlowAuth,
     private val repository: Repository
 ) : ViewModel() {
 
-    val isInitializing = mutableStateOf(false)
+    var isInitializing by mutableStateOf(false)
     private var userMonitoringJob: Job? = null
-    private val _navigateUsingAction = MutableLiveData<Event<Int>>()
-    val navigateUsingAction: LiveData<Event<Int>> = _navigateUsingAction
+
+    private var _landingHomeScreen = Channel<NavKey>()
+    val landingHomeScreen = _landingHomeScreen.receiveAsFlow()
+    var userClaim: String? by mutableStateOf(null)
 
     private val authListener = FirebaseAuth.AuthStateListener {
         initializeCurrentUser()
     }
 
     init {
+        Log.d("SAAT", "Main Activity Creating")
         auth.addAuthStateListener(authListener)
     }
 
     fun initializeCurrentUser() {
 
+        Log.d("SAAT", "Initializing current user")
         userMonitoringJob?.cancel()
 
         if (auth.currentUser == null) {
@@ -47,35 +55,35 @@ class MainActivityVM @Inject constructor(
             return
         }
 
-        isInitializing.value = true
+        isInitializing = true
         userMonitoringJob = viewModelScope.launch {
 
-            try {
-                repository.observeUser(auth.currentUser!!.uid)
-                    .collect { user ->
-                        if (user == null) {
-                            logOutCurrentUser()
-                        } else {
-                            val oldClaim = getClaim()
-                            savedStateHandle["claim"] = auth.fetchUserClaim(auth.currentUser, true)
-                            isInitializing.value = false
-                            navigateBasedOnClaims(oldClaim, getClaim())
-                        }
+            repository.observeUser(auth.currentUser!!.uid)
+                .catch {
+                    //If there is no internet connection detected
+                    isInitializing = false
+                    _landingHomeScreen.send(AppGraph.NoInternet)
+                }
+                .collect { user ->
+                    if (user == null) {
+                        logOutCurrentUser()
+                    } else {
+                        val oldClaim = getClaim()
+                        savedStateHandle["claim"] = auth.fetchUserClaim(auth.currentUser, true)
+                        isInitializing = false
+                        userClaim = getClaim()
+                        navigateBasedOnClaims(oldClaim, getClaim())
                     }
-
-            } catch (e: FirebaseNetworkException) {
-                //If there is no internet connection detected
-                isInitializing.value = false
-                _navigateUsingAction.value = Event(R.id.action_global_noInternetFragment)
-            }
+                }
 
         }
 
     }
 
-    private fun logOutCurrentUser() {
+    fun logOutCurrentUser() {
         savedStateHandle["claim"] = "none"
-        _navigateUsingAction.value = Event(R.id.action_global_loginFragment)
+        userClaim = "none"
+        _landingHomeScreen.trySend(AppGraph.Login)
     }
 
     private fun navigateBasedOnClaims(oldClaim: String, newClaim: String) {
@@ -83,47 +91,37 @@ class MainActivityVM @Inject constructor(
         if (oldClaim == newClaim)
             return
 
-        when (newClaim) {
+        val destination = when (newClaim) {
             "none" -> {
-                _navigateUsingAction.value = Event(R.id.action_global_loginFragment)
+                AppGraph.Login
             }
 
             "guest" -> {
-                _navigateUsingAction.value = Event(R.id.action_global_guestFragment)
+                AppGraph.Guest
             }
 
             "printer" -> {
-                if (oldClaim == "guest" || oldClaim == "none")
-                    _navigateUsingAction.value = Event(R.id.action_global_manageMachinesFragment)
-                else
-                    auth.logout()
+                AppGraph.Machines(false)
             }
 
             "admin" -> {
-                if (oldClaim == "guest" || oldClaim == "none")
-                    _navigateUsingAction.value = Event(R.id.action_global_fragmentHome)
-                else
-                    auth.logout()
+                AppGraph.Home
             }
 
             "root" -> {
-                if (oldClaim == "guest" || oldClaim == "none")
-                    _navigateUsingAction.value = Event(R.id.action_global_fragmentHome)
-                else
-                    auth.logout()
+                AppGraph.Home
             }
 
-            else -> {
-                error("Invalid user claim detected")
-            }
+            else -> error("Invalid user claim detected")
         }
+
+        _landingHomeScreen.trySend(destination)
 
     }
 
     fun getClaim(): String = savedStateHandle.get<String>("claim") ?: "none"
 
     override fun onCleared() {
-        super.onCleared()
         auth.removeAuthStateListener(authListener)
     }
 }

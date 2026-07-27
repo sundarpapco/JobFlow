@@ -18,7 +18,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -28,22 +27,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+
+fun EntryProviderScope<NavKey>.noInternetEntry(
+    isRefreshing: Boolean,
+    onRefresh:()->Unit
+){
+    entry<AppGraph.NoInternet> {
+        NoInternetScreen(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh
+        )
+    }
+}
 
 
 @Composable
 fun NoInternetScreen(
-    isRefreshing:MutableState<Boolean>,
+    isRefreshing: Boolean,
     onRefresh:()->Unit
 ){
     val config = LocalConfiguration.current
 
     JobFlowTheme{
         if(config.orientation==Configuration.ORIENTATION_PORTRAIT)
-            NoInternetPortraitScreen(isRefreshing.value,onRefresh)
+            NoInternetPortraitScreen(isRefreshing,onRefresh)
         else
-            NoInternetLandscapeScreen(isRefreshing.value,onRefresh)
+            NoInternetLandscapeScreen(isRefreshing,onRefresh)
     }
 
 }

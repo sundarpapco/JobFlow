@@ -7,11 +7,8 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -49,13 +46,6 @@ class PreviewManagementFragment : Fragment() {
 
         return ComposeView(requireContext()).apply{
             setContent {
-                JobFlowTheme {
-                    PreviewManagementScreen(
-                        viewModel,
-                        findNavController(),
-                        getFragmentTitle().ifBlank { getString(R.string.job_previews) }
-                    )
-                }
             }
         }
     }

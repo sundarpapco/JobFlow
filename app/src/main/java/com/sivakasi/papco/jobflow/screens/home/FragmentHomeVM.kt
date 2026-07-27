@@ -1,6 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import com.sivakasi.papco.jobflow.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,17 +27,17 @@ class FragmentHomeVM @Inject constructor(
 ) : ViewModel() {
 
     private val newJobsState = JobGroupState().apply {
-        groupName=application.getString(R.string.new_jobs)
+        groupName = application.getString(R.string.new_jobs)
         iconResourceId = R.drawable.ic_new_jobs
     }
 
     private val inProgressState = JobGroupState().apply {
-        groupName=application.getString(R.string.in_progress)
+        groupName = application.getString(R.string.in_progress)
         iconResourceId = R.drawable.ic_in_progress
     }
 
     private val machinesState = JobGroupState().apply {
-        groupName=application.getString(R.string.machines)
+        groupName = application.getString(R.string.machines)
         iconResourceId = R.drawable.ic_machine
     }
 
@@ -43,7 +45,7 @@ class FragmentHomeVM @Inject constructor(
         observeJobs()
     }
 
-    fun getStates() = listOf(newJobsState,inProgressState,machinesState)
+    fun getStates() = listOf(newJobsState, inProgressState, machinesState)
 
     private fun observeJobs() {
 
@@ -51,49 +53,46 @@ class FragmentHomeVM @Inject constructor(
 
             //Observe NewJobs
             launch {
-                try {
                     repository.observeDestination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS)
+                        .catch {
+                            renderDestinationToState(destination = null, newJobsState)
+                        }
                         .collect { destination ->
                             renderDestinationToState(destination, newJobsState)
                         }
-                } catch (e: Exception) {
-                    renderDestinationToState(destination = null, newJobsState)
                 }
-            }
 
             //Observe InProgress Jobs
             launch {
-                try {
+
                     repository.observeDestination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS)
-                        .collect { destination ->
-                            renderDestinationToState(destination,inProgressState)
+                        .catch {
+                            renderDestinationToState(destination = null, newJobsState)
                         }
-                } catch (e: Exception) {
-                    renderDestinationToState(destination=null,newJobsState)
+                        .collect { destination ->
+                            renderDestinationToState(destination, inProgressState)
+                        }
                 }
-            }
+
 
             //Observe Machines Job
             launch {
-                try {
-                    repository.loadAllMachines()
-                        .map {
-                            if (it.isNotEmpty())
-                                it.reduce { acc, destination ->
-                                    acc.jobCount += destination.jobCount
-                                    acc.runningTime += destination.runningTime
-                                    acc
-                                }
-                            else
-                                emptyDestination(application.getString(R.string.machines))
-                        }.collect {
-                            renderDestinationToState(it,machinesState)
-                        }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    renderDestinationToState(destination = null,machinesState)
-                }
+                repository.loadAllMachines()
+                    .map {
+                        if (it.isNotEmpty())
+                            it.reduce { acc, destination ->
+                                acc.jobCount += destination.jobCount
+                                acc.runningTime += destination.runningTime
+                                acc
+                            }
+                        else
+                            emptyDestination(application.getString(R.string.machines))
+                    }
+                    .catch {
+                        renderDestinationToState(destination = null, machinesState)
+                    }.collect {
+                        renderDestinationToState(it, machinesState)
+                    }
             }
         }
     }

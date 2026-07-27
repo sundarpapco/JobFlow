@@ -41,12 +41,6 @@ class FixedDestinationFragment : Fragment() {
             }
     }
 
-    //Variable used to determine whether we should notifyDataSetChanged on the adapter when the action
-    //mode finishes. When the action mode is finishing, this variable determines whether we should
-    //refresh the adapter or not
-    //True when the ActionMode is finishing cause of back arrow key and false when the action mode
-    //is finishing as the result of allocation completion
-
     private val viewModel: FixedDestinationVM by lazy {
         ViewModelProvider(this)[FixedDestinationVM::class.java]
     }

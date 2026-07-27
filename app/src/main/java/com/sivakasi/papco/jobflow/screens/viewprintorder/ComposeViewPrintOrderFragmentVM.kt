@@ -14,6 +14,7 @@ import com.sivakasi.papco.jobflow.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,27 +42,26 @@ class ComposeViewPrintOrderFragmentVM @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
 
-            try {
-                repository.observePrintOrder(printOrderNumber)
-                    .collect { printOrderWithDestination ->
-                        if (printOrderWithDestination == null) {
-                            loadedPrintOrder = null
-                            screenState.printOrderMoved()
-                        } else {
-                            loadedPrintOrder = printOrderWithDestination.printOrder
-                            screenState.loadPrintOrder(
-                                application,
-                                printOrderWithDestination,
-                                userRole
-                            )
-                            screenState.destinationName =
-                                printOrderWithDestination.destination.name
-                        }
+            repository.observePrintOrder(printOrderNumber)
+                .catch {
+                    val e = it as? Exception ?: Exception(it)
+                    screenState.loadError(application, e)
+                }
+                .collect { printOrderWithDestination ->
+                    if (printOrderWithDestination == null) {
+                        loadedPrintOrder = null
+                        screenState.printOrderMoved()
+                    } else {
+                        loadedPrintOrder = printOrderWithDestination.printOrder
+                        screenState.loadPrintOrder(
+                            application,
+                            printOrderWithDestination,
+                            userRole
+                        )
+                        screenState.destinationName =
+                            printOrderWithDestination.destination.name
                     }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                screenState.loadError(application, e)
-            }
+                }
 
         }
     }

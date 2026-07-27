@@ -69,11 +69,15 @@ android {
 dependencies {
 
     implementation libs.androidx.core.ktx
-    implementation libs.androidx.constraintlayout
 
     //Navigation
     implementation libs.androidx.navigation.fragment.ktx
     implementation libs.androidx.navigation.ui.ktx
+
+    //Navigation3
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.androidx.navigation3)
+    implementation(libs.androidx.navigation3.viewmodel)
 
     //Compose
     implementation platform(libs.compose.bom)
@@ -98,6 +102,7 @@ dependencies {
     //Dagger Hilt
     implementation(libs.androidx.hilt.navigation.fragment)
     implementation libs.hilt.android
+    implementation libs.androidx.hilt.navigation.compose
     ksp libs.hilt.compiler
 
     //Easy Validation for validation of Input fields

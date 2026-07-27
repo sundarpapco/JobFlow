@@ -26,10 +26,13 @@ import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.util.ResourceNotFoundException
 
 @Composable
-fun ErrorScreen(error:Throwable){
+fun ErrorScreen(
+    error:Throwable,
+    modifier: Modifier = Modifier
+){
 
     Surface(
-        modifier=Modifier.fillMaxSize(),
+        modifier=modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
     ) {
         Box(

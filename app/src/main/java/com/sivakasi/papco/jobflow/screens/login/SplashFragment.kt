@@ -13,9 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.fragment.app.Fragment
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
 import com.sivakasi.papco.jobflow.extensions.showActionBar
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 class SplashFragment : Fragment() {
@@ -40,6 +43,12 @@ class SplashFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         showActionBar()
+    }
+}
+
+fun EntryProviderScope<NavKey>.splashScreenEntry(){
+    entry<AppGraph.Splash> {
+        SplashScreen()
     }
 }
 

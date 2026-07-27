@@ -17,30 +17,68 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.ProcessingHistory
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.screens.common.ErrorScreen
 import com.sivakasi.papco.jobflow.screens.common.SearchListItem
 import com.sivakasi.papco.jobflow.screens.common.fakeSearchModel
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import com.sivakasi.papco.jobflow.ui.MenuAction
+import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+fun EntryProviderScope<NavKey>.previousHistoryScreenEntry(
+    backStack: NavBackStack<NavKey>
+){
+    entry<AppGraph.PreviousHistory> {key->
+
+        val viewModel: PreviousProcessingHistoryVM = hiltViewModel()
+
+        PreviousHistoryScreen(
+            viewModel = viewModel,
+            onClose = {backStack.removeLastOrNull()}
+        )
+
+        LaunchedEffect(Unit) {
+            viewModel.loadPreviousHistoryOfPlateNumber(key.plateNumber)
+        }
+
+    }
+}
+
 
 @Composable
 private fun HistoryCircle(
@@ -166,11 +204,12 @@ fun ProcessingHistoryList(
 @Composable
 private fun PreviousHistoryScreenContent(
     screenState: PreviousHistoryScreenState,
-    onClick: (SearchModel) -> Unit
+    onClick: (SearchModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
     ){
         Column(
@@ -190,28 +229,50 @@ private fun PreviousHistoryScreenContent(
 @ExperimentalCoroutinesApi
 @Composable
 fun PreviousHistoryScreen(
-    viewModel: PreviousProcessingHistoryVM
+    viewModel: PreviousProcessingHistoryVM,
+    onClose:()->Unit
 ){
-
-    when(val screenState = viewModel.screenToRender){
-
-        is LoadingStatus.Loading ->{
-            LoadingScreen()
-        }
-
-        is LoadingStatus.Success<*> ->{
-
-            PreviousHistoryScreenContent(
-                screenState = screenState.data as PreviousHistoryScreenState,
-                onClick = {}
+    Scaffold(
+        topBar = {
+            JobFlowTopBar(
+                title = stringResource(R.string.previous_processing_history),
+                navigationIcon = {
+                    IconButton(
+                        onClick = onClose
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
             )
         }
+    ) {paddingValues ->
+        when(val screenState = viewModel.screenToRender){
 
-        is LoadingStatus.Error ->{
-            ErrorScreen(error = screenState.exception)
+            is LoadingStatus.Loading ->{
+                LoadingScreen(Modifier.padding(paddingValues))
+            }
+
+            is LoadingStatus.Success<*> ->{
+
+                PreviousHistoryScreenContent(
+                    modifier = Modifier.padding(paddingValues),
+                    screenState = screenState.data as PreviousHistoryScreenState,
+                    onClick = {}
+                )
+            }
+
+            is LoadingStatus.Error ->{
+                ErrorScreen(
+                    modifier = Modifier.padding(paddingValues),
+                    error = screenState.exception
+                )
+            }
+
+            else -> {}
         }
-
-        else -> {}
     }
 }
 

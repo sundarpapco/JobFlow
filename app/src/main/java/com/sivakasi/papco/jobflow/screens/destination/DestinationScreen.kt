@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.destination
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
@@ -9,12 +10,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -39,6 +37,7 @@ import androidx.compose.material.icons.outlined.CurrencyRupee
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -51,10 +50,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.DatabaseContract
+import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.extensions.asReadableTimeStamp
 import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -64,10 +72,58 @@ import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.Duration
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.destinationScreenEntry(
+    backStack: NavBackStack<NavKey>,
+    resultBus: ResultEventBus
+) {
+    entry<AppGraph.Destination> { key ->
+        val viewModel: FixedDestinationVM = hiltViewModel()
+
+        DestinationScreen(
+            screenState = viewModel.screenState,
+            fixedDestination = key.destinationType == Destination.TYPE_FIXED,
+            onBack = { backStack.removeLastOrNull() },
+            onDragCompleted = { viewModel.updateJobs(key.destinationId, it) },
+            onAddJob = if (key.destinationId == DatabaseContract.DOCUMENT_DEST_NEW_JOBS) {
+                {
+                    //TO DO Navigate to Print order flow
+                }
+            } else
+                null,
+            onClicked = {backStack.add(AppGraph.ViewPrintOrder(it.printOrderNumber)) },
+            onAllotJobs = { backStack.add(AppGraph.Machines(true)) },
+            onInvoiceJobs = { invoiceNumber, partialDispatch ->
+                if (!partialDispatch)
+                    viewModel.invoiceSelectedJob(key.destinationId, invoiceNumber)
+                else
+                    viewModel.partDispatchSelectedJob(key.destinationId, invoiceNumber)
+            },
+            onMarkAsPending = { viewModel.markAsPending(key.destinationId, it) },
+            onDeleteJobs = { viewModel.cancelSelectedJobs(key.destinationId) },
+            onRevertJobs = { viewModel.backtrackSelectedJobs(key.destinationId) },
+            onMarkAsDone = { viewModel.markSelectedJobsAsComplete(key.destinationId) },
+            onClearPending = { item ->
+                viewModel.clearPendingStatus(key.destinationId, item)
+            }
+        )
+
+        //Load the Jobs from the destination
+        LaunchedEffect(Unit) {
+            viewModel.loadJobsFromDestination(key.destinationId)
+        }
+
+        //Allot the selected Jobs whenever a machine selection is detected
+        ResultEffect<String>(resultBus, AppGraph.Machines.SELECTION_KEY) {
+            viewModel.allotSelectedJobs(key.destinationId, it)
+        }
+    }
+}
 
 @Composable
 fun DestinationScreen(
@@ -95,10 +151,10 @@ fun DestinationScreen(
     val context = LocalContext.current
     val snackBarState = remember { SnackbarHostState() }
     val actionModeActionBar by remember {
-        derivedStateOf{screenState.selection.selectionCount>0}
+        derivedStateOf { screenState.selection.selectionCount > 0 }
     }
     val jobsLoaded by remember {
-        derivedStateOf{screenState.jobs!=null}
+        derivedStateOf { screenState.jobs != null }
     }
 
     Scaffold(
@@ -159,16 +215,16 @@ fun DestinationScreen(
 
         Crossfade(
             targetState = jobsLoaded
-        ) { loaded->
-            if(loaded)
+        ) { loaded ->
+            if (loaded)
                 DestinationJobList(
                     screenState = screenState,
                     snackBarState = snackBarState,
                     jobs = screenState.jobs!!,
                     fixedDestination = fixedDestination,
                     onDragCompleted = onDragCompleted,
-                    onClicked=onClicked,
-                    onClearPending=onClearPending,
+                    onClicked = onClicked,
+                    onClearPending = onClearPending,
                     modifier = Modifier.padding(paddingValues)
                 )
             else
@@ -186,18 +242,19 @@ fun DestinationScreen(
     )
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun DestinationJobList(
     screenState: DestinationScreenState,
-    snackBarState:SnackbarHostState,
-    jobs:List<PrintOrderUIModel>,
+    snackBarState: SnackbarHostState,
+    jobs: List<PrintOrderUIModel>,
     fixedDestination: Boolean,
-    onDragCompleted:(List<PrintOrderUIModel>)->Unit,
-    onClicked:(PrintOrderUIModel)->Unit,
+    onDragCompleted: (List<PrintOrderUIModel>) -> Unit,
+    onClicked: (PrintOrderUIModel) -> Unit,
     onClearPending: (PrintOrderUIModel?) -> Unit,
     modifier: Modifier = Modifier
-){
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -338,6 +395,7 @@ private fun DestinationDialog(
     }
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 private fun StandardTopBar(
     screenState: DestinationScreenState,
@@ -366,6 +424,7 @@ private fun StandardTopBar(
 }
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 private fun FixedDestinationActionBar(
     screenState: DestinationScreenState,
@@ -468,6 +527,7 @@ private fun DynamicDestinationActionBar(
     )
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 private fun LastJobCompletedAt(
     completionTime: Long

@@ -35,9 +35,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+
+@OptIn(
+    ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
+fun EntryProviderScope<NavKey>.forgotPasswordEntry() {
+
+    entry<AppGraph.ForgotPassword> {
+
+        val viewModel: ForgotPasswordVM = hiltViewModel()
+
+        ForgotPasswordScreen(
+            state = viewModel.forgotPasswordState,
+            onFormSubmit = viewModel::onFormSubmit
+        )
+
+    }
+}
+
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

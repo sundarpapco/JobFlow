@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,20 +25,20 @@ import javax.inject.Inject
 @HiltViewModel
 class InvoiceHistoryVM @Inject constructor(
     private val repository: Repository,
-    private val application:Application
+    private val application: Application
 ) : ViewModel() {
 
-    private var printOrderObservingJob: Job?=null
-    var userUpdatedItem:Event<SearchModel>? by mutableStateOf(null)
+    private var printOrderObservingJob: Job? = null
+    var userUpdatedItem: Event<SearchModel>? by mutableStateOf(null)
 
-    val pagingFlow=Pager(
+    val pagingFlow = Pager(
         config = PagingConfig(
             pageSize = 100,
             prefetchDistance = 50,
             enablePlaceholders = false,
             initialLoadSize = 100
         )
-    ){
+    ) {
         InvoiceHistoryPageSource(repository)
     }.flow.cachedIn(viewModelScope)
 
@@ -45,15 +46,13 @@ class InvoiceHistoryVM @Inject constructor(
         // Cancel any previously observing job
         printOrderObservingJob?.cancel()
         printOrderObservingJob = viewModelScope.launch(Dispatchers.IO) {
-            try {
-                repository.observePrintOrder(item.printOrderNumber)
-                    .collect {
-                        userUpdatedItem = it?.let { po ->
-                            Event(po.printOrder.toSearchModel(application, po.destination.id))
-                        }
+            repository.observePrintOrder(item.printOrderNumber)
+                .catch { }
+                .collect {
+                    userUpdatedItem = it?.let { po ->
+                        Event(po.printOrder.toSearchModel(application, po.destination.id))
                     }
-            } catch (_: Exception) {
-            }
+                }
         }
     }
 

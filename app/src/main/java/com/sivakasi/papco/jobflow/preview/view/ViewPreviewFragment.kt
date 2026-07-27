@@ -7,18 +7,11 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
-import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.hideActionBar
-import com.sivakasi.papco.jobflow.extensions.sharePreview
 import com.sivakasi.papco.jobflow.extensions.showActionBar
-import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.preview.JobPreview
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
-import com.sivakasi.papco.jobflow.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import java.io.File
 
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
@@ -55,9 +48,6 @@ class ViewPreviewFragment:Fragment() {
 
         return ComposeView(requireContext()).apply{
             setContent {
-                JobFlowTheme {
-                    ViewPreviewScreen(viewModel, findNavController())
-                }
             }
         }
     }
@@ -68,17 +58,7 @@ class ViewPreviewFragment:Fragment() {
     }
 
     private fun observeViewModel(){
-        viewModel.sharePreview.observe(viewLifecycleOwner,EventObserver{
-            when(it){
-                is File ->{
-                    requireContext().sharePreview(it)
-                }
 
-                is Exception ->{
-                    toast(it.message ?: getString(R.string.error_unknown_error))
-                }
-            }
-        })
     }
 
     override fun onResume() {

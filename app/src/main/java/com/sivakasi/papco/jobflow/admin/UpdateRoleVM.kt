@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -32,7 +33,7 @@ class UpdateRoleVM @Inject constructor(
 ) : ViewModel() {
 
     val state = UpdateRoleState()
-    var users:LoadingStatus by mutableStateOf(
+    var users: LoadingStatus by mutableStateOf(
         LoadingStatus.Loading(application.getString(R.string.one_moment_please))
     )
 
@@ -40,33 +41,33 @@ class UpdateRoleVM @Inject constructor(
         loadAllUsers()
     }
 
-    fun selectUser(user:User){
-        state.error=null
-        state.selectedUser=user
+    fun selectUser(user: User) {
+        state.error = null
+        state.selectedUser = user
     }
 
 
-    private fun loadAllUsers(){
+    private fun loadAllUsers() {
 
         //Send the loading state to UI first
         LoadingStatus.Loading(application.getString(R.string.one_moment_please))
 
         //Launch the loading process
         viewModelScope.launch(Dispatchers.IO) {
-            try{
-                repository.getAllUsers()
-                    .collect {
-                        users = LoadingStatus.Success(it)
-                    }
-            }catch(e:Exception){
-                users = LoadingStatus.Error(e)
-            }
+            repository.getAllUsers()
+                .catch {
+                    val e = it as? Exception ?: Exception(it)
+                    users = LoadingStatus.Error(e)
+                }
+                .collect {
+                    users = LoadingStatus.Success(it)
+                }
         }
     }
 
     fun onUpdateRole() {
 
-        if(state.selectedUser==null)
+        if (state.selectedUser == null)
             return
 
         state.startLoading()
@@ -92,32 +93,32 @@ class UpdateRoleVM @Inject constructor(
         }
     }
 
-    fun deleteUser(){
+    fun deleteUser() {
 
         val selectedUser = state.selectedUser
         val currentUser = auth.currentUser
 
-        if(selectedUser==null || currentUser==null)
+        if (selectedUser == null || currentUser == null)
             return
 
         state.startLoading()
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d("SAAT","Deleting the user: ${selectedUser.email}")
+                Log.d("SAAT", "Deleting the user: ${selectedUser.email}")
 
                 //You cannot your own Account
-                require(currentUser.email!=selectedUser.email){
+                require(currentUser.email != selectedUser.email) {
                     application.getString(R.string.you_cannot_delete_your_own_account)
                 }
 
                 //You cannot delete the primary account
-                require(selectedUser.email.lowercase()!="papcopvtltd@gmail.com"){
+                require(selectedUser.email.lowercase() != "papcopvtltd@gmail.com") {
                     application.getString(R.string.cannot_delete_primary_account)
                 }
 
                 //delay(3000)
                 auth.deleteUser(selectedUser.email)
-                state.selectedUser=null
+                state.selectedUser = null
                 withContext(Dispatchers.Main) {
                     state.loadingSuccess()
                     Toast.makeText(

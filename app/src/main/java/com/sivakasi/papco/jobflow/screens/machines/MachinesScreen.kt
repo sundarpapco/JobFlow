@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +22,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
@@ -50,13 +46,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Destination
+import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
+import com.sivakasi.papco.jobflow.nav3.util.Toaster
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
-import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
-import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment.Companion.KEY_SELECTED_MACHINE_ID
-import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
 import com.sivakasi.papco.jobflow.ui.ContextMenu
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
@@ -67,7 +67,6 @@ import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.Duration
-import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -75,16 +74,34 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
 
-val LocalNavigation = compositionLocalOf<NavController> { error("Navigation controller not set") }
+@OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
+    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class, FlowPreview::class
+)
+fun EntryProviderScope<NavKey>.machinesScreenEntry(
+    backstack: NavBackStack<NavKey>,
+    result: ResultEventBus,
+    onSignOut: () -> Unit
+){
+    entry<AppGraph.Machines> {key->
 
-@ExperimentalMaterialApi
-@ExperimentalCoroutinesApi
-val LocalViewModel = compositionLocalOf<ManageMachinesVM> { error("ViewModel not set") }
-val LocalSignOut = compositionLocalOf<() -> Unit> { error("Sign out function not set") }
+        val viewModel: ManageMachinesVM = hiltViewModel()
+
+        ManageMachinesScreen(
+            selectionMode = key.selectionMode,
+            screenState = viewModel.uiState,
+            backstack=backstack,
+            result=result,
+            onSignOut=onSignOut,
+            onAddMachine = {viewModel.addMachine()},
+            onEditMachine = {viewModel.editMachine()},
+            onDeleteMachine = {viewModel.deleteMachine(it)}
+        )
+
+    }
+}
+
+
 val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
-
-@ExperimentalMaterialApi
-val LocalState = compositionLocalOf<MachinesScreenUIState> { error("Machine state not set") }
 
 
 private val machineNameText: TextStyle = TextStyle(
@@ -100,9 +117,14 @@ letterSpacing = 0.sp
 @ExperimentalCoroutinesApi
 @Composable
 fun ManageMachinesScreen(
-    navController: NavController,
+    selectionMode: Boolean,
+    screenState: MachinesScreenUIState,
+    backstack: NavBackStack<NavKey>,
+    result: ResultEventBus,
     onSignOut: () -> Unit,
-    viewModel: ManageMachinesVM
+    onAddMachine:()->Unit,
+    onEditMachine:()->Unit,
+    onDeleteMachine:(String)->Unit
 ) {
 
     val density = LocalDensity.current
@@ -110,80 +132,58 @@ fun ManageMachinesScreen(
         ModalBottomSheetState(ModalBottomSheetValue.Hidden,density)
     }
 
-    CompositionLocalProvider(
-        LocalNavigation provides navController,
-        LocalSignOut provides onSignOut,
-        LocalViewModel provides viewModel,
-        LocalState provides viewModel.uiState,
-        LocalSheetState provides bottomSheetState
-    ) {
-        val uiState = LocalState.current
-        val user = remember(uiState.role) { JobFlowAuth().currentUser }
+    CompositionLocalProvider(LocalSheetState provides bottomSheetState) {
 
-        JobFlowTheme {
-            MachinesScreenContent(uiState.machines)
-            ShowDialogs(uiState = uiState, viewModel = viewModel)
+        val context = LocalContext.current
 
+        MachinesScreenContent(
+            selectionMode = selectionMode,
+            screenState = screenState,
+            onMachineClicked = { machine ->
+                if (selectionMode) {
+                    result.send(AppGraph.Machines.SELECTION_KEY, machine.id)
+                    backstack.removeLastOrNull()
+                } else {
+                    backstack.add(AppGraph.Destination(machine.id, Destination.TYPE_DYNAMIC))
+                }
+            },
+            onBack = { backstack.removeLastOrNull()},
+            onSignOut = onSignOut
+        )
+
+        Toaster(context,screenState)
+
+        when(val dialog=screenState.dialog){
+            is MachinesScreenUIState.Dialog.None->{}
+            is MachinesScreenUIState.Dialog.AddMachineDialog->{
+                TextInputDialog(
+                    dialogState = dialog.state,
+                    onPositiveClick = {onAddMachine()},
+                    onNegativeClick = {screenState.clearDialog() }
+                )
+            }
+            is MachinesScreenUIState.Dialog.EditMachineDialog->{
+                TextInputDialog(
+                    dialogState = dialog.state,
+                    onPositiveClick = { onEditMachine() },
+                    onNegativeClick = { screenState.clearDialog() }
+                )
+            }
+            is MachinesScreenUIState.Dialog.DeleteConfirmationDialog->{
+                JobFlowAlertDialog(
+                    message = stringResource(R.string.machine_delete_confirmation),
+                    positiveButtonText = stringResource(R.string.menu_delete),
+                    negativeButtonText= stringResource(R.string.cancel),
+                    onPositiveClick = { onDeleteMachine(dialog.deletingDestination.id) },
+                    onNegativeClick = {screenState.clearDialog() },
+                    onDismissListener = {screenState.clearDialog() }
+                )
+            }
+            is MachinesScreenUIState.Dialog.WaitDialog -> { WaitDialog()}
         }
     }
 
 }
-
-@ExperimentalFoundationApi
-@ExperimentalCoroutinesApi
-@ExperimentalComposeUiApi
-@ExperimentalMaterialApi
-@Composable
-private fun ShowDialogs(
-    uiState: MachinesScreenUIState,
-    viewModel: ManageMachinesVM
-) {
-    uiState.addMachineDialogState?.let {
-        TextInputDialog(
-            dialogState = it,
-            onPositiveClick = {
-                viewModel.addMachine()
-            },
-            onNegativeClick = {
-                uiState.hideAddMachineDialog()
-            }
-        )
-    }
-
-    uiState.editMachineDialogState?.let {
-        TextInputDialog(
-            dialogState = it,
-            onPositiveClick = {
-                viewModel.editMachine()
-            },
-            onNegativeClick = {
-                uiState.hideEditMachineDialog()
-            }
-        )
-    }
-
-    uiState.deletingMachineId?.let {
-        JobFlowAlertDialog(
-            message = stringResource(R.string.machine_delete_confirmation),
-            positiveButtonText = stringResource(R.string.menu_delete),
-            negativeButtonText= stringResource(R.string.cancel),
-            onPositiveClick = {
-                viewModel.deleteMachine(it)
-                uiState.hideDeleteConfirmationDialog()
-            },
-            onNegativeClick = {
-                uiState.hideDeleteConfirmationDialog()
-            },
-            onDismissListener = {
-                uiState.hideDeleteConfirmationDialog()
-            }
-        )
-    }
-
-    if(uiState.isWaitDialogShowing)
-        WaitDialog()
-}
-
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @FlowPreview
@@ -192,23 +192,30 @@ private fun ShowDialogs(
 @ExperimentalMaterialApi
 @Composable
 private fun MachinesScreenContent(
-    machinesLoadingStatus: LoadingStatus
+    selectionMode: Boolean,
+    screenState: MachinesScreenUIState,
+    onMachineClicked:(Destination)->Unit,
+    onBack: () -> Unit,
+    onSignOut: () -> Unit
 ) {
 
-    val uiState = LocalState.current
+    val role = LocalUserClaim.current
 
     Scaffold(
         topBar = {
-            MachinesTopAppBar()
+            MachinesTopAppBar(selectionMode,onBack,onSignOut)
         },
         floatingActionButton = {
-            if (uiState.shouldShowFloatingActionButton())
-                JobFlowFloatingActionButton {
-                    uiState.showAddMachineDialog()
-                }
+            if(!selectionMode){
+                if(role=="admin" || role=="root")
+                    JobFlowFloatingActionButton {
+                        screenState.showAddMachineDialog()
+                    }
+            }
         }
     ) {
-        when (machinesLoadingStatus) {
+
+        when (val loadingState = screenState.machines) {
 
             is LoadingStatus.Loading -> {
                 LoadingScreen()
@@ -217,7 +224,12 @@ private fun MachinesScreenContent(
 
             is LoadingStatus.Success<*> -> {
                 @Suppress("UNCHECKED_CAST")
-                MachinesList(machines = machinesLoadingStatus.data as List<Destination>)
+                MachinesList(
+                    machines = loadingState.data as List<Destination>,
+                    screenState = screenState,
+                    onClick = { onMachineClicked(it) },
+                    shouldShowContextMenu = !selectionMode && (role == "admin" || role == "root")
+                )
             }
 
             is LoadingStatus.Error -> {
@@ -232,28 +244,33 @@ private fun MachinesScreenContent(
 
 @ExperimentalMaterialApi
 @Composable
-private fun MachinesTopAppBar() {
+private fun MachinesTopAppBar(
+    selectionMode: Boolean,
+    onBack: () -> Unit,
+    onSignOut: () -> Unit
+) {
 
-    val uiState = LocalState.current
+    val role = LocalUserClaim.current
 
-    if (uiState.selectionMode) {
-        SelectionModeTopBar()
+    if (selectionMode) {
+        SelectionModeTopBar(onBack)
         return
     }
 
-    if (uiState.role == "printer") {
-        PrinterTopBar()
+    if (role == "printer") {
+        PrinterTopBar(onSignOut)
     } else
-        AdminTopBar()
+        AdminTopBar(onBack)
 }
 
 
 @ExperimentalMaterialApi
 @Composable
-private fun PrinterTopBar() {
+private fun PrinterTopBar(
+    onSignOut: () -> Unit
+) {
 
     val context = LocalContext.current
-    val signOut = LocalSignOut.current
     val sheetState = LocalSheetState.current
 
     val scope = rememberCoroutineScope()
@@ -268,7 +285,7 @@ private fun PrinterTopBar() {
                     context=context,
                     label = it,
                     bottomSheetState = sheetState,
-                    signOut = signOut,
+                    signOut = onSignOut,
                     scope=scope
                 )
             })
@@ -277,14 +294,14 @@ private fun PrinterTopBar() {
 }
 
 @Composable
-private fun AdminTopBar() {
-
-    val controller = LocalNavigation.current
+private fun AdminTopBar(
+    onBack:()->Unit
+) {
 
     JobFlowTopBar(
         title = stringResource(id = R.string.machines),
         navigationIcon = {
-            IconButton(onClick = { popUpBackStack(controller) }) {
+            IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
@@ -296,13 +313,15 @@ private fun AdminTopBar() {
 }
 
 @Composable
-private fun SelectionModeTopBar() {
+private fun SelectionModeTopBar(
+    onBack: () -> Unit
+) {
 
-    val controller = LocalNavigation.current
+
     JobFlowTopBar(
         title = stringResource(id = R.string.select_machine),
         navigationIcon = {
-            IconButton(onClick = { popUpBackStack(controller) }) {
+            IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
@@ -320,13 +339,15 @@ private fun SelectionModeTopBar() {
 @Composable
 fun MachinesList(
     machines: List<Destination>,
+    screenState: MachinesScreenUIState,
+    shouldShowContextMenu: Boolean,
+    onClick:(Destination)->Unit
 ) {
 
     val context = LocalContext.current
-    val uiState = LocalState.current
-    val navController = LocalNavigation.current
+    val role = LocalUserClaim.current
 
-    val menu = remember(uiState.role) {
+    val menu = remember(role) {
         prepareContextMenu(context)
     }
 
@@ -343,14 +364,14 @@ fun MachinesList(
 
             MachineListItem(
                 destination = destination,
-                onClick = { onMachineClicked(it, uiState.selectionMode,navController) },
-                optionsMenu = if (uiState.shouldShowContextMenu()) {
+                onClick = { onClick(it) },
+                optionsMenu = if (shouldShowContextMenu) {
                     {
                         ContextMenu(
                             identifier = destination,
                             menuItems = menu
                         ) { label, identifier ->
-                            onContextItemClicked(uiState, label, identifier)
+                            onContextItemClicked(screenState, label, identifier)
                         }
                     }
                 } else
@@ -366,7 +387,7 @@ fun MachinesList(
 @Composable
 fun MachineListItem(
     destination: Destination,
-    onClick: (String) -> Unit,
+    onClick: (Destination) -> Unit,
     optionsMenu: (@Composable () -> Unit)? = null
 ) {
 
@@ -379,7 +400,7 @@ fun MachineListItem(
         backgroundColor = MaterialTheme.colors.background,
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant),
-        onClick = { onClick(destination.id) }
+        onClick = { onClick(destination) }
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
@@ -449,7 +470,7 @@ private fun onContextItemClicked(
     }
 
     if (itemString == uiState.getString(R.string.menu_delete)) {
-        uiState.showDeleteConfirmationDialog(destination.id)
+        uiState.showDeleteConfirmationDialog(destination)
     }
 
 }
@@ -486,36 +507,6 @@ private fun onOptionsItemClicked(
 
 }
 
-private fun popUpBackStack(navController: NavController) {
-    navController.popBackStack()
-}
-
-
-@OptIn(ExperimentalFoundationApi::class)
-@ExperimentalCoroutinesApi
-@FlowPreview
-@ExperimentalMaterialApi
-@ExperimentalComposeUiApi
-private fun onMachineClicked(
-    machineId: String,
-    selectionMode: Boolean,
-    navController: NavController
-) {
-
-    if(selectionMode){
-        navController.previousBackStackEntry?.savedStateHandle?.set(
-            KEY_SELECTED_MACHINE_ID,
-            machineId
-        )
-        navController.popBackStack()
-    }else{
-        navController.navigate(
-            R.id.action_manageMachinesFragment_to_fixedDestinationFragment,
-            FixedDestinationFragment.getArgumentBundle(machineId, Destination.TYPE_DYNAMIC)
-        )
-    }
-}
-
 @ExperimentalMaterialApi
 @Preview
 @Composable
@@ -542,18 +533,8 @@ private fun PreviewMachineAListItem() {
 @Composable
 private fun PreviewTopAppBar() {
 
-    val context = LocalContext.current
-    val uiState = MachinesScreenUIState(context)
-
     JobFlowTheme {
-
-        CompositionLocalProvider(
-            LocalState provides uiState,
-            LocalNavigation provides NavController(LocalContext.current)
-        ) {
-            MachinesTopAppBar()
-        }
-
+        MachinesTopAppBar(false,{},{})
     }
 
 }

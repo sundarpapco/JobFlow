@@ -1,6 +1,5 @@
 package com.sivakasi.papco.jobflow.data
 
-import androidx.recyclerview.widget.DiffUtil
 import com.google.firebase.firestore.Exclude
 
 data class Destination(
@@ -17,15 +16,5 @@ data class Destination(
     companion object{
         const val TYPE_FIXED=1;
         const val TYPE_DYNAMIC=2;
-    }
-}
-
-class DestinationDiff:DiffUtil.ItemCallback<Destination>(){
-    override fun areItemsTheSame(oldItem: Destination, newItem: Destination): Boolean {
-        return oldItem==newItem
-    }
-
-    override fun areContentsTheSame(oldItem: Destination, newItem: Destination): Boolean {
-        return oldItem==newItem
     }
 }

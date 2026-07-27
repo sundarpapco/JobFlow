@@ -79,7 +79,7 @@ class Repository @Inject constructor(
                 .whereEqualTo(JobPreview.FIELD_PREVIEW_ID, previewId)
                 .addSnapshotListener { value, error ->
                     if (error != null)
-                        throw error
+                        close(error)
 
                     if (value == null || value.isEmpty) {
                         trySend(emptyList()).isSuccess
@@ -104,7 +104,7 @@ class Repository @Inject constructor(
             .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
 
                 if (firebaseFirestoreException != null)
-                    throw firebaseFirestoreException
+                    close(firebaseFirestoreException)
 
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
@@ -131,7 +131,7 @@ class Repository @Inject constructor(
             .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
 
                 if (firebaseFirestoreException != null)
-                    throw firebaseFirestoreException
+                    close(firebaseFirestoreException)
 
                 if (documentSnapshot == null || !documentSnapshot.exists()) {
                     try {
@@ -157,7 +157,7 @@ class Repository @Inject constructor(
             .limit(1)
             .addSnapshotListener { value, error ->
                 if (error != null)
-                    throw error
+                    close(error)
 
                 if (value == null || value.isEmpty)
                     trySend(null)
@@ -493,7 +493,7 @@ class Repository @Inject constructor(
             .orderBy("listPosition", Query.Direction.ASCENDING)
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
                 if (firebaseFireStoreException != null)
-                    throw firebaseFireStoreException
+                    close(firebaseFireStoreException)
 
                 if (querySnapshot == null)
                     throw ResourceNotFoundException("Jobs cannot be loaded")
@@ -520,7 +520,7 @@ class Repository @Inject constructor(
             .orderBy("displayName", Query.Direction.ASCENDING)
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
                 if (firebaseFireStoreException != null)
-                    throw firebaseFireStoreException
+                    close(firebaseFireStoreException)
 
                 if (querySnapshot == null)
                     throw ResourceNotFoundException("Users cannot be loaded")
@@ -549,10 +549,10 @@ class Repository @Inject constructor(
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
-                    throw firebaseFireStoreException
+                    close(firebaseFireStoreException)
 
                 if (querySnapshot == null)
-                    throw ResourceNotFoundException("machines cannot be loaded")
+                    close(ResourceNotFoundException("machines cannot be loaded"))
                 else
                     try {
                         trySend(querySnapshot.documents).isSuccess
@@ -576,10 +576,10 @@ class Repository @Inject constructor(
             .addSnapshotListener { querySnapshot, firebaseFireStoreException ->
 
                 if (firebaseFireStoreException != null)
-                    throw firebaseFireStoreException
+                    close(firebaseFireStoreException)
 
                 if (querySnapshot == null)
-                    throw ResourceNotFoundException("Clients cannot be loaded")
+                    close(ResourceNotFoundException("Clients cannot be loaded"))
                 else
                     trySend(querySnapshot.documents)
 
