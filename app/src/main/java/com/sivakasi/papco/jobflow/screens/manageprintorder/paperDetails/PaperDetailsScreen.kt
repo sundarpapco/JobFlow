@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.paperDetails
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,13 +36,44 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.extensions.toast
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.paperDetailsScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    backStack: NavBackStack<NavKey>,
+    onExitFlow:()->Unit
+){
+    entry<PrintOrderGraph.PaperDetails> {
+
+        val processDeath by viewModel.recoveringFromProcessDeath.collectAsStateWithLifecycle()
+
+        PaperDetailsScreen(
+            screenState = viewModel.paperDetailsScreenState,
+            onClose = onExitFlow,
+            onNext = {backStack.add(PrintOrderGraph.PlateMakingDetails)}
+        )
+
+        LaunchedEffect(processDeath) {
+            if (processDeath)
+                onExitFlow()
+        }
+    }
+}
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PaperDetailsScreen(
     screenState: PaperDetailsScreenState,

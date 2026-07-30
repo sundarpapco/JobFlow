@@ -2,6 +2,7 @@ package com.sivakasi.papco.jobflow.screens.destination
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -61,6 +62,7 @@ import com.sivakasi.papco.jobflow.extensions.asReadableTimeStamp
 import com.sivakasi.papco.jobflow.extensions.calendarWithTime
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
@@ -92,11 +94,17 @@ fun EntryProviderScope<NavKey>.destinationScreenEntry(
             onDragCompleted = { viewModel.updateJobs(key.destinationId, it) },
             onAddJob = if (key.destinationId == DatabaseContract.DOCUMENT_DEST_NEW_JOBS) {
                 {
-                    //TO DO Navigate to Print order flow
+                    backStack.add(
+                        PrintOrderGraph(
+                            null,
+                            DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                            false
+                        )
+                    )
                 }
             } else
                 null,
-            onClicked = {backStack.add(AppGraph.ViewPrintOrder(it.printOrderNumber)) },
+            onClicked = { backStack.add(AppGraph.ViewPrintOrder(it.printOrderNumber)) },
             onAllotJobs = { backStack.add(AppGraph.Machines(true)) },
             onInvoiceJobs = { invoiceNumber, partialDispatch ->
                 if (!partialDispatch)

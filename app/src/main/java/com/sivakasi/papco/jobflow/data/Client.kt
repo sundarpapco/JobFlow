@@ -1,16 +1,28 @@
 package com.sivakasi.papco.jobflow.data
 
-import android.os.Parcelable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import com.sivakasi.papco.jobflow.ui.pink
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+sealed interface ClientSelectionPurpose{
+
+    @Serializable
+    data object None:ClientSelectionPurpose
+
+    @Serializable
+    data object POCreationOrEditing:ClientSelectionPurpose
+
+    @Serializable
+    data object History:ClientSelectionPurpose
+}
+
+
+@Serializable
 data class Client(
     var id: Int = -1,
     var name: String = "Anonymous Client"
-) : Parcelable {
+){
 
     companion object {
         const val FIELD_NAME = "name"

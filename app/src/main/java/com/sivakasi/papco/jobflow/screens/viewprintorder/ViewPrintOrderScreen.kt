@@ -73,6 +73,7 @@ import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.extensions.shareReport
 import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.preview.PreviewManagementFragment
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
@@ -118,28 +119,47 @@ fun EntryProviderScope<NavKey>.viewPrintOrderEntry(
             },
             onSharePdf = { sharePdfFile(context, viewModel, scope) },
             navigateToNotes = {
-                backStack.add(AppGraph.Notes(key.poNumber,screenState.printOrder!!.notes))
+                backStack.add(AppGraph.Notes(key.poNumber, screenState.printOrder!!.notes))
             },
             onRepeatJob = {
-                // TO DO
-                //Navigate to the print order flow
+                screenState.printOrder?.let {
+                    backStack.add(
+                        PrintOrderGraph(
+                            it.printOrderNumber,
+                            DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                            true
+                        )
+                    )
+                }
             },
             onPreviousHistory = {
-                screenState.printOrder?.let{
+                screenState.printOrder?.let {
                     backStack.add(AppGraph.PreviousHistory(it.plateMakingDetail.plateNumber))
                 }
             },
             onRevokeJob = { viewModel.revokePrintOrder(screenState.printOrder!!) },
             onPreviewClicked = {
-                backStack.add(AppGraph.ManagePreviews(
-                    screenState.printOrder!!.previewId(),
-                    context.getString(R.string.manage_preview_heading,
-                        screenState.printOrder!!.printOrderNumber)
-                ))
+                backStack.add(
+                    AppGraph.ManagePreviews(
+                        screenState.printOrder!!.previewId(),
+                        context.getString(
+                            R.string.manage_preview_heading,
+                            screenState.printOrder!!.printOrderNumber
+                        )
+                    )
+                )
             },
             onEditPrintOrder = {
-                //TO DO
-                //Navigate to the print order flow
+                screenState.printOrder?.let {
+                    backStack.add(
+                        PrintOrderGraph(
+                            it.printOrderNumber,
+                            screenState.destinationId!!,
+                            false
+                        )
+                    )
+                }
+
             }
         )
 
@@ -475,8 +495,6 @@ private fun ViewPrintOrderTopBar(
 ) {
 
     val context = LocalContext.current
-    val sheetState = LocalSheetState.current
-    val scope = rememberCoroutineScope()
     val menuItems = screenState.menuItems
 
     JobFlowTopBar(
@@ -940,7 +958,6 @@ private fun ProcessingHistorySheet(
     sheetState: ModalBottomSheetState
 ) {
 
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     Column(
@@ -980,7 +997,6 @@ private fun PartDispatchesSheet(
     sheetState: ModalBottomSheetState
 ) {
 
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     Column(

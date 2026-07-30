@@ -33,12 +33,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.User
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.util.LoadingStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+fun EntryProviderScope<NavKey>.selectUserScreenEntry(
+    backStack: NavBackStack<NavKey>,
+    resultBus: ResultEventBus
+) {
+    entry<AppGraph.SelectUser> {
+
+        val viewModel: SelectUserVM = hiltViewModel()
+
+        UsersListScreen(
+            users = viewModel.users,
+            onClick = {
+                resultBus.send(AppGraph.SelectUser.SELECTION_KEY, it)
+                backStack.removeLastOrNull()
+            },
+            onBackPressed = { backStack.removeLastOrNull() }
+        )
+
+    }
+}
 
 @ExperimentalMaterialApi
 @Suppress("UNCHECKED_CAST")
@@ -55,21 +83,22 @@ fun UsersListScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         SelectUserTopBar(
-            if(users is LoadingStatus.Success<*>)
+            if (users is LoadingStatus.Success<*>)
                 (users.data as List<User>).size
             else
                 0,
             onBackPressed
         )
 
-        when(users){
+        when (users) {
 
-            is LoadingStatus.Loading ->{
+            is LoadingStatus.Loading -> {
                 LoadingScreen()
             }
 
             is LoadingStatus.Error -> {
-                val msg = users.exception.message ?: stringResource(id = R.string.error_unknown_error)
+                val msg =
+                    users.exception.message ?: stringResource(id = R.string.error_unknown_error)
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 onBackPressed()
             }

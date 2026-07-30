@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.nav3
 
 
-import android.util.Log
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -19,20 +18,28 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.sivakasi.papco.jobflow.MainActivityVM
+import com.sivakasi.papco.jobflow.admin.selectUserScreenEntry
+import com.sivakasi.papco.jobflow.admin.updateRoleScreenEntry
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.nav3.util.rememberResultEventBus
 import com.sivakasi.papco.jobflow.preview.managePreviewsScreenEntry
 import com.sivakasi.papco.jobflow.preview.view.viewPreviewScreenEntry
+import com.sivakasi.papco.jobflow.screens.clients.history.clientHistoryEntry
+import com.sivakasi.papco.jobflow.screens.clients.ui.clientsEntry
 import com.sivakasi.papco.jobflow.screens.destination.destinationScreenEntry
 import com.sivakasi.papco.jobflow.screens.home.homeScreenEntry
+import com.sivakasi.papco.jobflow.screens.invoicehistory.invoiceHistoryEntry
 import com.sivakasi.papco.jobflow.screens.login.forgotPasswordEntry
 import com.sivakasi.papco.jobflow.screens.login.guestScreenEntry
 import com.sivakasi.papco.jobflow.screens.login.loginScreenEntry
 import com.sivakasi.papco.jobflow.screens.login.noInternetEntry
 import com.sivakasi.papco.jobflow.screens.login.splashScreenEntry
 import com.sivakasi.papco.jobflow.screens.machines.machinesScreenEntry
+import com.sivakasi.papco.jobflow.screens.manageprintorder.printOrderFlowEntry
 import com.sivakasi.papco.jobflow.screens.notes.notesScreenEntry
 import com.sivakasi.papco.jobflow.screens.processinghistory.previousHistoryScreenEntry
+import com.sivakasi.papco.jobflow.screens.search.searchEntry
 import com.sivakasi.papco.jobflow.screens.viewprintorder.viewPrintOrderEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -82,6 +89,13 @@ fun MainScreen() {
             previousHistoryScreenEntry(backStack)
             managePreviewsScreenEntry(backStack)
             viewPreviewScreenEntry(backStack)
+            searchEntry(backStack)
+            clientsEntry(backStack,resultBus)
+            clientHistoryEntry(backStack)
+            invoiceHistoryEntry(backStack)
+            updateRoleScreenEntry(backStack,resultBus)
+            selectUserScreenEntry(backStack,resultBus)
+            printOrderFlowEntry(onExitFlow = {backStack.popUntil(true) { it is PrintOrderGraph }})
         }
     )
 
@@ -112,5 +126,13 @@ fun NavBackStack<NavKey>.popUntil(inclusive: Boolean = false, predicate: (NavKey
             return
         else
             this.subList(index + 1, this.size).clear()
+    }
+}
+
+fun NavBackStack<NavKey>.replaceLastOrAdd(destination: NavKey){
+    if(isEmpty())
+        add(destination)
+    else{
+        this[this.size-1]=destination
     }
 }

@@ -39,7 +39,7 @@ Will display loading progress bar on initial as well as subsequent loads, error 
 **This list is not realtime updated However using the realtimeUpdatedItem parameter we can simulate it
 
 This list will render the pagination loaded items on screen if the realTimeUpdatedItem is null
-If its not null, then that item is being copied in to the actual pagination list while rendering that
+If it's not null, then that item is being copied in to the actual pagination list while rendering that
 particular item in the list. When copied, realTimeUpdatedItem parameter is marked as handled so that
 the item will not be copied again and again whenever that particular item is rendered on the screen
 
@@ -77,7 +77,6 @@ fun PaginatedSearchModelListScreen(
             )
         }
 
-        else -> {}
     }
 }
 

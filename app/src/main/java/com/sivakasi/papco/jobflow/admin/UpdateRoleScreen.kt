@@ -45,10 +45,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.User
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.login.AuthError
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
+fun EntryProviderScope<NavKey>.updateRoleScreenEntry(
+    backStack: NavBackStack<NavKey>,
+    resultBus: ResultEventBus
+){
+
+    entry<AppGraph.UpdateRole>{
+
+        val viewModel: UpdateRoleVM = hiltViewModel()
+
+        UpdateRoleScreen(
+            updateRoleState = viewModel.state,
+            onSubmit = viewModel::onUpdateRole,
+            onUserChange = {backStack.add(AppGraph.SelectUser)},
+            onUserDelete = viewModel::deleteUser
+        )
+
+        ResultEffect<User>(resultBus, AppGraph.SelectUser.SELECTION_KEY) {
+            viewModel.selectUser(it)
+        }
+    }
+}
+
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi

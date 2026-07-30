@@ -31,16 +31,7 @@ class SelectUserFragment : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                JobFlowTheme{
-                    UsersListScreen(
-                        users = viewModel.users,
-                        onClick = {
-                            viewModel.selectUser(it)
-                            findNavController().popBackStack()
-                        },
-                        onBackPressed = { findNavController().popBackStack() }
-                    )
-                }
+
 
             }
         }

@@ -2,7 +2,6 @@ package com.sivakasi.papco.jobflow.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.provider.DocumentsContract
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
@@ -47,18 +46,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.Client
+import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
-import com.sivakasi.papco.jobflow.screens.destination.FixedDestinationFragment
-import com.sivakasi.papco.jobflow.screens.machines.ManageMachinesFragment
+import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
@@ -156,15 +155,25 @@ private fun HomeScreenContent(
             when (index) {
                 0 -> {
                     backStack.add(
-                        AppGraph.Destination(DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
-                    Destination.TYPE_FIXED)
+                        AppGraph.Destination(
+                            DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                            Destination.TYPE_FIXED
+                        )
                     )
                 }
-                1 -> { backStack.add(
-                    AppGraph.Destination(DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
-                        Destination.TYPE_FIXED)
-                )}
-                2 -> {backStack.add(AppGraph.Machines(false))}
+
+                1 -> {
+                    backStack.add(
+                        AppGraph.Destination(
+                            DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
+                            Destination.TYPE_FIXED
+                        )
+                    )
+                }
+
+                2 -> {
+                    backStack.add(AppGraph.Machines(false))
+                }
             }
         })
     }
@@ -333,7 +342,7 @@ private fun onOptionsItemClicked(
 ) {
     when (clickedItemLabel) {
         context.getString(R.string.search) -> {
-            //navController.navigate(R.id.action_fragmentHome_to_algoliaSearchFragment)
+            backStack.add(AppGraph.AlgoliaSearch)
         }
 
         context.getString(R.string.Profile) -> {
@@ -343,89 +352,24 @@ private fun onOptionsItemClicked(
         }
 
         context.getString(R.string.clients) -> {
-            //navController.navigate(R.id.action_fragmentHome_to_clientsFragment)
+            backStack.add(AppGraph.Client())
         }
 
         context.getString(R.string.client_history) -> {
-            /*navController.navigate(
-                R.id.action_fragmentHome_to_clientsFragment,
-                ClientsFragment.getArguments(true)
-            )*/
+            backStack.add(AppGraph.Client(ClientSelectionPurpose.History))
         }
 
         context.getString(R.string.invoice_history) -> {
-            //navController.navigate(R.id.action_fragmentHome_to_invoiceHistoryFragment)
+            backStack.add(AppGraph.InvoiceHistory)
         }
 
         context.getString(R.string.change_user_role) -> {
-            //navController.navigate(R.id.action_fragmentHome_to_updateRoleFragment)
+            backStack.add(AppGraph.UpdateRole)
         }
 
         context.getString(R.string.sign_out) -> {
             onSignOut()
         }
-    }
-}
-
-@FlowPreview
-@ExperimentalMaterialApi
-@ExperimentalComposeUiApi
-@ExperimentalCoroutinesApi
-private fun onJobGroupClicked(
-    index: Int,
-    navController: NavController,
-    role: String
-) {
-
-    when (index) {
-
-        //When New Jobs clicked
-        0 -> {
-            navController.navigate(R.id.action_fragmentHome_to_fixedDestinationFragment)
-        }
-
-        //When In Progress Clicked
-        1 -> {
-            navController.navigate(
-                R.id.action_fragmentHome_to_fixedDestinationFragment,
-                FixedDestinationFragment.getArgumentBundle(
-                    DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
-                    Destination.TYPE_FIXED
-                )
-            )
-        }
-
-        //When Machines Clicked
-        2 -> {
-            navigateToMachinesFragment(role, navController)
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@FlowPreview
-@ExperimentalComposeUiApi
-@ExperimentalMaterialApi
-@ExperimentalCoroutinesApi
-private fun navigateToMachinesFragment(
-    role: String,
-    navController: NavController
-) {
-
-    if (role == "printer") {
-        val navOptions = NavOptions.Builder()
-            .setPopUpTo(R.id.fragmentHome, true)
-            .build()
-        navController.navigate(
-            R.id.action_fragmentHome_to_manageMachinesFragment,
-            ManageMachinesFragment.getArguments(false),
-            navOptions
-        )
-    } else {
-        navController.navigate(
-            R.id.action_fragmentHome_to_manageMachinesFragment,
-            ManageMachinesFragment.getArguments(false)
-        )
     }
 }
 

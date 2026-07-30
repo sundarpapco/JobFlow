@@ -24,6 +24,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -38,14 +40,45 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.data.PrintOrder
 import com.sivakasi.papco.jobflow.extensions.isPositiveNumber
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowDropDown
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.plateMakingScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    backStack: NavBackStack<NavKey>,
+    onExitFlow:()->Unit
+){
+    entry<PrintOrderGraph.PlateMakingDetails> {
+
+        val processDeath by viewModel.recoveringFromProcessDeath.collectAsStateWithLifecycle()
+
+        PlateMakingScreen(
+            screenState = viewModel.plateMakingDetailsScreenState,
+            onNext = {backStack.add(PrintOrderGraph.PrintingDetails)},
+            onClose = onExitFlow
+        )
+
+        LaunchedEffect(processDeath) {
+            if(processDeath)
+                onExitFlow()
+        }
+
+    }
+}
 
 @Composable
 fun PlateMakingScreen(

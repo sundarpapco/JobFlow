@@ -44,12 +44,41 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.util.Duration
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.printingDetailsScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    backStack: NavBackStack<NavKey>,
+    onExitFlow:()->Unit
+){
+    entry<PrintOrderGraph.PrintingDetails> {
+
+        val processDeath by viewModel.recoveringFromProcessDeath.collectAsStateWithLifecycle()
+
+        PrintingDetailsScreen(
+            screenState = viewModel.printingDetailsScreenState,
+            onClose = onExitFlow,
+            onNext = {backStack.add(PrintOrderGraph.PostPressDetails)}
+        )
+
+        LaunchedEffect(processDeath) {
+            if (processDeath)
+                onExitFlow()
+        }
+    }
+}
 
 @Composable
 fun PrintingDetailsScreen(

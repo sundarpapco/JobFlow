@@ -45,14 +45,64 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.Client
+import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
 import com.sivakasi.papco.jobflow.models.ClientUIModel
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.popUntil
+import com.sivakasi.papco.jobflow.nav3.replaceLastOrAdd
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
+import com.sivakasi.papco.jobflow.screens.clients.ClientsFragmentVM
 import com.sivakasi.papco.jobflow.screens.common.SingleLineListItem
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+
+@OptIn(
+    ExperimentalCoroutinesApi::class, FlowPreview::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
+fun EntryProviderScope<NavKey>.clientsEntry(
+    backStack: NavBackStack<NavKey>,
+    resultBus: ResultEventBus
+) {
+    entry<AppGraph.Client> { key ->
+
+        val viewModel: ClientsFragmentVM = hiltViewModel()
+
+        ClientsScreen(
+            screenState = viewModel.screenState,
+            isSelectionMode = key.selectionPurpose !is ClientSelectionPurpose.None,
+            onClientEdit = { _, name ->
+                viewModel.onUpdateClient(name)
+            },
+            onClientSelected = { id, name ->
+                when (key.selectionPurpose) {
+                    is ClientSelectionPurpose.None -> {}
+                    is ClientSelectionPurpose.History -> {
+                        backStack.replaceLastOrAdd(AppGraph.ClientHistory(Client(id,name)))
+                    }
+                    is ClientSelectionPurpose.POCreationOrEditing -> {
+                        resultBus.send(AppGraph.Client.SELECTION_KEY, Client(id, name))
+                        backStack.removeLastOrNull()
+                    }
+                }
+            },
+            onClientAdd = {
+                viewModel.onAddClient(it)
+            },
+            onBackPressed = { backStack.removeLastOrNull() }
+        )
+
+    }
+}
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -67,7 +117,7 @@ fun ClientsScreen(
     onClientSelected: (Int, String) -> Unit,
     onClientEdit: (Int, String) -> Unit,
     onClientAdd: (String) -> Unit,
-    onBackPressed:()->Unit
+    onBackPressed: () -> Unit
 ) {
 
     Scaffold(
@@ -78,14 +128,14 @@ fun ClientsScreen(
                 else
                     stringResource(R.string.clients),
 
-                subtitle = if(screenState.clientList.isEmpty())
+                subtitle = if (screenState.clientList.isEmpty())
                     null
                 else
-                    stringResource(R.string.xx_clients,screenState.clientList.size),
+                    stringResource(R.string.xx_clients, screenState.clientList.size),
 
                 navigationIcon = {
                     IconButton(
-                       onClick = onBackPressed
+                        onClick = onBackPressed
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -285,7 +335,8 @@ private fun PreviewLoadingScreen() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, FlowPreview::class,
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, FlowPreview::class,
     ExperimentalCoroutinesApi::class
 )
 @Preview
@@ -310,8 +361,8 @@ private fun PreviewClientsList() {
         ClientsScreen(
             screenState = screenState,
             isSelectionMode = false,
-            onClientSelected = {_,_-> },
-            onClientEdit = {_,_-> },
+            onClientSelected = { _, _ -> },
+            onClientEdit = { _, _ -> },
             onClientAdd = {},
             onBackPressed = {}
         )

@@ -95,10 +95,7 @@ class FragmentHome : Fragment() {
     }
 
     private fun navigateToClientHistoryScreen(client: Client) {
-        findNavController().navigate(
-            R.id.action_fragmentHome_to_clientHistoryFragment,
-            ClientHistoryFragment.getArgumentBundle(client)
-        )
+
     }
 
 

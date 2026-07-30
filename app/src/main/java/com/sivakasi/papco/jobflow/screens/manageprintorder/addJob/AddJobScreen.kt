@@ -23,7 +23,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -34,15 +37,72 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.PlateMakingDetail
 import com.sivakasi.papco.jobflow.extensions.intNumber
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.nav3.replaceLastOrAdd
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowCircularProgressBar
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.addPOScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    backStack: NavBackStack<NavKey>,
+    onExitFlow:()->Unit
+) {
+    entry<PrintOrderGraph.AddPO> { key ->
+
+        val loadedJob by viewModel.loadedJob.collectAsStateWithLifecycle()
+        var isAlreadyLoaded = rememberSaveable { false }
+
+        AddPrintOrderScreen(
+            screenState = viewModel.addJobScreenState,
+            isEditMode = key.editingPONumber != null,
+            onCreateNewJob = viewModel::createNewJob,
+            onCreateRepeatJob = viewModel::createRepeatJob,
+            onLoadRepeatJob = viewModel::loadJobByPlateNumber,
+            onClose = onExitFlow
+        )
+
+        //Initialize the Auto repeat mode or Editing Mode
+        LaunchedEffect(Unit) {
+            if (!isAlreadyLoaded) {
+                if (key.autoRepeat) {
+                    requireNotNull(key.editingPONumber) { "Invalid PO number provided in auto repeat mode" }
+                    //Search and load from repo using the provided PO number and not plate number
+                    viewModel.loadJobByPONumber(key.editingPONumber)
+                } else {
+                    key.editingPONumber?.let {
+                        viewModel.isEditMode = true
+                        viewModel.editingPrintOrderParentDestinationId = key.parentDestinationId
+                        viewModel.loadJobByPONumber(it)
+                    }
+                }
+                isAlreadyLoaded = true
+            }
+        }
+
+        //Navigate to Next screen once a valid PO has been loaded
+        LaunchedEffect(loadedJob) {
+            loadedJob?.let {
+                backStack.replaceLastOrAdd(PrintOrderGraph.JobDetails)
+            }
+        }
+    }
+
+
+}
 
 @Composable
 fun AddPrintOrderScreen(
@@ -191,7 +251,7 @@ private fun AddJobScreenContent(
                 value = screenState.ridNumber,
                 onValueChange = {
                     screenState.ridError = null
-                    if(it.isDigitsOnly())
+                    if (it.isDigitsOnly())
                         screenState.ridNumber = it
                 },
                 singleLine = true,

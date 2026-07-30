@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.manageprintorder.postpress
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -29,16 +31,47 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.extensions.toastError
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalFoundationApi::class
+)
+fun EntryProviderScope<NavKey>.postPressScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    onExitFlow:()->Unit
+){
+    entry<PrintOrderGraph.PostPressDetails> {
+
+        val processDeath by viewModel.recoveringFromProcessDeath.collectAsStateWithLifecycle()
+
+        PostPressScreen(
+            state = viewModel.postPressScreenState,
+            onClose = onExitFlow,
+            onSavePrintOrder = {viewModel.createPrintOrder()},
+            onUpdatePrintOrder = {viewModel.updatePrintOrder()}
+        )
+
+        LaunchedEffect(processDeath) {
+            if (processDeath)
+                onExitFlow()
+        }
+    }
+}
 
 
 @ExperimentalFoundationApi
@@ -177,6 +210,7 @@ fun PostPressScreen(
 }
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PostPressItemsList(postPressScreenState: PostPressScreenState, modifier: Modifier = Modifier) {
 

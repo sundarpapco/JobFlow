@@ -92,7 +92,6 @@ class FragmentAddPO : Fragment() {
     private fun observeViewModel() {
 
         lifecycleScope.launch {
-            Log.d("SAATVIK","Listening for loaded Job")
             repeatOnLifecycle(Lifecycle.State.STARTED){
                 viewModel.loadedJob.collectLatest {
                     it?.let{

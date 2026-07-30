@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -36,10 +37,52 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.data.Client
+import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
+import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
+import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
+import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun EntryProviderScope<NavKey>.jobDetailsScreenEntry(
+    viewModel: ManagePrintOrderVM,
+    backStack: NavBackStack<NavKey>,
+    resultBus: ResultEventBus,
+    onExitFlow:()->Unit
+) {
+    entry<PrintOrderGraph.JobDetails> {
+
+        val screenState = viewModel.jobDetailsScreenState
+        val processDeath by viewModel.recoveringFromProcessDeath.collectAsStateWithLifecycle()
+
+        JobDetailsScreen(
+            screenState = viewModel.jobDetailsScreenState,
+            onSelectClientName = { backStack.add(AppGraph.Client(ClientSelectionPurpose.POCreationOrEditing)) },
+            onNext = { backStack.add(PrintOrderGraph.PaperDetails) },
+            onClosePressed = onExitFlow
+        )
+
+        ResultEffect<Client>(resultBus, AppGraph.Client.SELECTION_KEY) {
+            screenState.selectClient(it.id, it.name)
+        }
+
+        LaunchedEffect(processDeath) {
+            if (processDeath)
+                onExitFlow()
+        }
+    }
+}
 
 @Composable
 fun JobDetailsScreen(
@@ -76,7 +119,7 @@ fun JobDetailsScreen(
             ) {
                 Button(
                     onClick = {
-                        if(screenState.validate())
+                        if (screenState.validate())
                             onNext()
                     }
                 ) {
@@ -146,7 +189,7 @@ private fun JobDetailsScreenContent(
         JobFlowTextField(
             modifier = Modifier
                 .clickable {
-                    screenState.clientNameError=null
+                    screenState.clientNameError = null
                     onSelectClientName()
                 },
             value = screenState.clientName,

@@ -3,22 +3,15 @@ package com.sivakasi.papco.jobflow.admin
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.Repository
 import com.sivakasi.papco.jobflow.data.User
 import com.sivakasi.papco.jobflow.extensions.getMessage
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
-import com.sivakasi.papco.jobflow.util.LoadingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -28,41 +21,15 @@ import javax.inject.Inject
 @HiltViewModel
 class UpdateRoleVM @Inject constructor(
     private val application: Application,
-    private val auth: JobFlowAuth,
-    private val repository: Repository
+    private val auth: JobFlowAuth
 ) : ViewModel() {
 
     val state = UpdateRoleState()
-    var users: LoadingStatus by mutableStateOf(
-        LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-    )
 
-    init {
-        loadAllUsers()
-    }
 
     fun selectUser(user: User) {
         state.error = null
         state.selectedUser = user
-    }
-
-
-    private fun loadAllUsers() {
-
-        //Send the loading state to UI first
-        LoadingStatus.Loading(application.getString(R.string.one_moment_please))
-
-        //Launch the loading process
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.getAllUsers()
-                .catch {
-                    val e = it as? Exception ?: Exception(it)
-                    users = LoadingStatus.Error(e)
-                }
-                .collect {
-                    users = LoadingStatus.Success(it)
-                }
-        }
     }
 
     fun onUpdateRole() {

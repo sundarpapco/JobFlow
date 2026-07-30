@@ -34,13 +34,41 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.SearchModel
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.common.PaginatedSearchModelListScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlin.time.Duration.Companion.milliseconds
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+fun EntryProviderScope<NavKey>.searchEntry(
+    backStack: NavBackStack<NavKey>
+) {
+    entry<AppGraph.AlgoliaSearch> {
+
+        val viewModel: AlgoliaSearchVM = hiltViewModel()
+
+        AlgoliaSearchScreen(
+            viewModel = viewModel,
+            onItemClicked = {
+                viewModel.observePrintOrder(it)
+                backStack.add(AppGraph.ViewPrintOrder(it.printOrderNumber))
+            },
+            onBackPressed = { backStack.removeLastOrNull() }
+        )
+
+    }
+}
 
 @ExperimentalCoroutinesApi
 @ExperimentalMaterialApi
@@ -52,7 +80,7 @@ fun AlgoliaSearchScreen(
 ) {
 
     val data = viewModel.pagingFlow.collectAsLazyPagingItems()
-    var searchActivated by rememberSaveable{ mutableStateOf(false)}
+    var searchActivated by rememberSaveable { mutableStateOf(false) }
 
     Surface(
         color = MaterialTheme.colors.background
@@ -99,6 +127,7 @@ private fun AlgoliaTopABar(
     val focusRequester = remember { FocusRequester() }
 
     TopAppBar(
+        backgroundColor = MaterialTheme.colors.surface,
         elevation = 0.dp
     ) {
 
@@ -133,14 +162,14 @@ private fun AlgoliaTopABar(
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    if(query.isNotBlank()) {
+                    if (query.isNotBlank()) {
                         focusManager.clearFocus(true)
                         onQuerySubmit(query)
                     }
                 }
             ),
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primarySurface,
+                backgroundColor = MaterialTheme.colors.surface,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -151,7 +180,7 @@ private fun AlgoliaTopABar(
     LaunchedEffect(key1 = true) {
         if (initialLoading) {
             initialLoading = false
-            delay(200)
+            delay(200.milliseconds)
             focusRequester.requestFocus()
         }
     }
