@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.home
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

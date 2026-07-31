@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.data
 
 import android.os.Parcelable
-import androidx.recyclerview.widget.DiffUtil
 import com.sivakasi.papco.jobflow.extensions.asString
 import kotlinx.parcelize.Parcelize
 import kotlin.math.round
@@ -44,15 +43,5 @@ data class PaperDetail(
         "${height.asString()} X ${width.asString()} Cm $gsm GSM $name"
 
     fun paperSize(): String = "${(height * 10).toInt()} X ${(width * 10).toInt()} mm"
-
-}
-
-class PaperDetailDiff : DiffUtil.ItemCallback<PaperDetail>() {
-
-    override fun areItemsTheSame(oldItem: PaperDetail, newItem: PaperDetail): Boolean =
-        oldItem == newItem
-
-    override fun areContentsTheSame(oldItem: PaperDetail, newItem: PaperDetail): Boolean =
-        oldItem == newItem
 
 }

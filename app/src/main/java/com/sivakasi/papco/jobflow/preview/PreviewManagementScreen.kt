@@ -42,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -53,7 +52,6 @@ import coil.request.ImageRequest
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.admin.MenuItem
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
-import com.sivakasi.papco.jobflow.preview.view.ViewPreviewFragment
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -254,17 +252,6 @@ fun PreviewImage(
             .build()
         context.imageLoader.enqueue(request)
     }
-}
-
-@ExperimentalCoroutinesApi
-private fun navigateToViewPreviewScreen(
-    navController: NavController,
-    preview: JobPreview
-) {
-    navController.navigate(
-        R.id.action_previewTestFragment_to_viewPreviewFragment,
-        ViewPreviewFragment.getArgument(preview)
-    )
 }
 
 @Composable

@@ -1,0 +1,34 @@
+package com.sivakasi.papco.jobflow.screens.login
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.R
+import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
+
+
+fun EntryProviderScope<NavKey>.splashScreenEntry(){
+    entry<AppGraph.Splash> {
+        SplashScreen()
+    }
+}
+
+@Composable
+fun SplashScreen() {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo_svg),
+            contentDescription = "Splash Screen"
+        )
+    }
+}

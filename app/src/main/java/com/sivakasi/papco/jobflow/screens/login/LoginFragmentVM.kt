@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.screens.login
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sivakasi.papco.jobflow.extensions.getMessage

@@ -3,7 +3,6 @@ package com.sivakasi.papco.jobflow.nav3.graph
 import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
 import kotlinx.serialization.Serializable
-import java.io.Serial
 
 sealed interface AppGraph : NavKey {
 

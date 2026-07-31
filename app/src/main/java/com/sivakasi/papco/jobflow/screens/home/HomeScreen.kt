@@ -50,14 +50,11 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.sivakasi.papco.jobflow.R
-import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
-import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
-import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar

@@ -56,7 +56,6 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -74,13 +73,10 @@ import com.sivakasi.papco.jobflow.extensions.shareReport
 import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
-import com.sivakasi.papco.jobflow.preview.PreviewManagementFragment
 import com.sivakasi.papco.jobflow.print.PrintOrderAdapter
 import com.sivakasi.papco.jobflow.print.PrintOrderReport
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.screens.common.ErrorScreen
-import com.sivakasi.papco.jobflow.screens.manageprintorder.FragmentAddPO
-import com.sivakasi.papco.jobflow.screens.processinghistory.PreviousHistoryFragment
 import com.sivakasi.papco.jobflow.screens.processinghistory.ProcessingHistoryList
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
@@ -165,91 +161,6 @@ fun EntryProviderScope<NavKey>.viewPrintOrderEntry(
 
         LaunchedEffect(Unit) {
             viewModel.loadPrintOrder(key.poNumber, role ?: "none")
-        }
-
-    }
-}
-
-@ExperimentalMaterialApi
-@ExperimentalComposeUiApi
-@FlowPreview
-@ExperimentalCoroutinesApi
-private fun onOptionsItemSelected(
-    activityContext: Context,
-    bottomSheetState: ModalBottomSheetState,
-    id: String,
-    viewModel: ComposeViewPrintOrderFragmentVM,
-    navController: NavController,
-    scope: CoroutineScope
-) {
-
-    val screenState = viewModel.screenState
-
-    when (id) {
-
-        activityContext.getString(R.string.print) -> {
-            print(activityContext, screenState.printOrder!!, viewModel.printOrderReport)
-        }
-
-        activityContext.getString(R.string.menu_share_as_pdf) -> {
-            sharePdfFile(activityContext, viewModel, scope)
-        }
-
-        activityContext.getString(R.string.notes) -> {
-            navigateToNotesScreen(
-                navController,
-                screenState.printOrder!!.printOrderNumber,
-                screenState.printOrder!!.notes
-            )
-        }
-
-        activityContext.getString(R.string.repeat_this_job) -> {
-            screenState.printOrder?.let {
-                repeatThisJob(
-                    navController, it.printOrderNumber
-                )
-            }
-        }
-
-        activityContext.getString(R.string.previous_processing_history) -> {
-            screenState.printOrder?.let {
-                navigateToPreviousHistoryScreen(
-                    navController, it
-                )
-            }
-        }
-
-        activityContext.getString(R.string.processing_history) -> {
-            screenState.modalSheetContent =
-                ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
-            scope.launch {
-                bottomSheetState.show()
-            }
-        }
-
-        activityContext.getString(R.string.partial_dispatches) -> {
-            screenState.modalSheetContent =
-                ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
-            scope.launch {
-                bottomSheetState.show()
-            }
-        }
-
-        activityContext.getString(R.string.revoke_po) -> {
-            screenState.showRevokeConfirmationDialog()
-        }
-
-        activityContext.getString(R.string.previews) -> {
-            navController.navigate(
-                R.id.action_composeViewPrintOrderFragment_to_previewManagementFragment,
-                PreviewManagementFragment.arguments(
-                    screenState.printOrder!!.previewId(),
-                    activityContext.getString(
-                        R.string.manage_preview_heading,
-                        screenState.printOrder!!.printOrderNumber
-                    )
-                )
-            )
         }
 
     }
@@ -1268,63 +1179,6 @@ private fun sharePdfFile(
 
     }
 
-}
-
-@ExperimentalMaterialApi
-@ExperimentalCoroutinesApi
-private fun navigateToEditPrintOrderScreen(
-    navController: NavController,
-    screenState: ViewPrintOrderScreenState
-) {
-    screenState.printOrder?.let {
-        screenState.destinationId?.let { destination ->
-            navController.navigate(
-                R.id.action_composeViewPrintOrderFragment_to_print_order_flow,
-                FragmentAddPO.getArgumentBundle(it.printOrderNumber, destination)
-            )
-        }
-    }
-}
-
-@ExperimentalCoroutinesApi
-private fun navigateToNotesScreen(
-    navController: NavController,
-    poNumber: Int,
-    notes: String
-) {
-    navController.navigate(
-        R.id.action_composeViewPrintOrderFragment_to_notesFragment,
-        NotesFragment.getArguments(poNumber, notes)
-    )
-}
-
-@ExperimentalCoroutinesApi
-@ExperimentalComposeUiApi
-@ExperimentalMaterialApi
-@FlowPreview
-private fun navigateToPreviousHistoryScreen(
-    navController: NavController,
-    printOrder: PrintOrder
-) {
-    navController.navigate(
-        R.id.action_composeViewPrintOrderFragment_to_previousHistoryFragment,
-        PreviousHistoryFragment.getArgumentBundle(printOrder.plateMakingDetail.plateNumber)
-    )
-}
-
-@ExperimentalCoroutinesApi
-private fun repeatThisJob(
-    navController: NavController,
-    poNumber: Int
-) {
-    navController.navigate(
-        R.id.action_composeViewPrintOrderFragment_to_print_order_flow,
-        FragmentAddPO.getArgumentBundle(
-            poNumber,
-            DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
-            true
-        )
-    )
 }
 
 /*@Preview

@@ -25,7 +25,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -54,8 +53,6 @@ import com.sivakasi.papco.jobflow.screens.common.SearchListItem
 import com.sivakasi.papco.jobflow.screens.common.fakeSearchModel
 import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
-import com.sivakasi.papco.jobflow.ui.MenuAction
-import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
