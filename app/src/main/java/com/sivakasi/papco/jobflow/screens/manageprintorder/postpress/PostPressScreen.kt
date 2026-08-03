@@ -9,12 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
@@ -40,7 +40,7 @@ import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
@@ -225,7 +225,7 @@ fun PostPressItemsList(postPressScreenState: PostPressScreenState, modifier: Mod
         item("Screen heading") {
             Text(
                 text = stringResource(R.string.post_press_details),
-                style = MaterialTheme.typography.h4
+                style = MaterialTheme.typography.headlineSmall
             )
         }
 
@@ -440,7 +440,7 @@ fun PreviewPostPressScreen() {
         }
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PostPressScreen(
             state = screenState,
             onSavePrintOrder = {},

@@ -14,17 +14,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -52,7 +51,7 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.util.Duration
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -174,8 +173,8 @@ private fun PrintingDetailsScreenContent(
 
         Text(
             stringResource(R.string.printing_details),
-            style = MaterialTheme.typography.h4,
-            color = MaterialTheme.colors.onSurface
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -251,12 +250,12 @@ private fun PrintingDetailsScreenContent(
                     screenState.runningTimeError = null
                     screenState.isRunningTimeDialogShowing = true
                 },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
-                disabledBorderColor = MaterialTheme.colors.secondaryVariant,
-                disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledLabelColor = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha=0.74f)
             ),
             value = runningTime,
             onValueChange = {},
@@ -281,7 +280,7 @@ private fun PreviewPrintingDetailsScreen() {
     val screenState = remember {
         PrintingDetailsScreenState(context)
     }
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PrintingDetailsScreen(
             screenState = screenState,
             onNext = {},

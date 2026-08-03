@@ -214,6 +214,8 @@
     <string name="no_previews_available">No Previews Available</string>
     <string name="cancel_jobs_confirmation">Are you sure want to cancel the selected Jobs?</string>
     <string name="cancel_jobs">Cancel Jobs</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- Menu -->
     <string name="menu_allot">Allot</string>

@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -40,7 +40,7 @@ import com.sivakasi.papco.jobflow.extensions.isPositiveFloatNumber
 import com.sivakasi.papco.jobflow.extensions.isPositiveNumber
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 
 
 @Composable
@@ -86,8 +86,8 @@ private fun PaperDetailDialogContent(
         val heightFocus = remember { FocusRequester() }
         Text(
             text = stringResource(R.string.paper_details),
-            style = MaterialTheme.typography.h4,
-            color = MaterialTheme.colors.onSurface
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Row(
@@ -298,7 +298,7 @@ private fun ContentPreview() {
         PaperDetailDialogState(context, 0, PaperDetail())
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PaperDetailDialog(
             state = state,
             onDismiss = {

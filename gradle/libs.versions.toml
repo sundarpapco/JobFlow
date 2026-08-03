@@ -54,10 +54,9 @@ androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version
 compose-bom = {group="androidx.compose", name = "compose-bom", version.ref = "composeBom"}
 foundation = { group="androidx.compose.foundation", name = "foundation" }
 foundation-layout = { group="androidx.compose.foundation", name ="foundation-layout"}
-
+material3 = {group="androidx.compose.material3",name="material3"}
 runtime = { group="androidx.compose.runtime", name ="runtime"}
 ui = { group="androidx.compose.ui", name ="ui"}
-androidx-material = { group="androidx.compose.material", name ="material"}
 androidx-ui-tooling = { group="androidx.compose.ui", name ="ui-tooling"}
 material-icons={group="androidx.compose.material", name ="material-icons-extended"}
 

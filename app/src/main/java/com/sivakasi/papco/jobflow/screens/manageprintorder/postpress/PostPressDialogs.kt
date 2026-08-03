@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,8 +47,9 @@ import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 class LaminationDialogState {
 
@@ -123,7 +124,7 @@ fun LaminationDialogContent(
 
             Text(
                 stringResource(id = R.string.lamination),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
 
             Spacer(Modifier.height(16.dp))
@@ -214,7 +215,7 @@ fun LaminationDialogContent(
     }
 
     LaunchedEffect(true) {
-        delay(200)
+        delay(200.milliseconds)
         micronFocus.requestFocus()
     }
 
@@ -271,7 +272,7 @@ fun BindingDialogContent(
         ) {
             Text(
                 stringResource(id = R.string.binding),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
 
             Spacer(Modifier.height(16.dp))
@@ -354,7 +355,7 @@ fun BindingDialogContent(
 private fun validateLaminationMicron(micron: String): Boolean {
     val converted = try {
         micron.toInt()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         -1
     }
     return converted in 1..100
@@ -433,7 +434,7 @@ fun LaminationDialogPreview() {
 
     val state = remember { LaminationDialogState() }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         LaminationDialogContent(
             state = state,
             onPositiveClick = { },
@@ -451,7 +452,7 @@ fun BindingDialogPreview() {
 
     val state = remember { BindingDialogState() }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         BindingDialogContent(
             state = state,
             onPositiveClick = { },

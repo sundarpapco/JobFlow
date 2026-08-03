@@ -14,21 +14,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,6 +52,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.User
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
@@ -56,27 +60,47 @@ import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.login.AuthError
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalCoroutinesApi::class, ExperimentalComposeUiApi::class,
     ExperimentalFoundationApi::class
 )
 fun EntryProviderScope<NavKey>.updateRoleScreenEntry(
     backStack: NavBackStack<NavKey>,
     resultBus: ResultEventBus
-){
+) {
 
-    entry<AppGraph.UpdateRole>{
+    entry<AppGraph.UpdateRole> {
 
         val viewModel: UpdateRoleVM = hiltViewModel()
 
-        UpdateRoleScreen(
-            updateRoleState = viewModel.state,
-            onSubmit = viewModel::onUpdateRole,
-            onUserChange = {backStack.add(AppGraph.SelectUser)},
-            onUserDelete = viewModel::deleteUser
-        )
+        Scaffold(
+            topBar = {
+                JobFlowTopBar(
+                    title = stringResource(R.string.update_role),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { backStack.removeLastOrNull() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Back Arrow"
+                            )
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            UpdateRoleScreen(
+                modifier = Modifier.padding(paddingValues),
+                updateRoleState = viewModel.state,
+                onSubmit = viewModel::onUpdateRole,
+                onUserChange = { backStack.add(AppGraph.SelectUser) },
+                onUserDelete = viewModel::deleteUser
+            )
+        }
 
         ResultEffect<User>(resultBus, AppGraph.SelectUser.SELECTION_KEY) {
             viewModel.selectUser(it)
@@ -91,214 +115,188 @@ fun EntryProviderScope<NavKey>.updateRoleScreenEntry(
 fun UpdateRoleScreen(
     updateRoleState: UpdateRoleState,
     onSubmit: () -> Unit,
-    onUserChange:()->Unit,
-    onUserDelete:()->Unit
+    onUserChange: () -> Unit,
+    onUserDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    JobFlowTheme {
-        Surface {
 
-            val configuration = LocalConfiguration.current
-            val focusManager = LocalFocusManager.current
-            val buttonFocus = remember { FocusRequester() }
-            var menuExpanded by remember {
-                mutableStateOf(false)
-            }
+    Surface(modifier = modifier) {
 
-            Column(
+        val configuration = LocalConfiguration.current
+        val focusManager = LocalFocusManager.current
+        val buttonFocus = remember { FocusRequester() }
+        var menuExpanded by remember {
+            mutableStateOf(false)
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 32.dp, end = 32.dp)
+        ) {
+
+            //Heading text
+            Text(
+                modifier = Modifier.padding(top = 30.dp),
+                text = stringResource(id = R.string.update_role),
+                color = MaterialTheme.colorScheme.tertiary,
+                style = MaterialTheme.typography.headlineLarge
+            )
+
+            if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+                Spacer(Modifier.height(50.dp))
+            else
+                Spacer(Modifier.height(25.dp))
+
+            //Description for update role
+            Text(
+                modifier = Modifier.padding(bottom = 18.dp),
+                text = stringResource(id = R.string.update_role_desc),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelSmall
+            )
+
+            //Email Field
+            JobFlowTextField(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(start = 32.dp, end = 32.dp)
+                    .fillMaxWidth()
+                    .clickable {
+                        onUserChange()
+                    },
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = LocalContentColor.current,
+                    disabledBorderColor = MaterialTheme.colorScheme.primary,
+                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                    disabledLabelColor = MaterialTheme.colorScheme.primary
+                ),
+                value = updateRoleState.selectedUser?.displayName
+                    ?: stringResource(id = R.string.tap_to_select_user),
+                label = stringResource(id = R.string.user),
+                onValueChange = { updateRoleState.error = null },
+                readOnly = true,
+                singleLine = true,
+                enabled = false,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = "User Icon"
+                    )
+                }
+            )
+
+            //Roles Field
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             ) {
 
-                //Heading text
-                Text(
-                    modifier = Modifier.padding(top = 30.dp),
-                    text = stringResource(id = R.string.update_role),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h4
-                )
+                var dropDownWidth by remember { mutableIntStateOf(0) }
 
-                if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-                    Spacer(Modifier.height(50.dp))
-                else
-                    Spacer(Modifier.height(25.dp))
-
-                //Description for update role
-                Text(
-                    modifier = Modifier.padding(bottom = 18.dp),
-                    text = stringResource(id = R.string.update_role_desc),
-                    color = MaterialTheme.colors.onSurface,
-                    style = MaterialTheme.typography.caption
-                )
-
-                //Email Field
                 JobFlowTextField(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .onSizeChanged { dropDownWidth = it.width }
                         .clickable {
-                            onUserChange()
+                            if (!updateRoleState.isLoading)
+                                menuExpanded = !menuExpanded
                         },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         disabledTextColor = LocalContentColor.current,
-                        disabledBorderColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high),
-                        disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                        disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                        disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+                        disabledBorderColor = MaterialTheme.colorScheme.primary,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                        disabledLabelColor = MaterialTheme.colorScheme.primary
                     ),
-                    value = updateRoleState.selectedUser?.displayName
-                        ?: stringResource(id = R.string.tap_to_select_user),
-                    label = stringResource(id = R.string.user),
-                    onValueChange = {updateRoleState.error=null},
+                    value = updateRoleState.roles[updateRoleState.selectedRoleIndex],
+                    label = stringResource(id = R.string.user_role),
+                    onValueChange = {},
                     readOnly = true,
                     singleLine = true,
                     enabled = false,
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Filled.Person,
-                            contentDescription = "User Icon"
+                            painter = painterResource(id = R.drawable.user_role),
+                            contentDescription = "User Role to assign"
                         )
-                    }
-                )
-
-                /*//Email Field
-                JobFlowTextField(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    onTabPressed = { buttonFocus.requestFocus() },
-                    error = updateRoleState.emailError,
-                    value = updateRoleState.email,
-                    label = stringResource(id = R.string.email_to_reset),
-                    onValueChange = {
-                        updateRoleState.emailError = null
-                        updateRoleState.error = null
-                        if (!it.contains("\t"))
-                            updateRoleState.email = it
                     },
-                    singleLine = true,
-                    enabled = !updateRoleState.isLoading,
-                    keyboardActions = KeyboardActions { focusManager.clearFocus() },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Email,
-                            contentDescription = "Email to reset"
-                        )
-                    })*/
-
-                //Roles Field
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                ) {
-
-                    var dropDownWidth by remember { mutableStateOf(0) }
-
-                    JobFlowTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onSizeChanged { dropDownWidth = it.width }
-                            .clickable {
-                                if (!updateRoleState.isLoading)
-                                    menuExpanded = !menuExpanded
-                            },
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            disabledTextColor = LocalContentColor.current,
-                            disabledBorderColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high),
-                            disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                            disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                            disabledLabelColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
-                        ),
-                        value = updateRoleState.roles[updateRoleState.selectedRoleIndex],
-                        label = stringResource(id = R.string.user_role),
-                        onValueChange = {},
-                        readOnly = true,
-                        singleLine = true,
-                        enabled = false,
-                        leadingIcon = {
+                    trailingIcon = {
+                        if (menuExpanded)
                             Icon(
-                                painter = painterResource(id = R.drawable.user_role),
-                                contentDescription = "User Role to assign"
+                                painter = painterResource(id = R.drawable.arrow_drop_up),
+                                contentDescription = "Close drop down menu"
                             )
-                        },
-                        trailingIcon = {
-                            if (menuExpanded)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.arrow_drop_up),
-                                    contentDescription = "Close drop down menu"
-                                )
-                            else
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Open drop down menu"
-                                )
-                        })
+                        else
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = "Open drop down menu"
+                            )
+                    })
 
-                    DropdownMenu(
-                        modifier = Modifier
-                            .width(with(LocalDensity.current) { dropDownWidth.toDp() }),
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false }) {
+                DropdownMenu(
+                    modifier = Modifier
+                        .width(with(LocalDensity.current) { dropDownWidth.toDp() }),
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }) {
 
-                        updateRoleState.roles.forEachIndexed { index, s ->
-                            MenuItem(text = s) {
-                                updateRoleState.error=null
-                                updateRoleState.selectedRoleIndex = index
-                                menuExpanded = !menuExpanded
-                            }
+                    updateRoleState.roles.forEachIndexed { index, s ->
+                        MenuItem(text = s) {
+                            updateRoleState.error = null
+                            updateRoleState.selectedRoleIndex = index
+                            menuExpanded = !menuExpanded
                         }
                     }
                 }
-
-                Spacer(Modifier.height(30.dp))
-
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(buttonFocus)
-                        .focusable(true),
-                    onClick = {
-                        focusManager.clearFocus()
-                        onSubmit()
-                    },
-                    enabled = !updateRoleState.isLoading
-                ) {
-                    Text(text = stringResource(id = R.string.update_role_caps))
-                }
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(buttonFocus)
-                        .focusable(true),
-                    onClick = {
-                        focusManager.clearFocus()
-                        onUserDelete()
-                    },
-                    enabled = !updateRoleState.isLoading
-                ) {
-                    Text(text = stringResource(id = R.string.delete_user))
-                }
-
-                Spacer(Modifier.height(28.dp))
-
-                if (updateRoleState.isLoading) {
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                }
-
-                updateRoleState.error?.let {
-                    AuthError(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        error = it
-                    )
-                }
-
             }
 
+            Spacer(Modifier.height(30.dp))
+
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(buttonFocus)
+                    .focusable(true),
+                onClick = {
+                    focusManager.clearFocus()
+                    onSubmit()
+                },
+                enabled = !updateRoleState.isLoading
+            ) {
+                Text(text = stringResource(id = R.string.update_role_caps))
+            }
+            Spacer(Modifier.height(8.dp))
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(buttonFocus)
+                    .focusable(true),
+                onClick = {
+                    focusManager.clearFocus()
+                    onUserDelete()
+                },
+                enabled = !updateRoleState.isLoading
+            ) {
+                Text(text = stringResource(id = R.string.delete_user))
+            }
+
+            Spacer(Modifier.height(28.dp))
+
+            if (updateRoleState.isLoading) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
+
+            updateRoleState.error?.let {
+                AuthError(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    error = it
+                )
+            }
 
         }
     }
+
 }
 
 @Composable
@@ -313,8 +311,8 @@ fun MenuItem(text: String, onClick: () -> Unit) {
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onSurface
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -324,9 +322,14 @@ fun MenuItem(text: String, onClick: () -> Unit) {
 @Preview
 @Composable
 private fun UpdateRoleScreenPreview() {
-    UpdateRoleScreen(
-        UpdateRoleState(),{}, onUserChange = {},
-    ) {
 
+    JobFlowMaterial3Theme {
+        UpdateRoleScreen(
+            updateRoleState = UpdateRoleState(),
+            onSubmit = {},
+            onUserChange = {},
+            onUserDelete = {},
+            modifier = Modifier
+        )
     }
 }

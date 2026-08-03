@@ -13,18 +13,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,12 +50,12 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.admin.MenuItem
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -121,11 +122,12 @@ fun PreviewManagementScreen(
                 filePicker.launch("image/jpeg")
             }
         }
-    ) {
+    ) {paddingValues ->
         if(screenState.imageUris.isEmpty())
-            NoPreviewsScreen()
+            NoPreviewsScreen(Modifier.padding(paddingValues))
         else
             ContentMain(
+                modifier = Modifier.padding(paddingValues),
                 screenState = screenState,
                 onPreviewClicked=onPreviewClicked,
                 onDeletePreview = onPreviewDelete
@@ -136,12 +138,13 @@ fun PreviewManagementScreen(
 @ExperimentalCoroutinesApi
 @Composable
 private fun ContentMain(
+    modifier: Modifier = Modifier,
     screenState:PreviewManagementScreenState,
     onPreviewClicked: (JobPreview) -> Unit,
     onDeletePreview:(JobPreview)->Unit
 ){
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         PreviewGrid(
             previews = screenState.imageUris,
@@ -156,7 +159,6 @@ private fun ContentMain(
                 positiveButtonText = stringResource(id = R.string.menu_delete),
                 negativeButtonText = stringResource(id = R.string.cancel),
                 onPositiveClick = {onDeletePreview(it)},
-                onNegativeClick = { screenState.hideDeleteConfirmationDialog() },
                 onDismissListener = { screenState.hideDeleteConfirmationDialog() }
             )
         }
@@ -221,7 +223,7 @@ fun PreviewImage(
                             contextMenuShowing = true
                     }
                 )
-                .background(MaterialTheme.colors.surface),
+                .background(MaterialTheme.colorScheme.surface),
             model = loadedImage,
             contentScale = ContentScale.Crop,
             contentDescription = null
@@ -255,10 +257,10 @@ fun PreviewImage(
 }
 
 @Composable
-private fun NoPreviewsScreen(){
+private fun NoPreviewsScreen(modifier: Modifier = Modifier){
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
@@ -273,8 +275,8 @@ private fun NoPreviewsScreen(){
             Text(
                 text = stringResource(id = R.string.no_previews_available),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.body1,
-                color = MaterialTheme.colors.onBackground.copy(alpha=0.4f)
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha=0.4f)
             )
 
         }
@@ -286,7 +288,7 @@ private fun NoPreviewsScreen(){
 @Composable
 private fun NoPreviewScreenPreview() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         NoPreviewsScreen()
     }
 

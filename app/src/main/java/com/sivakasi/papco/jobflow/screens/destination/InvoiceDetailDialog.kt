@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -31,9 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -83,7 +83,7 @@ private fun InvoiceDialogContent(
         ) {
             Text(
                 stringResource(R.string.invoice_detail),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
             Spacer(Modifier.height(8.dp))
             JobFlowTextField(
@@ -113,7 +113,7 @@ private fun InvoiceDialogContent(
 
                 Text(
                     text= stringResource(R.string.partial_dispatch),
-                    style = MaterialTheme.typography.caption
+                    style = MaterialTheme.typography.labelSmall
                 )
 
                 Spacer(Modifier.weight(1f))
@@ -147,7 +147,7 @@ private fun InvoiceDialogContent(
 @Composable
 private fun InvoiceDialogContentPreview() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
 
         InvoiceDetailDialog(
             onPositiveClick = {_,_->},

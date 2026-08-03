@@ -16,25 +16,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -49,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
 import com.sivakasi.papco.jobflow.data.DatabaseContract
@@ -56,19 +56,16 @@ import com.sivakasi.papco.jobflow.data.Destination
 import com.sivakasi.papco.jobflow.nav3.LocalUserClaim
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.MenuAction
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.launch
 import java.util.LinkedList
 
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
+     ExperimentalCoroutinesApi::class,
     ExperimentalComposeUiApi::class, FlowPreview::class
 )
 fun EntryProviderScope<NavKey>.homeScreenEntry(
@@ -84,17 +81,15 @@ fun EntryProviderScope<NavKey>.homeScreenEntry(
             navBackstack = navBackStack,
             onSignOut = onSignOut
         )
+        
     }
 }
 
-@ExperimentalMaterialApi
-val LocalBottomSheetState =
-    compositionLocalOf<ModalBottomSheetState> { error("Bottom sheet state must be provided") }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalCoroutinesApi
 @FlowPreview
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
+
 @Composable
 fun HomeScreen(
     jobGroups: List<JobGroupState>,
@@ -103,30 +98,34 @@ fun HomeScreen(
 ) {
 
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+        rememberModalBottomSheetState()
 
-    CompositionLocalProvider(
-        LocalBottomSheetState provides bottomSheetState
-    ) {
+    var bottomSheetShowing by rememberSaveable { mutableStateOf(false) }
 
-        val role = LocalUserClaim.current
-        val user = remember(role) { JobFlowAuth().currentUser }
+    val role = LocalUserClaim.current
+    val user = remember(role) { JobFlowAuth().currentUser }
 
-        ModalBottomSheetLayout(
-            sheetContent = {
-                ProfileScreen(
-                    name = user?.displayName ?: "null",
-                    email = user?.email ?: "null",
-                    role = role ?: "none"
-                )
-            },
-            sheetState = bottomSheetState,
-            scrimColor = MaterialTheme.colors.background.copy(alpha = 0.3f),
-            sheetShape = RoundedCornerShape(20.dp, 20.dp)
-        ) {
-            HomeScreenContent(jobGroups = jobGroups, navBackstack, onSignOut)
+    HomeScreenContent(
+        jobGroups = jobGroups,
+        backStack = navBackstack,
+        onSignOut = onSignOut,
+        onProfileClicked = {
+            bottomSheetShowing = true
         }
+    )
 
+
+    if (bottomSheetShowing) {
+        ModalBottomSheet(
+            onDismissRequest = { bottomSheetShowing = false },
+            sheetState = bottomSheetState
+        ) {
+            ProfileScreen(
+                name = user?.displayName ?: "null",
+                email = user?.email ?: "null",
+                role = role ?: "none"
+            )
+        }
     }
 }
 
@@ -134,58 +133,63 @@ fun HomeScreen(
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 private fun HomeScreenContent(
     jobGroups: List<JobGroupState>,
     backStack: NavBackStack<NavKey>,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onProfileClicked: () -> Unit
 ) {
 
     Scaffold(
         topBar = {
-            HomeScreenTopBar(backStack, onSignOut)
+            HomeScreenTopBar(backStack, onSignOut, onProfileClicked)
         }
-    ) {
+    ) { paddingValues ->
 
-        JobGroupList(jobGroups = jobGroups, onJobGroupClicked = { index ->
-            when (index) {
-                0 -> {
-                    backStack.add(
-                        AppGraph.Destination(
-                            DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
-                            Destination.TYPE_FIXED
+        JobGroupList(
+            modifier = Modifier.padding(paddingValues),
+            jobGroups = jobGroups,
+            onJobGroupClicked = { index ->
+                when (index) {
+                    0 -> {
+                        backStack.add(
+                            AppGraph.Destination(
+                                DatabaseContract.DOCUMENT_DEST_NEW_JOBS,
+                                Destination.TYPE_FIXED
+                            )
                         )
-                    )
-                }
+                    }
 
-                1 -> {
-                    backStack.add(
-                        AppGraph.Destination(
-                            DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
-                            Destination.TYPE_FIXED
+                    1 -> {
+                        backStack.add(
+                            AppGraph.Destination(
+                                DatabaseContract.DOCUMENT_DEST_IN_PROGRESS,
+                                Destination.TYPE_FIXED
+                            )
                         )
-                    )
-                }
+                    }
 
-                2 -> {
-                    backStack.add(AppGraph.Machines(false))
+                    2 -> {
+                        backStack.add(AppGraph.Machines(false))
+                    }
                 }
-            }
-        })
+            })
     }
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 fun JobGroupList(
+    modifier: Modifier = Modifier,
     jobGroups: List<JobGroupState>,
     onJobGroupClicked: (Int) -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
         LazyColumn(
             modifier = Modifier
@@ -213,17 +217,17 @@ fun JobGroupList(
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 fun JobGroup(
     state: JobGroupState,
     onClick: () -> Unit
 ) {
 
-    Card(
-        backgroundColor = MaterialTheme.colors.background,
+    Surface(
+        color = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth(),
         onClick = onClick
@@ -238,7 +242,7 @@ fun JobGroup(
                 painter = painterResource(id = state.iconResourceId),
                 contentDescription = "Home screen Icon",
                 modifier = Modifier.size(65.dp),
-                tint = MaterialTheme.colors.secondary
+                tint = MaterialTheme.colorScheme.tertiary
             )
 
             Spacer(modifier = Modifier.width(24.dp))
@@ -246,22 +250,22 @@ fun JobGroup(
             Column {
                 Text(
                     text = state.groupName,
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary,
+                    color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = state.jobCount,
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = state.jobTime,
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -275,18 +279,17 @@ fun JobGroup(
 @FlowPreview
 @ExperimentalCoroutinesApi
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
+
 @Composable
 private fun HomeScreenTopBar(
     backStack: NavBackStack<NavKey>,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onProfileClicked: () -> Unit
 ) {
 
     val context = LocalContext.current
     val role = LocalUserClaim.current ?: "none"
-    val bottomSheetState = LocalBottomSheetState.current
     val menuItems = remember(role) { prepareOptionsMenu(role, context) }
-    val scope = rememberCoroutineScope()
 
     JobFlowTopBar(
         title = stringResource(id = R.string.papco_jobs),
@@ -296,8 +299,7 @@ private fun HomeScreenTopBar(
                     it,
                     context,
                     backStack,
-                    bottomSheetState,
-                    scope,
+                    onProfileClicked,
                     onSignOut
                 )
             })
@@ -328,13 +330,12 @@ private fun prepareOptionsMenu(role: String, context: Context): List<MenuAction>
 @ExperimentalCoroutinesApi
 @FlowPreview
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
+
 private fun onOptionsItemClicked(
     clickedItemLabel: String,
     context: Context,
     backStack: NavBackStack<NavKey>,
-    bottomSheetState: ModalBottomSheetState,
-    scope: CoroutineScope,
+    onProfileClicked: () -> Unit,
     onSignOut: () -> Unit
 ) {
     when (clickedItemLabel) {
@@ -343,9 +344,7 @@ private fun onOptionsItemClicked(
         }
 
         context.getString(R.string.Profile) -> {
-            scope.launch {
-                bottomSheetState.show()
-            }
+            onProfileClicked()
         }
 
         context.getString(R.string.clients) -> {
@@ -370,7 +369,7 @@ private fun onOptionsItemClicked(
     }
 }
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun JobGroupPreview() {
@@ -383,14 +382,14 @@ private fun JobGroupPreview() {
     state.jobCount = "7 Jobs"
     state.jobTime = "9 Hours, 18 Minutes"
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         JobGroup(state = state) {
 
         }
     }
 }
 
-/*@ExperimentalMaterialApi
+/*
 @Preview
 @Composable
 private fun HomeScreenPreview() {
@@ -402,7 +401,7 @@ private fun HomeScreenPreview() {
     state.jobCount = "7 Jobs"
     state.jobTime = "9 Hours, 18 Minutes"
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         HomeScreen(role = "root",
             jobGroups = listOf(state, state, state),
             onJobGroupClicked = {}

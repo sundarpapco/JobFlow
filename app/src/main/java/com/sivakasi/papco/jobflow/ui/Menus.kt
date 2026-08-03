@@ -2,12 +2,12 @@ package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,13 +40,13 @@ fun OptionsMenu(
                 Icon(
                     imageVector = it.imageVector!!,
                     contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             else
                 Icon(
                     painterResource(id = it.iconId!!),
                     contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
         }
     }
@@ -59,7 +59,7 @@ fun OptionsMenu(
                 Icon(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = "Overflow menu",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -97,13 +97,13 @@ fun<T> ContextMenu(
                 Icon(
                     imageVector = it.imageVector!!,
                     contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             else
                 Icon(
                     painterResource(id = it.iconId!!),
                     contentDescription = it.label,
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
         }
     }
@@ -116,7 +116,7 @@ fun<T> ContextMenu(
                 Icon(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = "Overflow menu",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 

@@ -15,15 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,17 +36,17 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.User
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun EntryProviderScope<NavKey>.selectUserScreenEntry(
     backStack: NavBackStack<NavKey>,
     resultBus: ResultEventBus
@@ -68,7 +67,7 @@ fun EntryProviderScope<NavKey>.selectUserScreenEntry(
     }
 }
 
-@ExperimentalMaterialApi
+
 @Suppress("UNCHECKED_CAST")
 @Composable
 fun UsersListScreen(
@@ -143,7 +142,7 @@ private fun SelectUserTopBar(
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun UsersList(
     users: List<User>,
@@ -152,7 +151,7 @@ private fun UsersList(
 ) {
 
     LazyColumn(
-        modifier = modifier.background(MaterialTheme.colors.background),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
@@ -178,14 +177,14 @@ private fun UsersList(
 
 }
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun UserListItem(
     user: User,
     onClick: (User) -> Unit
 ) {
-    Card(
-        backgroundColor = MaterialTheme.colors.background,
+    Surface(
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier
             .fillMaxWidth(),
         onClick = { onClick(user) },
@@ -202,7 +201,7 @@ private fun UserListItem(
                 Icon(
                     imageVector = Icons.Outlined.Person,
                     contentDescription = "User Icon",
-                    tint = MaterialTheme.colors.secondary,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(40.dp)
                 )
                 Spacer(Modifier.width(16.dp))
@@ -211,13 +210,13 @@ private fun UserListItem(
                 ) {
                     Text(
                         text = user.displayName,
-                        style = MaterialTheme.typography.subtitle1,
-                        color = MaterialTheme.colors.onBackground
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = user.email,
-                        style = MaterialTheme.typography.subtitle2,
-                        color = MaterialTheme.colors.onBackground.copy(0.7f)
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
                     )
                 }
             }
@@ -225,7 +224,6 @@ private fun UserListItem(
     }
 }
 
-@ExperimentalMaterialApi
 @Preview
 @Composable
 private fun UserListItemPreview() {
@@ -252,7 +250,7 @@ private fun UserListItemPreview() {
 
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         UsersListScreen(users = LoadingStatus.Success(users), onClick = {}, onBackPressed = {})
     }
 

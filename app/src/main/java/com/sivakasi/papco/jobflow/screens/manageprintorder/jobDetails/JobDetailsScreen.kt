@@ -6,24 +6,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,7 +51,7 @@ import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -164,24 +165,22 @@ private fun JobDetailsScreenContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(R.string.job_details),
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.h4
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.headlineSmall
             )
 
             Text(
                 text = stringResource(R.string.urgent),
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.body2
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium
             )
+
+            Spacer(Modifier.width(12.dp))
 
             Switch(
                 checked = screenState.isUrgent,
-                onCheckedChange = { screenState.isUrgent = it },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colors.primary,
-                    checkedTrackColor = MaterialTheme.colors.primary,
-                    uncheckedThumbColor = MaterialTheme.colors.surface
-                )
+                onCheckedChange = { screenState.isUrgent = it }
+
             )
 
         }
@@ -201,12 +200,12 @@ private fun JobDetailsScreenContent(
             singleLine = true,
             error = screenState.clientNameError,
             enabled = false,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
-                disabledBorderColor = MaterialTheme.colors.secondaryVariant,
-                disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledLabelColor = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(0.6f)
             )
         )
 
@@ -233,7 +232,7 @@ private fun JobDetailsScreenContent(
             )
             Text(
                 text = stringResource(R.string.blank_if_not_pending),
-                color = MaterialTheme.colors.secondaryVariant
+                color = MaterialTheme.colorScheme.outline
             )
         }
 
@@ -262,7 +261,7 @@ private fun PreviewJobDetailsScreen() {
         JobDetailsScreenState(context)
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         JobDetailsScreen(
             screenState = screenState,
             onSelectClientName = {},

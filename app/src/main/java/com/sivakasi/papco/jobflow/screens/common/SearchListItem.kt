@@ -12,12 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,23 +28,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.extensions.getCalendarInstance
 import com.sivakasi.papco.jobflow.models.SearchModel
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
-@ExperimentalMaterialApi
+
 @Composable
 fun SearchListItem(
     searchModel: SearchModel,
     onClick: (SearchModel) -> Unit
 ) {
 
-    Card(
-        backgroundColor = MaterialTheme.colors.background,
+    Surface(
+        color = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(15.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         onClick = { onClick(searchModel) },
         modifier = Modifier
             .fillMaxWidth()
@@ -58,21 +57,21 @@ fun SearchListItem(
         ) {
             Row {
                 Surface(
-                    color = MaterialTheme.colors.secondaryVariant,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(0.dp, 0.dp, 15.dp, 15.dp)
                 ) {
                     Text(
                         text = searchModel.poNumberAndDate(),
-                        color = MaterialTheme.colors.onSecondary,
-                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colorScheme.background,
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
 
                 Text(
                     text = searchModel.rid(),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier
                         .padding(12.dp, 4.dp, 12.dp, 4.dp)
                 )
@@ -81,8 +80,8 @@ fun SearchListItem(
 
                 Text(
                     text = searchModel.status(),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp, top = 4.dp, bottom = 4.dp),
@@ -101,8 +100,8 @@ fun SearchListItem(
             Row {
                 Text(
                     text = searchModel.jobName,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                    style = MaterialTheme.typography.subtitle1,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
@@ -111,18 +110,16 @@ fun SearchListItem(
 
                 Text(
                     text = searchModel.colors,
-                    color = MaterialTheme.colors.secondaryVariant.copy(alpha = 0.8f),
-                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.8f),
+                    style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
             }
 
-            Spacer(Modifier.height(4.dp))
-
             Text(
                 text = searchModel.paperDetails,
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 fontSize = 12.sp
@@ -143,8 +140,8 @@ fun ClientNameRow(
     ) {
         Text(
             text = clientName,
-            color = MaterialTheme.colors.primary,
-            style = MaterialTheme.typography.h6,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
@@ -171,8 +168,8 @@ fun PartDispatchIcon(
         Text(
             modifier = Modifier.align(Alignment.Top),
             text = dispatchCount.toString(),
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.width(2.dp))
@@ -180,7 +177,7 @@ fun PartDispatchIcon(
         Icon(
             modifier = Modifier.size(12.dp),
             painter = painterResource(id = R.drawable.ic_forward_send),
-            tint = MaterialTheme.colors.secondary,
+            tint = MaterialTheme.colorScheme.tertiary,
             contentDescription = "Partial Dispatch Icon"
         )
     }
@@ -190,12 +187,12 @@ fun PartDispatchIcon(
 @Composable
 private fun PreviewPartialDispatchIcon() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PartDispatchIcon(dispatchCount = 1)
     }
 }
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun SearchListItemPreview() {
@@ -203,7 +200,7 @@ private fun SearchListItemPreview() {
     val context = LocalContext.current
     val searchModel = remember { fakeSearchModel(context) }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         SearchListItem(searchModel = searchModel, onClick = {})
     }
 

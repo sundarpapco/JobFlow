@@ -14,14 +14,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Button
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
@@ -45,7 +45,7 @@ import com.sivakasi.papco.jobflow.data.PaperDetail
 import com.sivakasi.papco.jobflow.extensions.toast
 import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -136,7 +136,7 @@ fun PaperDetailsScreen(
             item(key = "Screen Heading") {
                 Text(
                     text = stringResource(R.string.paper_details),
-                    style = MaterialTheme.typography.h4
+                    style = MaterialTheme.typography.headlineSmall
                 )
             }
 
@@ -203,13 +203,13 @@ private fun AddPaperDetailButton(
 
         Text(
             text = stringResource(R.string.add_paper_detail),
-            color = MaterialTheme.colors.primary
+            color = MaterialTheme.colorScheme.primary
         )
     }
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
 @Composable
 private fun PaperDetailListItem(
     paperDetail: PaperDetail,
@@ -221,11 +221,11 @@ private fun PaperDetailListItem(
         modifier = modifier
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colors.primary,
+                color = MaterialTheme.colorScheme.primary,
                 shape = MaterialTheme.shapes.medium
             ),
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         onClick = {
             onClick(paperDetail)
         }
@@ -245,8 +245,8 @@ private fun PaperDetailListItem(
                         stringResource(R.string.party_own)
                     else
                         stringResource(R.string.our_own),
-                    style = MaterialTheme.typography.body2,
-                    color = MaterialTheme.colors.primary
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(Modifier.weight(1f))
@@ -258,14 +258,14 @@ private fun PaperDetailListItem(
                         },
                     imageVector = Icons.Outlined.Close,
                     contentDescription = "Close",
-                    tint = MaterialTheme.colors.primary
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
             }
 
             Text(
                 text = paperDetail.toString(),
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -283,7 +283,7 @@ private fun PreviewAddPaperDetailScreen() {
         mutableStateOf(state)
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
        PaperDetailsScreen(
            screenState = state,
            onClose = {},

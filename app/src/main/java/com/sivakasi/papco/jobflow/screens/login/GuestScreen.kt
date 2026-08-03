@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,9 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.util.JobFlowAuth
 
 fun EntryProviderScope<NavKey>.guestScreenEntry(
@@ -42,7 +42,7 @@ fun EntryProviderScope<NavKey>.guestScreenEntry(
 fun GuestScreen(
     onSignOut: () -> Unit
 ) {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
 
             val configuration = LocalConfiguration.current
@@ -59,8 +59,8 @@ fun GuestScreen(
                 Text(
                     modifier = Modifier.padding(top = 30.dp),
                     text = stringResource(id = R.string.guest_greeting),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h4
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.headlineLarge
                 )
 
                 if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
@@ -72,8 +72,8 @@ fun GuestScreen(
                 Text(
                     modifier = Modifier.padding(bottom = 18.dp),
                     text = stringResource(id = R.string.activation_description),
-                    color = MaterialTheme.colors.onSurface,
-                    style = MaterialTheme.typography.caption
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelSmall
                 )
 
                 Spacer(Modifier.height(30.dp))

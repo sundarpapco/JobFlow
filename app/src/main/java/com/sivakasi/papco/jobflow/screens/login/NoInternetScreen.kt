@@ -10,13 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,9 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 fun EntryProviderScope<NavKey>.noInternetEntry(
     isRefreshing: Boolean,
@@ -53,7 +52,7 @@ fun NoInternetScreen(
 ){
     val config = LocalConfiguration.current
 
-    JobFlowTheme{
+    JobFlowMaterial3Theme{
         if(config.orientation==Configuration.ORIENTATION_PORTRAIT)
             NoInternetPortraitScreen(isRefreshing,onRefresh)
         else
@@ -68,7 +67,7 @@ private fun NoInternetPortraitScreen(
     onRefresh:()->Unit
 ) {
     Surface(
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
@@ -82,7 +81,7 @@ private fun NoInternetPortraitScreen(
                     .size(100.dp)
                     .align(Alignment.CenterHorizontally)
                     .weight(1f),
-                tint = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.disabled),
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.38f),
                 painter = painterResource(id = R.drawable.wifi_off),
 
                 contentDescription = "No connection Icon"
@@ -91,14 +90,14 @@ private fun NoInternetPortraitScreen(
            Column {
                Text(
                    text = stringResource(id = R.string.oops_no_internet),
-                   color = MaterialTheme.colors.secondary,
-                   style = MaterialTheme.typography.h5,
+                   color = MaterialTheme.colorScheme.tertiary,
+                   style = MaterialTheme.typography.headlineMedium,
                    fontWeight = FontWeight.Bold
                )
                Text(
                    modifier = Modifier.padding(top = 8.dp),
                    text = stringResource(id = R.string.check_internet_connection),
-                   style = MaterialTheme.typography.subtitle1
+                   style = MaterialTheme.typography.titleMedium
                )
                Spacer(Modifier.height(32.dp))
                Button(
@@ -129,7 +128,7 @@ private fun NoInternetLandscapeScreen(
     onRefresh: () -> Unit
 ) {
     Surface(
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
     ) {
         Row(
@@ -143,7 +142,7 @@ private fun NoInternetLandscapeScreen(
                     .size(150.dp)
                     .align(Alignment.CenterVertically)
                     .weight(1f),
-                tint = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.disabled),
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.38f),
                 painter = painterResource(id = R.drawable.wifi_off),
 
                 contentDescription = "No connection Icon"
@@ -156,14 +155,14 @@ private fun NoInternetLandscapeScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.oops_no_internet),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     modifier = Modifier.padding(top = 8.dp),
                     text = stringResource(id = R.string.check_internet_connection),
-                    style = MaterialTheme.typography.subtitle1
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(32.dp))
                 Button(
@@ -192,7 +191,7 @@ private fun NoInternetLandscapeScreen(
 private fun PreviewNoInternetScreenPortrait() {
 
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         NoInternetPortraitScreen(false){
 
         }
@@ -209,7 +208,7 @@ private fun PreviewNoInternetScreenPortrait() {
 @Composable
 private fun PreviewNoInternetScreenLandscape() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         NoInternetLandscapeScreen(false){
 
         }

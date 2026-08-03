@@ -4,12 +4,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Save
@@ -31,7 +31,7 @@ import com.sivakasi.papco.jobflow.extensions.toastError
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.viewprintorder.NotesFragmentVM
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.MenuAction
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
@@ -127,8 +127,9 @@ fun NotesScreen(
                 onValueChange = {
                     screenState.notes = it
                 },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
@@ -157,8 +158,8 @@ fun NotesScreen(
                 title = stringResource(R.string.unsaved_changes_title),
                 message = stringResource(R.string.unsaved_changes_confirmation),
                 positiveButtonText = stringResource(R.string.exit),
+                negativeButtonText = stringResource(R.string.cancel),
                 onPositiveClick = onClose,
-                cancellable = true,
                 onDismissListener = { screenState.hideDialog() }
             )
         }
@@ -168,8 +169,8 @@ fun NotesScreen(
                 title = stringResource(R.string.po_not_found),
                 message = stringResource(R.string.po_not_found_desc),
                 positiveButtonText = stringResource(R.string.exit),
+                negativeButtonText = "",
                 onPositiveClick = onClose,
-                cancellable = false,
                 onDismissListener = onClose
             )
         }
@@ -203,7 +204,7 @@ private fun PreviewNotesScreen() {
         NotesScreenState()
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         NotesScreen(
             screenState = screenState,
             title = "Notes - po28412",

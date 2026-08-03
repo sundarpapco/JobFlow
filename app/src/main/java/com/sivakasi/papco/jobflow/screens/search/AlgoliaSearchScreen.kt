@@ -1,22 +1,24 @@
 package com.sivakasi.papco.jobflow.screens.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.TopAppBar
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,16 +40,16 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.SearchModel
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.screens.common.PaginatedSearchModelListScreen
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun EntryProviderScope<NavKey>.searchEntry(
     backStack: NavBackStack<NavKey>
 ) {
@@ -68,7 +70,7 @@ fun EntryProviderScope<NavKey>.searchEntry(
 }
 
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 fun AlgoliaSearchScreen(
     viewModel: AlgoliaSearchVM,
@@ -79,35 +81,37 @@ fun AlgoliaSearchScreen(
     val data = viewModel.pagingFlow.collectAsLazyPagingItems()
     var searchActivated by rememberSaveable { mutableStateOf(false) }
 
-    Surface(
-        color = MaterialTheme.colors.background
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
+    Scaffold {paddingValues ->
+        Surface(
+            modifier = Modifier.padding(paddingValues),
+            color = MaterialTheme.colorScheme.background
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
 
-            AlgoliaTopABar(
-                query = viewModel.query ?: "",
-                onQueryChange = { viewModel.query = it },
-                onQuerySubmit = {
-                    searchActivated = true
-                    viewModel.search(it)
-                },
-                onQueryClear = { viewModel.query = "" },
-                onBackPressed = onBackPressed
-            )
-
-            if (searchActivated)
-                PaginatedSearchModelListScreen(
-                    data = data,
-                    onResultClicked = onItemClicked,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                    realTimeUpdatedItem = viewModel.userUpdatedItem
+                AlgoliaTopABar(
+                    query = viewModel.query ?: "",
+                    onQueryChange = { viewModel.query = it },
+                    onQuerySubmit = {
+                        searchActivated = true
+                        viewModel.search(it)
+                    },
+                    onQueryClear = { viewModel.query = "" },
+                    onBackPressed = onBackPressed
                 )
+
+                if (searchActivated)
+                    PaginatedSearchModelListScreen(
+                        data = data,
+                        onResultClicked = onItemClicked,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        realTimeUpdatedItem = viewModel.userUpdatedItem
+                    )
+            }
         }
     }
-
 }
 
 @Composable
@@ -123,15 +127,13 @@ private fun AlgoliaTopABar(
     var initialLoading by rememberSaveable { mutableStateOf(true) }
     val focusRequester = remember { FocusRequester() }
 
-    TopAppBar(
-        backgroundColor = MaterialTheme.colors.surface,
-        elevation = 0.dp
-    ) {
+    Row(modifier= Modifier.background(MaterialTheme.colorScheme.surface)) {
 
         IconButton(onClick = onBackPressed) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back"
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -165,8 +167,9 @@ private fun AlgoliaTopABar(
                     }
                 }
             ),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.surface,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -191,7 +194,7 @@ private fun AlgoliaTopBarPreview() {
 
     var query by remember { mutableStateOf("") }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         AlgoliaTopABar(
             query = query,
             onQueryChange = { query = it },

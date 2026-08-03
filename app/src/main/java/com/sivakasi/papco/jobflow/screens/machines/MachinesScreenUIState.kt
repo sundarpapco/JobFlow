@@ -1,7 +1,7 @@
 package com.sivakasi.papco.jobflow.screens.machines
 
 import android.content.Context
-import androidx.compose.material.ExperimentalMaterialApi
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,7 +13,7 @@ import com.sivakasi.papco.jobflow.nav3.util.ToasterState
 import com.sivakasi.papco.jobflow.ui.TextInputDialogState
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 
-@ExperimentalMaterialApi
+
 class MachinesScreenUIState(
     private val context: Context
 ): ToasterState() {

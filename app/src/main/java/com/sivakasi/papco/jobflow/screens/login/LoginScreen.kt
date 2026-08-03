@@ -19,12 +19,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
@@ -56,10 +56,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class,
     ExperimentalFoundationApi::class
@@ -90,7 +90,7 @@ fun LoginScreen(
     onForgotPassword: () -> Unit,
     onModeChange: (AuthenticationMode) -> Unit
 ) {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
             Column(
                 modifier = Modifier
@@ -307,8 +307,8 @@ private fun LoginFields(
                                 onForgotPassword()
                         },
                     text = stringResource(id = R.string.forgot_password_question),
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.secondary
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.tertiary
 
                 )
             }
@@ -358,7 +358,7 @@ fun AuthError(error: String, modifier: Modifier = Modifier) {
                 .align(Alignment.CenterVertically),
             imageVector = Icons.Filled.Info,
             contentDescription = "Password",
-            tint = MaterialTheme.colors.error
+            tint = MaterialTheme.colorScheme.error
         )
 
         Text(
@@ -366,8 +366,8 @@ fun AuthError(error: String, modifier: Modifier = Modifier) {
             text = error,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.error
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.error
         )
     }
 }
@@ -410,8 +410,8 @@ private fun Register(onRegister: () -> Unit, isEnabled: Boolean = true) {
         Row {
             Text(
                 text = stringResource(id = R.string.dont_have_an_account_ques),
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelSmall
             )
 
             Spacer(Modifier.width(8.dp))
@@ -422,8 +422,8 @@ private fun Register(onRegister: () -> Unit, isEnabled: Boolean = true) {
                         onRegister()
                 },
                 text = stringResource(R.string.register),
-                color = MaterialTheme.colors.secondary,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.tertiary,
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
@@ -439,8 +439,8 @@ private fun Login(onSelect: () -> Unit, isEnabled: Boolean = true) {
         Row {
             Text(
                 text = stringResource(id = R.string.already_have_an_account),
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelSmall
             )
 
             Spacer(Modifier.width(8.dp))
@@ -451,8 +451,8 @@ private fun Login(onSelect: () -> Unit, isEnabled: Boolean = true) {
                         onSelect()
                 },
                 text = stringResource(R.string.login),
-                color = MaterialTheme.colors.secondary,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.tertiary,
+                style = MaterialTheme.typography.labelSmall
             )
         }
 
@@ -468,8 +468,8 @@ private fun Heading(mode: AuthenticationMode) {
                 Text(
                     modifier = Modifier.padding(top = 30.dp),
                     text = stringResource(id = R.string.login),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h3
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.displaySmall
                 )
             }
 
@@ -477,8 +477,8 @@ private fun Heading(mode: AuthenticationMode) {
                 Text(
                     modifier = Modifier.padding(top = 30.dp),
                     text = stringResource(id = R.string.register),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h3
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.displaySmall
                 )
             }
         }
@@ -489,7 +489,7 @@ private fun Heading(mode: AuthenticationMode) {
 @Preview
 @Composable
 private fun PreviewSplashScreen() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -506,7 +506,7 @@ private fun LoginCredentialsPreview() {
 
     val credentials = AuthenticationState(LocalContext.current)
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
             LoginFields(authState = credentials, {}, {})
         }
@@ -517,7 +517,7 @@ private fun LoginCredentialsPreview() {
 @Composable
 private fun AuthErrorPreview() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
             AuthError(error = "This user does not exist or this user has a different password. Try again with different password")
         }
@@ -528,7 +528,7 @@ private fun AuthErrorPreview() {
 @Composable
 private fun RegisterPreview() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
             Register({})
         }

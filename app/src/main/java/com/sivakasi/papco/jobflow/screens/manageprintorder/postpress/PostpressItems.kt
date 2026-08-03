@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Binding
 import com.sivakasi.papco.jobflow.data.Lamination
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 
 
 @Composable
@@ -74,7 +74,7 @@ fun PostPressItem(
 ) {
 
     Surface(
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) {
 
@@ -86,9 +86,9 @@ fun PostPressItem(
                 checked = isSelected,
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colors.primary,
-                    uncheckedColor = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
-                    checkmarkColor = MaterialTheme.colors.background,
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    checkmarkColor = MaterialTheme.colorScheme.background,
                 )
 
             )
@@ -98,16 +98,16 @@ fun PostPressItem(
             ) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.body1,
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.fillMaxWidth()
                 )
                 remarks?.let {
                     if (remarks.isNotBlank())
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                         )
                 }
 
@@ -115,9 +115,9 @@ fun PostPressItem(
                     if (remarks2.isNotBlank())
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                         )
                 }
             }
@@ -134,9 +134,9 @@ fun PostPressItem(
 @Composable
 private fun PreviewPostPressItem() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface(
-            color = MaterialTheme.colors.background,
+            color = MaterialTheme.colorScheme.background,
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),

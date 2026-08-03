@@ -16,16 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.SnackbarResult
-import androidx.compose.material.Text
+
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Reply
@@ -36,6 +33,9 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.CurrencyRupee
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Upload
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -54,6 +54,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.DatabaseContract
 import com.sivakasi.papco.jobflow.data.Destination
@@ -66,7 +67,6 @@ import com.sivakasi.papco.jobflow.nav3.util.ResultEffect
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.MenuAction
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
@@ -205,7 +205,7 @@ fun DestinationScreen(
         floatingActionButton = {
             onAddJob?.let {
                 FloatingActionButton(
-                    backgroundColor = MaterialTheme.colors.primary,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     onClick = it,
                 ) {
                     Icon(
@@ -250,7 +250,7 @@ fun DestinationScreen(
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterialApi::class)
+
 @Composable
 private fun DestinationJobList(
     screenState: DestinationScreenState,
@@ -375,8 +375,9 @@ private fun DestinationDialog(
         is DestinationScreenDialog.DeleteConfirmation -> {
             JobFlowAlertDialog(
                 message = stringResource(R.string.cancel_jobs_confirmation),
-                positiveButtonText = stringResource(R.string.menu_delete),
+                positiveButtonText = stringResource(R.string.yes),
                 onPositiveClick = onDeleteConfirmation,
+                negativeButtonText = stringResource(R.string.no),
                 onDismissListener = { screenState.hideDialog() }
             )
         }
@@ -386,6 +387,7 @@ private fun DestinationDialog(
                 message = stringResource(R.string.revert_confirmation),
                 positiveButtonText = stringResource(R.string.remove),
                 onPositiveClick = onRevertConfirmation,
+                negativeButtonText = stringResource(R.string.cancel),
                 onDismissListener = { screenState.hideDialog() }
             )
         }
@@ -394,6 +396,7 @@ private fun DestinationDialog(
             JobFlowAlertDialog(
                 message = stringResource(R.string.complete_confirmation),
                 positiveButtonText = stringResource(R.string.mark_as_complete),
+                negativeButtonText = stringResource(R.string.cancel),
                 onPositiveClick = onMarkAsDoneConfirmation,
                 onDismissListener = { screenState.hideDialog() }
             )
@@ -549,13 +552,13 @@ private fun LastJobCompletedAt(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colors.primary)
+            .background(MaterialTheme.colorScheme.primary)
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = timeString,
-            style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
         )
     }
 }
@@ -599,7 +602,7 @@ private fun onOptionsItemSelected(
 }
 
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun DestinationScreenPreview() {
@@ -615,7 +618,7 @@ private fun DestinationScreenPreview() {
         }
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         DestinationScreen(
             screenState,
             fixedDestination = false,

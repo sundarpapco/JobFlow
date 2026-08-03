@@ -15,14 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.runtime.Composable
@@ -51,12 +51,12 @@ import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.screens.common.ErrorScreen
 import com.sivakasi.papco.jobflow.screens.common.SearchListItem
 import com.sivakasi.papco.jobflow.screens.common.fakeSearchModel
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.util.LoadingStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun EntryProviderScope<NavKey>.previousHistoryScreenEntry(
     backStack: NavBackStack<NavKey>
 ){
@@ -86,7 +86,7 @@ private fun HistoryCircle(
         modifier = modifier
             .size(diameter)
             .clip(CircleShape)
-            .background(MaterialTheme.colors.primary)
+            .background(MaterialTheme.colorScheme.primary)
     )
 }
 
@@ -111,7 +111,7 @@ private fun HistoryIndicator(
                     .width(3.dp)
                     .fillMaxHeight()
                     .weight(2f),
-                color = MaterialTheme.colors.primary
+                color = MaterialTheme.colorScheme.primary
             )
         else
             Spacer(
@@ -131,17 +131,17 @@ fun HistoryText(
     ) {
         Text(
             text = machineName,
-            style = MaterialTheme.typography.subtitle1,
+            style = MaterialTheme.typography.titleMedium,
             fontStyle = FontStyle.Italic,
-            color = MaterialTheme.colors.onSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         Text(
             text = timeStamp,
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             fontStyle = FontStyle.Italic,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -197,7 +197,7 @@ fun ProcessingHistoryList(
     }
 }
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun PreviousHistoryScreenContent(
     screenState: PreviousHistoryScreenState,
@@ -207,7 +207,7 @@ private fun PreviousHistoryScreenContent(
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
+        color = MaterialTheme.colorScheme.background
     ){
         Column(
             modifier = Modifier
@@ -222,7 +222,7 @@ private fun PreviousHistoryScreenContent(
     }
 }
 
-@ExperimentalMaterialApi
+
 @ExperimentalCoroutinesApi
 @Composable
 fun PreviousHistoryScreen(
@@ -285,7 +285,7 @@ private fun PreviewProcessingHistoryItem() {
         )
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         ProcessingHistory(
             processingHistory = history,
             shouldDrawLine = true
@@ -297,7 +297,7 @@ private fun PreviewProcessingHistoryItem() {
 @Preview
 @Composable
 private fun PreviewHistoryText() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         HistoryText(
             machineName = "PO Created",
             timeStamp = "28/04/2022, 08:45 AM"
@@ -313,7 +313,7 @@ private fun PreviewHistoryList() {
         fakeHistory()
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         ProcessingHistoryList(
             modifier = Modifier.padding(16.dp),
             items = history
@@ -322,7 +322,7 @@ private fun PreviewHistoryList() {
 
 }*/
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun PreviewPreviousHistoryScreenContent(){
@@ -335,7 +335,7 @@ private fun PreviewPreviousHistoryScreenContent(){
         )
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PreviousHistoryScreenContent(
             screenState,
             onClick = {}

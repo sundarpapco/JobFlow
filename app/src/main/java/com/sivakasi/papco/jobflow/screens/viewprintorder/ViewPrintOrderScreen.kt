@@ -22,29 +22,29 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -79,7 +79,7 @@ import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
 import com.sivakasi.papco.jobflow.screens.common.ErrorScreen
 import com.sivakasi.papco.jobflow.screens.processinghistory.ProcessingHistoryList
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.ui.TwoLineListItem
@@ -93,7 +93,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(
-    ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
+     ExperimentalCoroutinesApi::class,
     ExperimentalComposeUiApi::class, FlowPreview::class
 )
 fun EntryProviderScope<NavKey>.viewPrintOrderEntry(
@@ -166,11 +166,9 @@ fun EntryProviderScope<NavKey>.viewPrintOrderEntry(
     }
 }
 
-val LocalSheetState =
-    compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@ExperimentalMaterialApi
+
 @ExperimentalComposeUiApi
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -188,92 +186,80 @@ fun ViewPrintOrderScreen(
     onEditPrintOrder: () -> Unit
 ) {
 
-    val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val sheetState = rememberModalBottomSheetState()
+    var bottomSheetShowing by remember { mutableStateOf(false) }
 
-    CompositionLocalProvider(
-        LocalSheetState provides sheetState
-    ) {
+    val scope = rememberCoroutineScope()
 
-        val bottomSheetState = LocalSheetState.current
-
-        JobFlowTheme {
-
-            val scope = rememberCoroutineScope()
-
-            BackHandler {
-                if (bottomSheetState.isVisible) {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                } else
-                    onBack()
+    BackHandler {
+        if (sheetState.isVisible) {
+            scope.launch {
+                sheetState.hide()
             }
-
-            ModalBottomSheetLayout(
-                sheetContent = { ViewPrintOrderBottomSheet(screenState) },
-                sheetState = bottomSheetState,
-                sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
-                scrimColor = MaterialTheme.colors.background.copy(alpha = 0.6f)
-            ) {
-                Scaffold(
-                    topBar = {
-                        ViewPrintOrderTopBar(
-                            screenState = screenState,
-                            onBack = onBack,
-                            onPrint = onPrint,
-                            onSharePdf = onSharePdf,
-                            onNotes = navigateToNotes,
-                            onRepeatJob = onRepeatJob,
-                            onPreviousHistory = onPreviousHistory,
-                            onPartialDispatch = {
-                                screenState.modalSheetContent =
-                                    ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            onRevokePrintOrder = { screenState.showRevokeConfirmationDialog() },
-                            onPreviewClicked = onPreviewClicked,
-                            onProcessingHistory = {
-                                screenState.modalSheetContent =
-                                    ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
-                            }
-                        )
-                    },
-                    floatingActionButton = {
-                        if (screenState.fabShowing)
-                            FloatingActionButton(
-                                backgroundColor = MaterialTheme.colors.primary,
-                                onClick = onEditPrintOrder
-                            ) {
-                                Icon(Icons.Filled.Edit, "Edit Print Order Button")
-                            }
-                    }
-                ) { padding ->
-                    PrintOrderScreenContent(
-                        modifier = Modifier.padding(padding),
-                        screenState = screenState,
-                        onRevokePrintOrder = onRevokeJob,
-                        onPoMoved = onBack
-                    )
-                }
-            }
-        }
+        } else
+            onBack()
     }
+
+    Scaffold(
+        topBar = {
+            ViewPrintOrderTopBar(
+                screenState = screenState,
+                onBack = onBack,
+                onPrint = onPrint,
+                onSharePdf = onSharePdf,
+                onNotes = navigateToNotes,
+                onRepeatJob = onRepeatJob,
+                onPreviousHistory = onPreviousHistory,
+                onPartialDispatch = {
+                    screenState.modalSheetContent =
+                        ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES
+                    bottomSheetShowing = true
+                },
+                onRevokePrintOrder = { screenState.showRevokeConfirmationDialog() },
+                onPreviewClicked = onPreviewClicked,
+                onProcessingHistory = {
+                    screenState.modalSheetContent =
+                        ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY
+                    bottomSheetShowing = true
+                }
+            )
+        },
+        floatingActionButton = {
+            if (screenState.fabShowing)
+                FloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    onClick = onEditPrintOrder
+                ) {
+                    Icon(Icons.Filled.Edit, "Edit Print Order Button")
+                }
+        }
+    ) { padding ->
+        PrintOrderScreenContent(
+            modifier = Modifier.padding(padding),
+            screenState = screenState,
+            onRevokePrintOrder = onRevokeJob,
+            onPoMoved = onBack
+        )
+    }
+
+    if (bottomSheetShowing)
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = { bottomSheetShowing = false }
+        ) {
+            ViewPrintOrderBottomSheet(screenState = screenState){bottomSheetShowing=false}
+        }
 }
 
-@ExperimentalMaterialApi
+
+
 @Composable
 private fun ViewPrintOrderBottomSheet(
-    screenState: ViewPrintOrderScreenState
+    screenState: ViewPrintOrderScreenState,
+    onDismiss: () -> Unit
 ) {
-    val sheetState = LocalSheetState.current
     val printOrder = screenState.printOrder
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     if (printOrder == null) {
         Spacer(modifier = Modifier.height(20.dp))
@@ -289,32 +275,24 @@ private fun ViewPrintOrderBottomSheet(
         ViewPrintOrderScreenState.ModalSheetContent.PROCESSING_HISTORY -> {
             ProcessingHistorySheet(
                 history = printOrder.completeProcessingHistory(context),
-                sheetState = sheetState
+                onDismiss = onDismiss
             )
         }
 
         ViewPrintOrderScreenState.ModalSheetContent.PART_DISPATCHES -> {
-            if (printOrder.partialDispatches.isEmpty()) {
-                Spacer(Modifier.height(20.dp))
-                LaunchedEffect(key1 = printOrder) {
-                    scope.launch {
-                        sheetState.hide()
-                    }
-                }
-            } else {
+            if (printOrder.partialDispatches.isNotEmpty()) {
                 PartDispatchesSheet(
                     dispatches = printOrder.partialDispatches,
-                    sheetState = sheetState
+                    onDismiss = onDismiss
                 )
             }
         }
-
     }
 
 }
 
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 fun PrintOrderScreenContent(
     modifier: Modifier = Modifier,
@@ -366,7 +344,9 @@ fun PrintOrderScreenContent(
             title = stringResource(id = R.string.po_not_found),
             message = stringResource(id = R.string.po_not_found_desc),
             positiveButtonText = stringResource(id = R.string.exit).toUpperCase(Locale.current),
-            onPositiveClick = onPoMoved
+            negativeButtonText = "",
+            onPositiveClick = onPoMoved,
+            onDismissListener = onPoMoved
         )
     }
 
@@ -380,13 +360,13 @@ private fun RevokeConfirmationDialog(onCancel: () -> Unit, onConfirm: () -> Unit
         positiveButtonText = stringResource(id = R.string.revoke).toUpperCase(Locale.current),
         negativeButtonText = stringResource(id = R.string.cancel).toUpperCase(Locale.current),
         onPositiveClick = { onConfirm() },
-        onNegativeClick = { onCancel() }
+        onDismissListener = { onCancel() }
     )
 }
 
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@ExperimentalMaterialApi
+
 @ExperimentalComposeUiApi
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -485,7 +465,7 @@ fun PrintOrder(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
             .padding(start = 16.dp, end = 16.dp)
     ) {
 
@@ -595,8 +575,8 @@ fun PlateMakingDetails(
     Column {
         Text(
             text = stringResource(id = R.string.plate_making_details),
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.height(8.dp))
@@ -668,8 +648,8 @@ private fun PaperDetails(
     Column {
         Text(
             text = stringResource(id = R.string.paper_details),
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.height(8.dp))
@@ -696,13 +676,13 @@ private fun PaperDetails(
                         ) {
                             Text(
                                 text = detail.owner,
-                                style = MaterialTheme.typography.body1
+                                style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(Modifier.width(16.dp))
                             Text(
                                 modifier = Modifier.weight(2f),
                                 text = detail.sheets,
-                                style = MaterialTheme.typography.body1,
+                                style = MaterialTheme.typography.bodyLarge,
                                 textAlign = TextAlign.End
                             )
                         }
@@ -712,15 +692,15 @@ private fun PaperDetails(
                         Text(
                             modifier = Modifier.fillMaxWidth(),
                             text = detail.paperDetail,
-                            style = MaterialTheme.typography.body1
+                            style = MaterialTheme.typography.bodyLarge
                         )
 
                         if (index < details.size - 1) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 1.dp,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                         }
                     }
@@ -739,8 +719,8 @@ private fun PrintingDetails(
     Column {
         Text(
             text = stringResource(id = R.string.printing_details),
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.height(8.dp))
@@ -754,13 +734,13 @@ private fun PrintingDetails(
                 Row {
                     Text(
                         text = stringResource(id = R.string.colours),
-                        style = MaterialTheme.typography.body1
+                        style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(Modifier.width(16.dp))
                     Text(
                         modifier = Modifier.weight(2f),
                         text = detail.colours,
-                        style = MaterialTheme.typography.body1,
+                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.End
                     )
                 }
@@ -768,16 +748,16 @@ private fun PrintingDetails(
                 if (detail.printingInstructions.isNotBlank()) {
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(),
                         thickness = 1.dp,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = detail.printingInstructions,
-                        style = MaterialTheme.typography.body1
+                        style = MaterialTheme.typography.bodyLarge
                     )
 
                 }
@@ -797,8 +777,8 @@ private fun PostPressDetails(
     Column {
         Text(
             text = stringResource(id = R.string.post_press_details),
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.height(8.dp))
@@ -825,13 +805,13 @@ private fun PostPressDetails(
                         ) {
                             Text(
                                 text = detail.name,
-                                style = MaterialTheme.typography.body1
+                                style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(Modifier.width(16.dp))
                             Text(
                                 modifier = Modifier.weight(2f),
                                 text = detail.details,
-                                style = MaterialTheme.typography.body1,
+                                style = MaterialTheme.typography.bodyLarge,
                                 textAlign = TextAlign.End
                             )
                         }
@@ -840,15 +820,15 @@ private fun PostPressDetails(
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
                                 text = detail.remarks,
-                                style = MaterialTheme.typography.body2
+                                style = MaterialTheme.typography.bodyMedium
                             )
 
                         if (index < details.size - 1) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 1.dp,
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f)
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                         }
                     }
@@ -862,14 +842,12 @@ private fun PostPressDetails(
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun ProcessingHistorySheet(
     history: List<ProcessingHistory>,
-    sheetState: ModalBottomSheetState
+    onDismiss: () -> Unit
 ) {
-
-    val scope = rememberCoroutineScope()
 
     Column(
         Modifier.padding(top = 24.dp, start = 32.dp, end = 32.dp)
@@ -881,12 +859,10 @@ private fun ProcessingHistorySheet(
             Text(
                 modifier = Modifier.weight(2f),
                 text = stringResource(R.string.processing_history),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
             IconButton(onClick = {
-                scope.launch {
-                    sheetState.hide()
-                }
+                onDismiss()
             }) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
@@ -901,14 +877,12 @@ private fun ProcessingHistorySheet(
 
 }
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun PartDispatchesSheet(
     dispatches: List<PartialDispatch>,
-    sheetState: ModalBottomSheetState
+    onDismiss: () -> Unit
 ) {
-
-    val scope = rememberCoroutineScope()
 
     Column(
         Modifier.padding(top = 24.dp, start = 32.dp, end = 32.dp)
@@ -920,12 +894,10 @@ private fun PartDispatchesSheet(
             Text(
                 modifier = Modifier.weight(2f),
                 text = stringResource(R.string.partial_dispatches),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
             IconButton(onClick = {
-                scope.launch {
-                    sheetState.hide()
-                }
+                onDismiss()
             }) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
@@ -967,13 +939,13 @@ fun DetailRow(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             modifier = Modifier.weight(2f),
             text = detail,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.End
         )
     }
@@ -1007,7 +979,7 @@ private fun RupeeRound(
 
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colors.primary,
+        color = MaterialTheme.colorScheme.primary,
         shape = CircleShape
     ) {
         Box(
@@ -1015,7 +987,7 @@ private fun RupeeRound(
         ) {
             Text(
                 text = stringResource(id = R.string.rupee_symbol),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.headlineMedium
             )
         }
     }
@@ -1048,7 +1020,7 @@ private fun PreviewPartialDispatchList() {
         )
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PartialDispatchList(dispatches = dispatches)
     }
 }
@@ -1063,12 +1035,13 @@ private fun PreviewDispatchListItem() {
         )
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PartialDispatchListItem(dispatch = dispatch)
     }
 }
 
-@ExperimentalMaterialApi
+@OptIn(ExperimentalMaterial3Api::class)
+
 @Preview
 @Composable
 private fun PreviewProcessingHistorySheet() {
@@ -1088,18 +1061,18 @@ private fun PreviewProcessingHistorySheet() {
             )
         )
     }
-    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
 
         Surface {
-            ProcessingHistorySheet(history = history, sheetState)
+            ProcessingHistorySheet(history = history){}
         }
     }
 
 }
 
-@ExperimentalMaterialApi
+@OptIn(ExperimentalMaterial3Api::class)
+
 @Preview
 @Composable
 private fun PreviewPartialDispatchSheet() {
@@ -1125,12 +1098,11 @@ private fun PreviewPartialDispatchSheet() {
             ),
         )
     }
-    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme{
 
         Surface {
-            PartDispatchesSheet(dispatches = dispatches, sheetState = sheetState)
+            PartDispatchesSheet(dispatches = dispatches){}
         }
     }
 
@@ -1153,7 +1125,7 @@ private fun print(
     }
 }
 
-@ExperimentalMaterialApi
+
 @ExperimentalCoroutinesApi
 private fun sharePdfFile(
     activityContext: Context,
@@ -1198,7 +1170,7 @@ fun PreviewPODetails() {
             }
         }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface(
             Modifier.fillMaxWidth()
         ) {
@@ -1217,9 +1189,9 @@ fun PreviewPlateMakingDetails() {
             PrintOrderRenderInfo.from(context, fakePrintOrder()).plateMakingDetailsRenderInfo
         }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Box(
-            Modifier.background(MaterialTheme.colors.background)
+            Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             Surface(
                 Modifier.fillMaxWidth()
@@ -1240,9 +1212,9 @@ fun PreviewPaperDetails(){
             PrintOrderRenderInfo.from(context, fakePrintOrder()).paperDetailsRenderInfo
         }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Box(
-            Modifier.background(MaterialTheme.colors.background)
+            Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             Surface(
                 Modifier.fillMaxWidth()
@@ -1264,9 +1236,9 @@ fun PreviewPrintingDetail(){
             PrintOrderRenderInfo.from(context, fakePrintOrder()).printingDetailRenderInfo
         }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Box(
-            Modifier.background(MaterialTheme.colors.background)
+            Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             Surface(
                 Modifier.fillMaxWidth()
@@ -1288,9 +1260,9 @@ fun PreviewPostPressDetails(){
             PrintOrderRenderInfo.from(context, fakePrintOrder()).postPressDetailRenderInfo
         }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Box(
-            Modifier.background(MaterialTheme.colors.background)
+            Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             Surface(
                 Modifier.fillMaxWidth()
@@ -1311,7 +1283,7 @@ private fun PreviewPrintOrder() {
         PrintOrderRenderInfo.from(context, fakePrintOrder())
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
 
         PrintOrder(render)
     }

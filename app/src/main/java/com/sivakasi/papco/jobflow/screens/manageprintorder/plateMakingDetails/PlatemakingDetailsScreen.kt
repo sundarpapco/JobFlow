@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
@@ -52,7 +52,7 @@ import com.sivakasi.papco.jobflow.nav3.graph.PrintOrderGraph
 import com.sivakasi.papco.jobflow.screens.manageprintorder.ManagePrintOrderVM
 import com.sivakasi.papco.jobflow.ui.JobFlowDropDown
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -162,7 +162,7 @@ private fun PlateMakingScreenContent(
 
         Text(
             text = stringResource(R.string.plate_making_details),
-            style = MaterialTheme.typography.h4
+            style = MaterialTheme.typography.headlineSmall
         )
 
         Row(
@@ -185,7 +185,7 @@ private fun PlateMakingScreenContent(
                     screenState.dontCheckSize = !screenState.dontCheckSize
                 },
                 text = stringResource(R.string.do_not_check_size),
-                style = MaterialTheme.typography.subtitle2
+                style = MaterialTheme.typography.titleSmall
             )
         }
 
@@ -470,8 +470,8 @@ private fun PlateMakingScreenContent(
             Spacer(Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.blank_if_same_as_front_machine),
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.secondaryVariant
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -522,7 +522,7 @@ private fun PlateNumber(screenState: PlateMakingDetailsScreenState) {
                             PlateMakingDetail.PLATE_NUMBER_OUTSIDE_PLATE
                 },
                 text = stringResource(R.string.outside_plate),
-                style = MaterialTheme.typography.subtitle2
+                style = MaterialTheme.typography.titleSmall
             )
         }
     }
@@ -553,7 +553,7 @@ private fun PreviewContent() {
         state
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PlateMakingScreen(
             screenState = screenState,
             onNext = { screenState.validate() },

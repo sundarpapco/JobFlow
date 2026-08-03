@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,7 +44,7 @@ import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.extensions.intNumber
 import com.sivakasi.papco.jobflow.screens.manageprintorder.RunningTimeExpressionChecker
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.util.Duration
 
 @Composable
@@ -120,8 +120,8 @@ private fun RunningTimeDialogContent(
         ) {
             Text(
                 text = stringResource(R.string.running_time),
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onSurface
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Row(
@@ -283,7 +283,7 @@ private fun RunningTimeDialogContent(
 @Preview
 @Composable
 private fun PreviewRunningDialogContent() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         RunningTimeDialogContent(90, true) { _, _ ->
 
         }

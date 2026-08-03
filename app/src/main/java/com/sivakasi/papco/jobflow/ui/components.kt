@@ -1,5 +1,6 @@
 package com.sivakasi.papco.jobflow.ui
 
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,24 +15,24 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.AppBarDefaults
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,10 +50,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.admin.MenuItem
@@ -81,7 +82,7 @@ fun JobFlowTextField(
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     shape: Shape = MaterialTheme.shapes.small,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
 
     Column(
@@ -137,8 +138,8 @@ fun JobFlowTextField(
         if (error != null) {
             Text(
                 text = error,
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
@@ -167,7 +168,7 @@ fun JobFlowTextField(
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     shape: Shape = MaterialTheme.shapes.small,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
     Column(
         modifier = modifier
@@ -211,8 +212,8 @@ fun JobFlowTextField(
         if (error != null) {
             Text(
                 text = error,
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
@@ -240,7 +241,7 @@ fun SelectableTextField(
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     shape: Shape = MaterialTheme.shapes.small,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
     Column {
 
@@ -288,13 +289,14 @@ fun SelectableTextField(
         if (error != null) {
             Text(
                 text = error,
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.caption
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobFlowTopBar(
     modifier: Modifier = Modifier,
@@ -302,32 +304,31 @@ fun JobFlowTopBar(
     subtitle: String? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
-    backgroundColor: Color = MaterialTheme.colors.surface.copy(0.99f),
-    contentColor: Color = MaterialTheme.colors.onSurface,
-    elevation: Dp = AppBarDefaults.TopAppBarElevation
+    backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(0.99f)
 ) {
     TopAppBar(
-        backgroundColor = backgroundColor,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = backgroundColor
+        ),
         modifier = modifier,
-        navigationIcon = navigationIcon,
+        navigationIcon = navigationIcon ?: {},
         title = {
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.h5,
-                    color = MaterialTheme.colors.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
                 )
 
                 if (subtitle != null)
                     Text(
                         text = subtitle,
-                        style = MaterialTheme.typography.subtitle2,
-                        color = MaterialTheme.colors.onSurface.copy(0.6f)
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                     )
             }
         },
-        contentColor = contentColor,
-        elevation = elevation,
         actions = actions
     )
 }
@@ -338,7 +339,7 @@ fun JobFlowRadioButton(
     title: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    textColor: Color = MaterialTheme.colors.onSurface
+    textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -347,15 +348,15 @@ fun JobFlowRadioButton(
             selected = isSelected,
             onClick = onClick,
             colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colors.primary,
-                unselectedColor = MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                selectedColor = MaterialTheme.colorScheme.primary,
+                unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             ),
             enabled = enabled
         )
         //Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.clickable {
                 onClick()
             },
@@ -390,12 +391,12 @@ fun JobFlowDropDown(
                 .clickable {
                     menuExpanded = !menuExpanded
                 },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
-                disabledBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.42f),
-                disabledLeadingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledTrailingIconColor = MaterialTheme.colors.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-                disabledLabelColor = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.medium)
+                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.42f),
+                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
+                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
             ),
             value = value,
             label = label,
@@ -442,10 +443,13 @@ fun JobFlowCircularProgressBar(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary
+        )
         Text(
             text = text,
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -453,7 +457,7 @@ fun JobFlowCircularProgressBar(
 @Preview
 @Composable
 private fun PreviewProgressBar() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         JobFlowCircularProgressBar(
             text = "One moment please"
         )
@@ -466,14 +470,14 @@ private fun PreviewProgressBar() {
 @Preview
 @Composable
 private fun JobFlowTextFieldPreview() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
             JobFlowTextField(
                 value = "m.sundaravel@gmail.com",
                 onValueChange = {},
                 singleLine = true,
                 label = "Email",
-                error = "*Invalid email"
+                error = null
             )
         }
     }

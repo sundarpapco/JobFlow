@@ -14,12 +14,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.Composable
@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @OptIn(
     ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class,
@@ -70,7 +70,7 @@ fun ForgotPasswordScreen(
     state: ForgotPasswordState,
     onFormSubmit: () -> Unit
 ) {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         Surface {
 
             val configuration = LocalConfiguration.current
@@ -88,8 +88,8 @@ fun ForgotPasswordScreen(
                 Text(
                     modifier = Modifier.padding(top = 30.dp),
                     text = stringResource(id = R.string.forgot_password_question),
-                    color = MaterialTheme.colors.secondary,
-                    style = MaterialTheme.typography.h4
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.headlineLarge
                 )
 
                 if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
@@ -101,8 +101,8 @@ fun ForgotPasswordScreen(
                 Text(
                     modifier = Modifier.padding(bottom = 18.dp),
                     text = stringResource(id = R.string.forgot_password_desc),
-                    color = MaterialTheme.colors.onSurface,
-                    style = MaterialTheme.typography.caption
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelSmall
                 )
 
                 JobFlowTextField(

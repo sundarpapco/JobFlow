@@ -13,22 +13,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Divider
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -49,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.data.Client
 import com.sivakasi.papco.jobflow.data.ClientSelectionPurpose
@@ -58,7 +58,6 @@ import com.sivakasi.papco.jobflow.nav3.replaceLastOrAdd
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.screens.clients.ClientsFragmentVM
 import com.sivakasi.papco.jobflow.screens.common.SingleLineListItem
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -147,14 +146,14 @@ fun ClientsScreen(
         floatingActionButton = {
             if (!isSelectionMode)
                 FloatingActionButton(
-                    backgroundColor = MaterialTheme.colors.primary,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     onClick = { screenState.showAddClientDialog() }
                 ) {
                     Icon(Icons.Filled.Add, "Client Add Button")
                 }
         }
-    ) {
-        ContentMain(screenState) {
+    ) {paddingValues ->
+        ContentMain(modifier=Modifier.padding(paddingValues),screenState) {
 
             when {
                 screenState.isLoading -> {
@@ -195,14 +194,15 @@ fun ClientsScreen(
 
 @Composable
 private fun ContentMain(
+    modifier: Modifier= Modifier,
     screenState: ClientScreenState,
     content: @Composable () -> Unit
 ) {
     val query by screenState.query.collectAsState()
     val searchBarFocus = remember { FocusRequester() }
     Surface(
-        color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize()
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             SearchBar(
@@ -241,7 +241,7 @@ private fun SearchBar(
         singleLine = true,
         label = { Text("Search Client") },
         leadingIcon = {
-            Icon(Icons.Outlined.Search, "Search", Modifier.alpha(ContentAlpha.medium))
+            Icon(Icons.Outlined.Search, "Search", Modifier.alpha(0.6f))
         },
         trailingIcon = {
             if (query.isNotBlank())
@@ -249,7 +249,7 @@ private fun SearchBar(
                     Icons.Outlined.Close,
                     "Clear Query",
                     Modifier
-                        .alpha(ContentAlpha.medium)
+                        .alpha(0.6f)
                         .clickable {
                             onQueryChange("")
                         }
@@ -282,7 +282,7 @@ private fun ClientsList(
                     onClick = onItemClicked
                 )
                 if (index < clientsList.size - 1)
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 else
                     Spacer(Modifier.height(60.dp))
             }
@@ -295,7 +295,7 @@ fun LoadingScreen(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize()
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -311,7 +311,7 @@ fun InformationScreen(
     message: String
 ) {
     Surface(
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
     ) {
         Box(
@@ -320,7 +320,7 @@ fun InformationScreen(
         ) {
             Text(
                 text = message,
-                style = MaterialTheme.typography.button
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
@@ -329,7 +329,7 @@ fun InformationScreen(
 @Preview
 @Composable
 private fun PreviewLoadingScreen() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         LoadingScreen()
     }
 }
@@ -356,7 +356,7 @@ private fun PreviewClientsList() {
         }
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         ClientsScreen(
             screenState = screenState,
             isSelectionMode = false,

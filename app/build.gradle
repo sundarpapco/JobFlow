@@ -81,11 +81,11 @@ dependencies {
     implementation libs.ui
     implementation libs.foundation
     implementation libs.foundation.layout
-    implementation libs.androidx.material
     implementation libs.androidx.ui.tooling
     implementation libs.androidx.activity.compose
     implementation libs.compose.theme.adapter
     implementation libs.material.icons
+    implementation libs.material3
 
     //WorkManager (For transforming and uploading the preview Images to firebase storage)
     implementation libs.androidx.work.runtime.ktx

@@ -1,29 +1,10 @@
 package com.sivakasi.papco.jobflow.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalRippleConfiguration
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RippleConfiguration
-import androidx.compose.material.darkColors
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sivakasi.papco.jobflow.R
 
@@ -73,7 +54,7 @@ private val subDetailText = TextStyle(
     fontSize = 14.sp
 )
 
-
+/*
 private val darkColors = darkColors(
     primary = pink,
     primaryVariant = pink,
@@ -94,28 +75,29 @@ private val lightColors = darkColors.copy(
 )
 
 
-@OptIn(ExperimentalMaterialApi::class)
+
+
 @Composable
 fun JobFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) darkColors else lightColors
-    MaterialTheme(
+    androidx.compose.material.MaterialTheme(
         colors = colors,
-        typography = MaterialTheme.typography.copy(
+        typography = androidx.compose.material.MaterialTheme.typography.copy(
             h4= screenTitle,
             h5= appBarTitle,
             h6 = h6,
             body1 = detailText,
             body2 = subDetailText
         ),
-        shapes = MaterialTheme.shapes.copy(
+        shapes = androidx.compose.material.MaterialTheme.shapes.copy(
             medium = RoundedCornerShape(15.dp)
         )
     ) {
 
-        val rippleColor = MaterialTheme.colors.primary
+        val rippleColor = MaterialTheme.colorScheme.primary
         val rippleConfiguration = remember(true) {
             RippleConfiguration(
                 color = rippleColor,
@@ -128,11 +110,12 @@ fun JobFlowTheme(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colors.surface)
+                .background(MaterialTheme.colorScheme.surface)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ){
             CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration, content = content)
+
         }
 
     }
-}
+}*/

@@ -15,12 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Star
@@ -35,16 +34,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.R
 import com.sivakasi.papco.jobflow.models.PrintOrderUIModel
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 import com.sivakasi.papco.jobflow.util.Duration
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalFoundationApi::class)
-@ExperimentalMaterialApi
+
 @Composable
 fun ReorderableCollectionItemScope.JobListItem(
     printOrder: PrintOrderUIModel,
@@ -57,14 +56,14 @@ fun ReorderableCollectionItemScope.JobListItem(
     onPendingIconClicked:()->Unit
 ) {
 
-    Card(
-        backgroundColor = MaterialTheme.colors.background,
+   Surface(
+        color = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(15.dp),
         border =
             if (selected || dragging)
-                BorderStroke(3.dp, MaterialTheme.colors.primary)
+                BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
             else
-                BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant),
+                BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         onClick = { onClick(printOrder) },
         modifier = Modifier
             .fillMaxWidth()
@@ -74,9 +73,9 @@ fun ReorderableCollectionItemScope.JobListItem(
                 .fillMaxWidth()
                 .background(
                     if (selected || dragging)
-                        MaterialTheme.colors.primary.copy(alpha = 0.2f)
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     else
-                        MaterialTheme.colors.background,
+                        MaterialTheme.colorScheme.background,
                 )
                 .combinedClickable(
                     onLongClick = { onLongClick(printOrder) },
@@ -87,15 +86,19 @@ fun ReorderableCollectionItemScope.JobListItem(
             Row {
                 Surface(
                     color = if (selected || dragging)
-                        MaterialTheme.colors.primary
+                        MaterialTheme.colorScheme.primary
                     else
-                        MaterialTheme.colors.secondaryVariant,
+                        MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(0.dp, 0.dp, 15.dp, 15.dp)
                 ) {
                     Text(
                         text = printOrder.poNumberAndAge,
-                        style = MaterialTheme.typography.caption,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = if(selected)
+                        MaterialTheme.colorScheme.onPrimary
+                        else
+                        MaterialTheme.colorScheme.background
                     )
                 }
 
@@ -104,7 +107,7 @@ fun ReorderableCollectionItemScope.JobListItem(
                         modifier = Modifier.padding(4.dp),
                         imageVector = Icons.Filled.Star,
                         contentDescription = "Urgent",
-                        tint = MaterialTheme.colors.secondary
+                        tint = MaterialTheme.colorScheme.tertiary
                     )
 
                 if (printOrder.pendingReason.isNotEmpty())
@@ -112,7 +115,7 @@ fun ReorderableCollectionItemScope.JobListItem(
                         modifier = Modifier.clickable { onPendingIconClicked() }.padding(4.dp),
                         imageVector = Icons.Filled.Error,
                         contentDescription = "Urgent",
-                        tint = MaterialTheme.colors.error
+                        tint = MaterialTheme.colorScheme.errorContainer
                     )
 
                 if (printOrder.partialDispatchCount > 0)
@@ -128,8 +131,8 @@ fun ReorderableCollectionItemScope.JobListItem(
                 if (printOrder.isReprint)
                     Text(
                         text = stringResource(R.string.reprint),
-                        color = MaterialTheme.colors.secondary,
-                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
                             .padding(horizontal = 12.dp)
                             .align(Alignment.CenterVertically)
@@ -138,7 +141,7 @@ fun ReorderableCollectionItemScope.JobListItem(
                 Icon(
                     imageVector = Icons.Outlined.Menu,
                     contentDescription = "Drag Handle",
-                    tint = MaterialTheme.colors.secondaryVariant,
+                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier
                         .draggableHandle(enabled = dragEnabled, onDragStopped = onDragCompleted)
                         .padding(vertical = 4.dp)
@@ -148,8 +151,8 @@ fun ReorderableCollectionItemScope.JobListItem(
             Row {
                 Text(
                     text = printOrder.billingName,
-                    color = MaterialTheme.colors.primary,
-                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1
@@ -157,8 +160,8 @@ fun ReorderableCollectionItemScope.JobListItem(
                 Spacer(Modifier.width(4.dp))
                 Text(
                     text = printOrder.runningTime.timeFormatString(),
-                    color = MaterialTheme.colors.secondaryVariant,
-                    style = MaterialTheme.typography.caption
+                    color = MaterialTheme.colorScheme.outline,
+                    style = MaterialTheme.typography.labelSmall
                 )
 
             }
@@ -166,8 +169,8 @@ fun ReorderableCollectionItemScope.JobListItem(
             Row {
                 Text(
                     text = printOrder.jobName,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                    style = MaterialTheme.typography.subtitle1,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
@@ -178,8 +181,8 @@ fun ReorderableCollectionItemScope.JobListItem(
 
                 Text(
                     text = printOrder.colors,
-                    color = MaterialTheme.colors.secondaryVariant,
-                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colorScheme.outline,
+                    style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
             }
@@ -187,8 +190,8 @@ fun ReorderableCollectionItemScope.JobListItem(
 
             Text(
                 text = printOrder.printingSizePaperDetail,
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 fontSize = 12.sp
@@ -211,8 +214,8 @@ fun PartDispatchIcon(
 
         Text(
             text = dispatchCount.toString(),
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.secondary
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.tertiary
         )
 
         Spacer(Modifier.width(2.dp))
@@ -220,22 +223,22 @@ fun PartDispatchIcon(
         Icon(
             modifier = Modifier.size(16.dp),
             painter = painterResource(id = R.drawable.ic_forward_send),
-            tint = MaterialTheme.colors.secondary,
+            tint = MaterialTheme.colorScheme.tertiary,
             contentDescription = "Partial Dispatch Icon"
         )
     }
 }
 
-@Preview
+/*@Preview
 @Composable
 private fun PreviewPartialDispatchIcon() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         PartDispatchIcon(dispatchCount = 1)
     }
-}
+}*/
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun SearchListItemPreview() {
@@ -246,7 +249,7 @@ private fun SearchListItemPreview() {
 
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         LazyColumn(
             state = lazyListState
         ) {
@@ -257,7 +260,7 @@ private fun SearchListItemPreview() {
                 ) {
                     JobListItem(
                         printOrder = printOrderModel,
-                        selected = true,
+                        selected = false,
                         dragging = false,
                         dragEnabled = false,
                         onDragCompleted = {},

@@ -1,7 +1,6 @@
 package com.sivakasi.papco.jobflow.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,15 +10,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -112,7 +114,7 @@ private fun TextInputDialogContent(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(dialogState.title, style = MaterialTheme.typography.h5)
+            Text(dialogState.title, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(8.dp))
             SelectableTextField(
                 value = dialogState.text,
@@ -215,74 +217,117 @@ fun WaitDialog(msg: String = "") {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DialogFrame(
+    onCancel: () -> Unit,
+    content: @Composable ()->Unit
+) {
+    BasicAlertDialog(
+        onDismissRequest = onCancel
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            content()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlertDialog(
+    title: String?,
+    text: String,
+    confirmationText: String,
+    cancellationText: String,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+
+    DialogFrame(
+        onCancel = onCancel
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            title?.let{
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+            Text(
+                text = text,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Spacer(Modifier.weight(1f))
+
+                TextButton(
+                    onClick = onCancel,
+                ) {
+                    Text(
+                        text = cancellationText,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+
+                TextButton(
+                    onClick = onConfirm,
+                ) {
+                    Text(
+                        text = confirmationText,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobFlowAlertDialog(
     message: String,
     positiveButtonText: String,
     onPositiveClick: () -> Unit,
-    negativeButtonText: String? = null,
+    negativeButtonText: String,
     title: String? = null,
-    onNegativeClick: () -> Unit = {},
-    onDismissListener: () -> Unit = {},
-    cancellable:Boolean=true
+    onDismissListener: () -> Unit = {}
 ) {
+
     AlertDialog(
-        properties = DialogProperties(
-            dismissOnBackPress = cancellable,
-            dismissOnClickOutside = cancellable
-        ),
-        onDismissRequest = onDismissListener,
-        buttons = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-
-                negativeButtonText?.let {
-                    TextButton(onClick = onNegativeClick) {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.button
-                        )
-                    }
-
-                    Spacer(Modifier.width(16.dp))
-                }
-
-                TextButton(onClick = onPositiveClick) {
-                    Text(
-                        text = positiveButtonText,
-                        style = MaterialTheme.typography.button
-                    )
-                }
-            }
-        },
-        title = title?.let {
-            {
-                Text(
-                    text = it,
-                    style = LocalTextStyle.current
-                )
-            }
-        },
-        text = {
-            Text(
-                text = message,
-                style = LocalTextStyle.current
-            )
-        }
+      title = title,
+        text = message,
+        confirmationText = positiveButtonText,
+        cancellationText = negativeButtonText,
+        onConfirm = onPositiveClick,
+        onCancel = onDismissListener
     )
 }
 
 @Preview
 @Composable
 private fun AlertDialogPreview() {
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         JobFlowAlertDialog(
             message = "Are you sure want to delete this machine?",
             positiveButtonText = "Yes",
+            negativeButtonText = "Cancel",
             onPositiveClick = { })
     }
 }
@@ -302,7 +347,7 @@ private fun TextInputDialogPreview() {
             label = "Label"
         }
     }
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
 
         TextInputDialogContent(
             dialogState = dialogState,
@@ -317,7 +362,7 @@ private fun TextInputDialogPreview() {
 @Composable
 private fun PreviewWaitDialog() {
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         WaitDialog()
     }
 }*/

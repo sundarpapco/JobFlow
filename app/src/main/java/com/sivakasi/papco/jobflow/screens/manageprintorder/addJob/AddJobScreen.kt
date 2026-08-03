@@ -13,12 +13,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
@@ -51,7 +51,7 @@ import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowCircularProgressBar
 import com.sivakasi.papco.jobflow.ui.JobFlowRadioButton
 import com.sivakasi.papco.jobflow.ui.JobFlowTextField
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -188,8 +188,7 @@ fun AddPrintOrderScreen(
                 )
                 onCreateRepeatJob(plateNumber)
             },
-            onDismissListener = { screenState.hideIsPONotFoundDialog() },
-            onNegativeClick = { screenState.hideIsPONotFoundDialog() }
+            onDismissListener = { screenState.hideIsPONotFoundDialog() }
         )
 }
 
@@ -211,7 +210,7 @@ private fun AddJobScreenContent(
     ) {
         Text(
             text = stringResource(R.string.new_print_order),
-            style = MaterialTheme.typography.h4
+            style = MaterialTheme.typography.headlineSmall
         )
 
         Row(
@@ -263,7 +262,7 @@ private fun AddJobScreenContent(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Search,
-                        tint = MaterialTheme.colors.primary,
+                        tint = MaterialTheme.colorScheme.primary,
                         contentDescription = "Search Icon"
                     )
                 },
@@ -275,7 +274,7 @@ private fun AddJobScreenContent(
             )
             Text(
                 text = stringResource(R.string.blank_if_party_plate),
-                color = MaterialTheme.colors.secondaryVariant
+                color = MaterialTheme.colorScheme.outline
             )
         }
 
@@ -321,7 +320,7 @@ private fun PreviewNewJobScreenContent() {
         AddJobScreenState()
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         AddPrintOrderScreen(
             screenState,
             isEditMode = true,

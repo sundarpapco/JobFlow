@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -17,8 +17,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.models.ClientUIModel
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
 
 @Composable
 fun <T> SingleLineListItem(
@@ -28,7 +28,7 @@ fun <T> SingleLineListItem(
 ) {
 
     Surface(
-        color=MaterialTheme.colors.background,
+        color=MaterialTheme.colorScheme.background,
         modifier = Modifier
             .requiredHeight(56.dp)
             .clickable { onClick(data) }
@@ -41,7 +41,7 @@ fun <T> SingleLineListItem(
         ) {
             Text(
                 text = textBlock(data),
-                style = MaterialTheme.typography.subtitle1,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.fillMaxWidth(),
                 overflow = TextOverflow.Ellipsis
             )
@@ -57,11 +57,11 @@ fun <T> SingleLineListItem(
 private fun PreviewSingleLineListItem() {
 
     val annotatedString = with(AnnotatedString.Builder("Suri graphix")) {
-        addStyle(SpanStyle(MaterialTheme.colors.primary), 0, 3)
+        addStyle(SpanStyle(MaterialTheme.colorScheme.primary), 0, 3)
         toAnnotatedString()
     }
     val listData = ClientUIModel(1, annotatedString)
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         SingleLineListItem(
             data = listData,
             textBlock = { it.name },

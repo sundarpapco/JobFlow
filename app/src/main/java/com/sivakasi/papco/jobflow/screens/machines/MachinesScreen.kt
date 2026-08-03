@@ -17,28 +17,29 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -57,64 +58,79 @@ import com.sivakasi.papco.jobflow.nav3.graph.AppGraph
 import com.sivakasi.papco.jobflow.nav3.util.ResultEventBus
 import com.sivakasi.papco.jobflow.nav3.util.Toaster
 import com.sivakasi.papco.jobflow.screens.clients.ui.LoadingScreen
+import com.sivakasi.papco.jobflow.screens.profile.ProfileScreen
 import com.sivakasi.papco.jobflow.ui.ContextMenu
 import com.sivakasi.papco.jobflow.ui.JobFlowAlertDialog
 import com.sivakasi.papco.jobflow.ui.JobFlowFloatingActionButton
-import com.sivakasi.papco.jobflow.ui.JobFlowTheme
+import com.sivakasi.papco.jobflow.ui.JobFlowMaterial3Theme
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import com.sivakasi.papco.jobflow.ui.MenuAction
 import com.sivakasi.papco.jobflow.ui.OptionsMenu
 import com.sivakasi.papco.jobflow.ui.TextInputDialog
 import com.sivakasi.papco.jobflow.ui.WaitDialog
 import com.sivakasi.papco.jobflow.util.Duration
+import com.sivakasi.papco.jobflow.util.JobFlowAuth
 import com.sivakasi.papco.jobflow.util.LoadingStatus
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.launch
 
 
-
-@OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class,
-    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class, FlowPreview::class
+@OptIn(
+     ExperimentalCoroutinesApi::class,
+    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class, FlowPreview::class,
+    ExperimentalMaterial3Api::class
 )
 fun EntryProviderScope<NavKey>.machinesScreenEntry(
     backstack: NavBackStack<NavKey>,
     result: ResultEventBus,
     onSignOut: () -> Unit
-){
-    entry<AppGraph.Machines> {key->
+) {
+    entry<AppGraph.Machines> { key ->
 
         val viewModel: ManageMachinesVM = hiltViewModel()
+
+        val bottomSheetState = rememberModalBottomSheetState()
+        val role = LocalUserClaim.current
+        val user = remember(role) { JobFlowAuth().currentUser }
+        var bottomSheetShowing by remember { mutableStateOf(false) }
 
         ManageMachinesScreen(
             selectionMode = key.selectionMode,
             screenState = viewModel.uiState,
-            backstack=backstack,
-            result=result,
-            onSignOut=onSignOut,
-            onAddMachine = {viewModel.addMachine()},
-            onEditMachine = {viewModel.editMachine()},
-            onDeleteMachine = {viewModel.deleteMachine(it)}
+            backstack = backstack,
+            result = result,
+            onSignOut = onSignOut,
+            onAddMachine = { viewModel.addMachine() },
+            onEditMachine = { viewModel.editMachine() },
+            onDeleteMachine = { viewModel.deleteMachine(it) },
+            onProfileClicked = {bottomSheetShowing=true}
         )
 
+        if (bottomSheetShowing)
+            ModalBottomSheet(
+                sheetState = bottomSheetState,
+                onDismissRequest = { bottomSheetShowing = false }
+            ) {
+                ProfileScreen(
+                    name = user?.displayName ?: "null",
+                    email = user?.email ?: "null",
+                    role = role ?: "none"
+                )
+            }
     }
 }
 
 
-val LocalSheetState = compositionLocalOf<ModalBottomSheetState> { error("Bottom Sheet state not set") }
-
-
 private val machineNameText: TextStyle = TextStyle(
-fontWeight = FontWeight.Normal,
-fontSize = 24.sp,
-letterSpacing = 0.sp
+    fontWeight = FontWeight.Normal,
+    fontSize = 24.sp,
+    letterSpacing = 0.sp
 )
 
 @ExperimentalFoundationApi
 @FlowPreview
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
+
 @ExperimentalCoroutinesApi
 @Composable
 fun ManageMachinesScreen(
@@ -123,64 +139,62 @@ fun ManageMachinesScreen(
     backstack: NavBackStack<NavKey>,
     result: ResultEventBus,
     onSignOut: () -> Unit,
-    onAddMachine:()->Unit,
-    onEditMachine:()->Unit,
-    onDeleteMachine:(String)->Unit
+    onAddMachine: () -> Unit,
+    onEditMachine: () -> Unit,
+    onDeleteMachine: (String) -> Unit,
+    onProfileClicked: () -> Unit
 ) {
 
-    val density = LocalDensity.current
-    val bottomSheetState = remember{
-        ModalBottomSheetState(ModalBottomSheetValue.Hidden,density)
-    }
+    val context = LocalContext.current
 
-    CompositionLocalProvider(LocalSheetState provides bottomSheetState) {
-
-        val context = LocalContext.current
-
-        MachinesScreenContent(
-            selectionMode = selectionMode,
-            screenState = screenState,
-            onMachineClicked = { machine ->
-                if (selectionMode) {
-                    result.send(AppGraph.Machines.SELECTION_KEY, machine.id)
-                    backstack.removeLastOrNull()
-                } else {
-                    backstack.add(AppGraph.Destination(machine.id, Destination.TYPE_DYNAMIC))
-                }
-            },
-            onBack = { backstack.removeLastOrNull()},
-            onSignOut = onSignOut
-        )
-
-        Toaster(context,screenState)
-
-        when(val dialog=screenState.dialog){
-            is MachinesScreenUIState.Dialog.None->{}
-            is MachinesScreenUIState.Dialog.AddMachineDialog->{
-                TextInputDialog(
-                    dialogState = dialog.state,
-                    onPositiveClick = {onAddMachine()},
-                    onNegativeClick = {screenState.clearDialog() }
-                )
+    MachinesScreenContent(
+        selectionMode = selectionMode,
+        screenState = screenState,
+        onMachineClicked = { machine ->
+            if (selectionMode) {
+                result.send(AppGraph.Machines.SELECTION_KEY, machine.id)
+                backstack.removeLastOrNull()
+            } else {
+                backstack.add(AppGraph.Destination(machine.id, Destination.TYPE_DYNAMIC))
             }
-            is MachinesScreenUIState.Dialog.EditMachineDialog->{
-                TextInputDialog(
-                    dialogState = dialog.state,
-                    onPositiveClick = { onEditMachine() },
-                    onNegativeClick = { screenState.clearDialog() }
-                )
-            }
-            is MachinesScreenUIState.Dialog.DeleteConfirmationDialog->{
-                JobFlowAlertDialog(
-                    message = stringResource(R.string.machine_delete_confirmation),
-                    positiveButtonText = stringResource(R.string.menu_delete),
-                    negativeButtonText= stringResource(R.string.cancel),
-                    onPositiveClick = { onDeleteMachine(dialog.deletingDestination.id) },
-                    onNegativeClick = {screenState.clearDialog() },
-                    onDismissListener = {screenState.clearDialog() }
-                )
-            }
-            is MachinesScreenUIState.Dialog.WaitDialog -> { WaitDialog()}
+        },
+        onBack = { backstack.removeLastOrNull() },
+        onSignOut = onSignOut,
+        onProfileClicked = onProfileClicked
+    )
+
+    Toaster(context, screenState)
+
+    when (val dialog = screenState.dialog) {
+        is MachinesScreenUIState.Dialog.None -> {}
+        is MachinesScreenUIState.Dialog.AddMachineDialog -> {
+            TextInputDialog(
+                dialogState = dialog.state,
+                onPositiveClick = { onAddMachine() },
+                onNegativeClick = { screenState.clearDialog() }
+            )
+        }
+
+        is MachinesScreenUIState.Dialog.EditMachineDialog -> {
+            TextInputDialog(
+                dialogState = dialog.state,
+                onPositiveClick = { onEditMachine() },
+                onNegativeClick = { screenState.clearDialog() }
+            )
+        }
+
+        is MachinesScreenUIState.Dialog.DeleteConfirmationDialog -> {
+            JobFlowAlertDialog(
+                message = stringResource(R.string.machine_delete_confirmation),
+                positiveButtonText = stringResource(R.string.menu_delete),
+                negativeButtonText = stringResource(R.string.cancel),
+                onPositiveClick = { onDeleteMachine(dialog.deletingDestination.id) },
+                onDismissListener = { screenState.clearDialog() }
+            )
+        }
+
+        is MachinesScreenUIState.Dialog.WaitDialog -> {
+            WaitDialog()
         }
     }
 
@@ -190,13 +204,14 @@ fun ManageMachinesScreen(
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 private fun MachinesScreenContent(
     selectionMode: Boolean,
     screenState: MachinesScreenUIState,
-    onMachineClicked:(Destination)->Unit,
+    onMachineClicked: (Destination) -> Unit,
     onBack: () -> Unit,
+    onProfileClicked:()->Unit,
     onSignOut: () -> Unit
 ) {
 
@@ -204,28 +219,29 @@ private fun MachinesScreenContent(
 
     Scaffold(
         topBar = {
-            MachinesTopAppBar(selectionMode,onBack,onSignOut)
+            MachinesTopAppBar(selectionMode, onBack, onProfileClicked,onSignOut)
         },
         floatingActionButton = {
-            if(!selectionMode){
-                if(role=="admin" || role=="root")
+            if (!selectionMode) {
+                if (role == "admin" || role == "root")
                     JobFlowFloatingActionButton {
                         screenState.showAddMachineDialog()
                     }
             }
         }
-    ) {
+    ) {paddingValues -> 
 
         when (val loadingState = screenState.machines) {
 
             is LoadingStatus.Loading -> {
-                LoadingScreen()
+                LoadingScreen(modifier = Modifier.padding(paddingValues))
             }
 
 
             is LoadingStatus.Success<*> -> {
                 @Suppress("UNCHECKED_CAST")
                 MachinesList(
+                    modifier = Modifier.padding(paddingValues),
                     machines = loadingState.data as List<Destination>,
                     screenState = screenState,
                     onClick = { onMachineClicked(it) },
@@ -243,11 +259,12 @@ private fun MachinesScreenContent(
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun MachinesTopAppBar(
     selectionMode: Boolean,
     onBack: () -> Unit,
+    onProfileClicked: () -> Unit,
     onSignOut: () -> Unit
 ) {
 
@@ -259,44 +276,42 @@ private fun MachinesTopAppBar(
     }
 
     if (role == "printer") {
-        PrinterTopBar(onSignOut)
+        PrinterTopBar(onProfileClicked,onSignOut)
     } else
         AdminTopBar(onBack)
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 private fun PrinterTopBar(
+    onProfileClicked: () -> Unit,
     onSignOut: () -> Unit
 ) {
 
     val context = LocalContext.current
-    val sheetState = LocalSheetState.current
 
-    val scope = rememberCoroutineScope()
     val optionsMenu = remember { prepareOptionsMenu(context) }
 
     JobFlowTopBar(
         title = stringResource(id = R.string.machines),
         actions =
-        {
-            OptionsMenu(menuItems = optionsMenu, onItemClick = {
-                onOptionsItemClicked(
-                    context=context,
-                    label = it,
-                    bottomSheetState = sheetState,
-                    signOut = onSignOut,
-                    scope=scope
-                )
-            })
-        }
+            {
+                OptionsMenu(menuItems = optionsMenu, onItemClick = {
+                    onOptionsItemClicked(
+                        context = context,
+                        label = it,
+                        onProfileClicked = onProfileClicked,
+                        signOut = onSignOut
+                    )
+                })
+            }
     )
 }
 
 @Composable
 private fun AdminTopBar(
-    onBack:()->Unit
+    onBack: () -> Unit
 ) {
 
     JobFlowTopBar(
@@ -306,7 +321,7 @@ private fun AdminTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -326,7 +341,7 @@ private fun SelectionModeTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -336,13 +351,14 @@ private fun SelectionModeTopBar(
 @FlowPreview
 @ExperimentalComposeUiApi
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 fun MachinesList(
+    modifier: Modifier = Modifier,
     machines: List<Destination>,
     screenState: MachinesScreenUIState,
     shouldShowContextMenu: Boolean,
-    onClick:(Destination)->Unit
+    onClick: (Destination) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -353,7 +369,7 @@ fun MachinesList(
     }
 
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -384,7 +400,7 @@ fun MachinesList(
 }
 
 
-@ExperimentalMaterialApi
+
 @Composable
 fun MachineListItem(
     destination: Destination,
@@ -396,11 +412,11 @@ fun MachineListItem(
         Duration.fromMinutes(destination.runningTime)
     }
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         onClick = { onClick(destination) }
     ) {
         Row(
@@ -412,7 +428,7 @@ fun MachineListItem(
                 modifier = Modifier.size(40.dp),
                 painter = painterResource(id = R.drawable.ic_setting),
                 contentDescription = "Gear Icon",
-                tint = MaterialTheme.colors.secondary
+                tint = MaterialTheme.colorScheme.tertiary
             )
 
             Spacer(Modifier.width(16.dp))
@@ -431,7 +447,7 @@ fun MachineListItem(
                         duration,
                         destination.jobCount
                     ),
-                    style = MaterialTheme.typography.subtitle1
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
 
@@ -458,7 +474,7 @@ private fun prepareContextMenu(context: Context): List<MenuAction> {
     )
 }
 
-@ExperimentalMaterialApi
+
 @ExperimentalCoroutinesApi
 private fun onContextItemClicked(
     uiState: MachinesScreenUIState,
@@ -483,32 +499,29 @@ private fun prepareOptionsMenu(context: Context): List<MenuAction> {
     )
 }
 
-@ExperimentalMaterialApi
+
 private fun onOptionsItemClicked(
     context: Context,
     label: String,
-    bottomSheetState: ModalBottomSheetState,
-    signOut:()->Unit,
-    scope:CoroutineScope
+    onProfileClicked:()->Unit,
+    signOut: () -> Unit
 ) {
 
-    when(label){
+    when (label) {
 
-        context.getString(R.string.sign_out)->{
+        context.getString(R.string.sign_out) -> {
             signOut()
         }
 
-        context.getString(R.string.Profile)->{
-            scope.launch{
-                bottomSheetState.show()
-            }
+        context.getString(R.string.Profile) -> {
+            onProfileClicked()
         }
 
     }
 
 }
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun PreviewMachineAListItem() {
@@ -522,20 +535,20 @@ private fun PreviewMachineAListItem() {
         jobCount = 14
     }
 
-    JobFlowTheme {
+    JobFlowMaterial3Theme {
         MachineListItem(destination, {}) {
             OptionsMenu(menuItems = menu, onItemClick = {})
         }
     }
 }
 
-@ExperimentalMaterialApi
+
 @Preview
 @Composable
 private fun PreviewTopAppBar() {
 
-    JobFlowTheme {
-        MachinesTopAppBar(false,{},{})
+    JobFlowMaterial3Theme {
+        MachinesTopAppBar(false, {}, {},{})
     }
 
 }

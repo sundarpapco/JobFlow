@@ -1,10 +1,10 @@
 package com.sivakasi.papco.jobflow.screens.clients.history
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.runtime.Composable
@@ -24,7 +24,7 @@ import com.sivakasi.papco.jobflow.screens.common.PaginatedSearchModelListScreen
 import com.sivakasi.papco.jobflow.ui.JobFlowTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun EntryProviderScope<NavKey>.clientHistoryEntry(
     backStack: NavBackStack<NavKey>
 ) {
@@ -46,7 +46,7 @@ fun EntryProviderScope<NavKey>.clientHistoryEntry(
 }
 
 @ExperimentalCoroutinesApi
-@ExperimentalMaterialApi
+
 @Composable
 fun ClientHistoryScreen(
     client: Client,
